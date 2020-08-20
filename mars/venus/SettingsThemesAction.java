@@ -13,11 +13,11 @@ import javax.swing.WindowConstants;
 import mars.Globals;
 import themeengine.IJThemesPanel;
 
-public class SettingThemesAction extends GuiAction {
+public class SettingsThemesAction extends GuiAction {
 
 	JDialog themesDialog;
 
-	protected SettingThemesAction(String name, Icon icon, String descrip, Integer mnemonic, KeyStroke accel,
+	protected SettingsThemesAction(String name, Icon icon, String descrip, Integer mnemonic, KeyStroke accel,
 			VenusUI gui) {
 		super(name, icon, descrip, mnemonic, accel, gui);
 	}
