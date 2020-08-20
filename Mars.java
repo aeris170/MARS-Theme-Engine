@@ -1,5 +1,3 @@
-import themeengine.ThemeEngine;
-
 /*
  * Copyright (c) 2003-2006, Pete Sanderson and Kenneth Vollmar
  *
@@ -37,7 +35,6 @@ import themeengine.ThemeEngine;
 public class Mars {
 
 	public static void main(final String[] args) {
-		ThemeEngine.setup();
 		new mars.MarsLaunch(args);
 	}
 }

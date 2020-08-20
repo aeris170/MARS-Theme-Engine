@@ -32,33 +32,34 @@ import java.nio.file.StandardCopyOption;
  */
 public class IJThemesUpdater {
 
-	public static void main(String[] args) {
-		IJThemesManager themesManager = new IJThemesManager();
+	public static void main(final String[] args) {
+		final IJThemesManager themesManager = new IJThemesManager();
 		themesManager.loadBundledThemes();
 
-		for (IJThemeInfo ti : themesManager.bundledThemes) {
-			if (ti.sourceCodeUrl == null || ti.sourceCodePath == null) continue;
+		for (final IJThemeInfo ti : themesManager.bundledThemes) {
+			if (ti.sourceCodeUrl == null || ti.sourceCodePath == null) { continue; }
 
 			String fromUrl = ti.sourceCodeUrl + "/" + ti.sourceCodePath;
-			if (fromUrl.contains("github.com")) fromUrl += "?raw=true";
-			else if (fromUrl.contains("gitlab.com")) fromUrl = fromUrl.replace("/blob/", "/raw/");
+			if (fromUrl.contains("github.com")) {
+				fromUrl += "?raw=true";
+			} else if (fromUrl.contains("gitlab.com")) { fromUrl = fromUrl.replace("/blob/", "/raw/"); }
 
-			String toPath = "../flatlaf-intellij-themes/src/main/resources" + IJThemesPanel.THEMES_PACKAGE
+			final String toPath = "../flatlaf-intellij-themes/src/main/resources" + IJThemesPanel.THEMES_PACKAGE
 					+ ti.resourceName;
 
 			download(fromUrl, toPath);
 		}
 	}
 
-	private static void download(String fromUrl, String toPath) {
+	private static void download(final String fromUrl, final String toPath) {
 		System.out.println("Download " + fromUrl);
 
-		Path out = new File(toPath).toPath();
+		final Path out = new File(toPath).toPath();
 		try {
-			URL url = new URL(fromUrl.replace(" ", "%20"));
-			URLConnection con = url.openConnection();
+			final URL url = new URL(fromUrl.replace(" ", "%20"));
+			final URLConnection con = url.openConnection();
 			Files.copy(con.getInputStream(), out, StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			ex.printStackTrace();
 		}
 	}

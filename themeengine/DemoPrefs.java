@@ -45,38 +45,46 @@ public class DemoPrefs {
 
 	public static Preferences getState() { return state; }
 
-	public static void init(String rootPath) {
+	public static void init(final String rootPath) {
 		state = Preferences.userRoot().node(rootPath);
 	}
 
-	public static void initLaf(String[] args) {
+	public static void initLaf(final String[] args) {
 		// set look and feel
 		try {
-			if (args.length > 0) UIManager.setLookAndFeel(args[0]);
-			else {
-				String lafClassName = state.get(KEY_LAF, FlatLightLaf.class.getName());
+			if (args.length > 0) {
+				UIManager.setLookAndFeel(args[0]);
+			} else {
+				final String lafClassName = state.get(KEY_LAF, FlatLightLaf.class.getName());
 				if (IntelliJTheme.ThemeLaf.class.getName().equals(lafClassName)) {
-					String theme = state.get(KEY_LAF_THEME, "");
-					if (theme.startsWith(RESOURCE_PREFIX)) IntelliJTheme.install(IJThemesPanel.class
-							.getResourceAsStream(IJThemesPanel.THEMES_PACKAGE + theme.substring(RESOURCE_PREFIX
-									.length())));
-					else if (theme.startsWith(FILE_PREFIX)) FlatLaf.install(IntelliJTheme.createLaf(new FileInputStream(
-							theme.substring(FILE_PREFIX.length()))));
-					else FlatLightLaf.install();
+					final String theme = state.get(KEY_LAF_THEME, "");
+					if (theme.startsWith(RESOURCE_PREFIX)) {
+						IntelliJTheme.install(IJThemesPanel.class.getResourceAsStream(IJThemesPanel.THEMES_PACKAGE
+								+ theme.substring(RESOURCE_PREFIX.length())));
+					} else if (theme.startsWith(FILE_PREFIX)) {
+						FlatLaf.install(IntelliJTheme.createLaf(new FileInputStream(theme.substring(FILE_PREFIX
+								.length()))));
+					} else {
+						FlatLightLaf.install();
+					}
 
-					if (!theme.isEmpty()) UIManager.getLookAndFeelDefaults().put(THEME_UI_KEY, theme);
+					if (!theme.isEmpty()) { UIManager.getLookAndFeelDefaults().put(THEME_UI_KEY, theme); }
 				} else if (FlatPropertiesLaf.class.getName().equals(lafClassName)) {
-					String theme = state.get(KEY_LAF_THEME, "");
+					final String theme = state.get(KEY_LAF_THEME, "");
 					if (theme.startsWith(FILE_PREFIX)) {
-						File themeFile = new File(theme.substring(FILE_PREFIX.length()));
-						String themeName = StringUtils.removeTrailing(themeFile.getName(), ".properties");
+						final File themeFile = new File(theme.substring(FILE_PREFIX.length()));
+						final String themeName = StringUtils.removeTrailing(themeFile.getName(), ".properties");
 						FlatLaf.install(new FlatPropertiesLaf(themeName, themeFile));
-					} else FlatLightLaf.install();
+					} else {
+						FlatLightLaf.install();
+					}
 
-					if (!theme.isEmpty()) UIManager.getLookAndFeelDefaults().put(THEME_UI_KEY, theme);
-				} else UIManager.setLookAndFeel(lafClassName);
+					if (!theme.isEmpty()) { UIManager.getLookAndFeelDefaults().put(THEME_UI_KEY, theme); }
+				} else {
+					UIManager.setLookAndFeel(lafClassName);
+				}
 			}
-		} catch (Throwable ex) {
+		} catch (final Throwable ex) {
 			ex.printStackTrace();
 
 			// fallback
@@ -85,8 +93,9 @@ public class DemoPrefs {
 
 		// remember active look and feel
 		UIManager.addPropertyChangeListener(e -> {
-			if ("lookAndFeel".equals(e.getPropertyName())) state.put(KEY_LAF, UIManager.getLookAndFeel().getClass()
-					.getName());
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				state.put(KEY_LAF, UIManager.getLookAndFeel().getClass().getName());
+			}
 		});
 	}
 }

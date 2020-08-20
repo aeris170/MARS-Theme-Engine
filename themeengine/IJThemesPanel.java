@@ -65,6 +65,7 @@ import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatPropertiesLaf;
 import com.formdev.flatlaf.IntelliJTheme;
+import com.formdev.flatlaf.IntelliJTheme.ThemeLaf;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import com.formdev.flatlaf.util.StringUtils;
 
@@ -75,6 +76,11 @@ import net.miginfocom.swing.MigLayout;
  */
 public class IJThemesPanel extends JPanel {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1015932645086976264L;
+
 	public static final String THEMES_PACKAGE = "/com/formdev/flatlaf/intellijthemes/themes/";
 
 	private final IJThemesManager themesManager = new IJThemesManager();
@@ -84,7 +90,7 @@ public class IJThemesPanel extends JPanel {
 	private final WindowListener windowListener = new WindowAdapter() {
 
 		@Override
-		public void windowActivated(WindowEvent e) {
+		public void windowActivated(final WindowEvent e) {
 			IJThemesPanel.this.windowActivated();
 		}
 	};
@@ -100,24 +106,25 @@ public class IJThemesPanel extends JPanel {
 		themesList.setCellRenderer(new DefaultListCellRenderer() {
 
 			@Override
-			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
-					boolean cellHasFocus) {
-				String title = categories.get(index);
+			public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index,
+					final boolean isSelected, final boolean cellHasFocus) {
+				final String title = categories.get(index);
 				String name = ((IJThemeInfo) value).name;
-				int sep = name.indexOf('/');
-				if (sep >= 0) name = name.substring(sep + 1).trim();
+				final int sep = name.indexOf('/');
+				if (sep >= 0) { name = name.substring(sep + 1).trim(); }
 
-				JComponent c = (JComponent) super.getListCellRendererComponent(list, name, index, isSelected,
+				final JComponent c = (JComponent) super.getListCellRendererComponent(list, name, index, isSelected,
 						cellHasFocus);
 				c.setToolTipText(buildToolTip((IJThemeInfo) value));
-				if (title != null) c.setBorder(new CompoundBorder(new ListCellTitledBorder(themesList, title), c
-						.getBorder()));
+				if (title != null) {
+					c.setBorder(new CompoundBorder(new ListCellTitledBorder(themesList, title), c.getBorder()));
+				}
 				return c;
 			}
 
-			private String buildToolTip(IJThemeInfo ti) {
-				if (ti.themeFile != null) return ti.themeFile.getPath();
-				if (ti.resourceName == null) return ti.name;
+			private String buildToolTip(final IJThemeInfo ti) {
+				if (ti.themeFile != null) { return ti.themeFile.getPath(); }
+				if (ti.resourceName == null) { return ti.name; }
 
 				return "Name: " + ti.name + "\nLicense: " + ti.license + "\nSource Code: " + ti.sourceCodeUrl;
 			}
@@ -127,16 +134,16 @@ public class IJThemesPanel extends JPanel {
 	}
 
 	private void updateThemesList() {
-		int filterLightDark = filterComboBox.getSelectedIndex();
-		boolean showLight = (filterLightDark != 2);
-		boolean showDark = (filterLightDark != 1);
+		final int filterLightDark = filterComboBox.getSelectedIndex();
+		final boolean showLight = filterLightDark != 2;
+		final boolean showDark = filterLightDark != 1;
 
 		// load theme infos
 		themesManager.loadBundledThemes();
 		themesManager.loadThemesFromDirectory();
 
 		// sort themes by name
-		Comparator<? super IJThemeInfo> comparator = (t1, t2) -> t1.name.compareToIgnoreCase(t2.name);
+		final Comparator<? super IJThemeInfo> comparator = (t1, t2) -> t1.name.compareToIgnoreCase(t2.name);
 		themesManager.bundledThemes.sort(comparator);
 		themesManager.moreThemes.sort(comparator);
 
@@ -148,14 +155,22 @@ public class IJThemesPanel extends JPanel {
 
 		// add core themes at beginning
 		categories.put(themes.size(), "Core Themes");
-		if (showLight) themes.add(new IJThemeInfo("Flat Light", null, false, null, null, null, null, null,
-				FlatLightLaf.class.getName()));
-		if (showDark) themes.add(new IJThemeInfo("Flat Dark", null, true, null, null, null, null, null,
-				FlatDarkLaf.class.getName()));
-		if (showLight) themes.add(new IJThemeInfo("Flat IntelliJ", null, false, null, null, null, null, null,
-				FlatIntelliJLaf.class.getName()));
-		if (showDark) themes.add(new IJThemeInfo("Flat Darcula", null, true, null, null, null, null, null,
-				FlatDarculaLaf.class.getName()));
+		if (showLight) {
+			themes.add(new IJThemeInfo("Flat Light", null, false, null, null, null, null, null, FlatLightLaf.class
+					.getName()));
+		}
+		if (showDark) {
+			themes.add(new IJThemeInfo("Flat Dark", null, true, null, null, null, null, null, FlatDarkLaf.class
+					.getName()));
+		}
+		if (showLight) {
+			themes.add(new IJThemeInfo("Flat IntelliJ", null, false, null, null, null, null, null, FlatIntelliJLaf.class
+					.getName()));
+		}
+		if (showDark) {
+			themes.add(new IJThemeInfo("Flat Darcula", null, true, null, null, null, null, null, FlatDarculaLaf.class
+					.getName()));
+		}
 
 		// add themes from directory
 		categories.put(themes.size(), "Current Directory");
@@ -163,19 +178,19 @@ public class IJThemesPanel extends JPanel {
 
 		// add uncategorized bundled themes
 		categories.put(themes.size(), "IntelliJ Themes");
-		for (IJThemeInfo ti : themesManager.bundledThemes) {
-			boolean show = (showLight && !ti.dark) || (showDark && ti.dark);
-			if (show && !ti.name.contains("/")) themes.add(ti);
+		for (final IJThemeInfo ti : themesManager.bundledThemes) {
+			final boolean show = showLight && !ti.dark || showDark && ti.dark;
+			if (show && !ti.name.contains("/")) { themes.add(ti); }
 		}
 
 		// add categorized bundled themes
 		String lastCategory = null;
-		for (IJThemeInfo ti : themesManager.bundledThemes) {
-			boolean show = (showLight && !ti.dark) || (showDark && ti.dark);
-			int sep = ti.name.indexOf('/');
-			if (!show || sep < 0) continue;
+		for (final IJThemeInfo ti : themesManager.bundledThemes) {
+			final boolean show = showLight && !ti.dark || showDark && ti.dark;
+			final int sep = ti.name.indexOf('/');
+			if (!show || sep < 0) { continue; }
 
-			String category = ti.name.substring(0, sep).trim();
+			final String category = ti.name.substring(0, sep).trim();
 			if (!Objects.equals(lastCategory, category)) {
 				lastCategory = category;
 				categories.put(themes.size(), category);
@@ -191,7 +206,7 @@ public class IJThemesPanel extends JPanel {
 			public int getSize() { return themes.size(); }
 
 			@Override
-			public IJThemeInfo getElementAt(int index) {
+			public IJThemeInfo getElementAt(final int index) {
 				return themes.get(index);
 			}
 		});
@@ -199,7 +214,7 @@ public class IJThemesPanel extends JPanel {
 		// restore selection
 		if (oldSel != null) {
 			for (int i = 0; i < themes.size(); i++) {
-				IJThemeInfo theme = themes.get(i);
+				final IJThemeInfo theme = themes.get(i);
 				if (oldSel.name.equals(theme.name) && Objects.equals(oldSel.resourceName, theme.resourceName) && Objects
 						.equals(oldSel.themeFile, theme.themeFile) && Objects.equals(oldSel.lafClassName,
 								theme.lafClassName)) {
@@ -207,53 +222,63 @@ public class IJThemesPanel extends JPanel {
 					break;
 				}
 			}
+		} else {
+			ThemeLaf laf = (ThemeLaf) UIManager.getLookAndFeel();
+			IntelliJTheme themeLaf = laf.getTheme();
+			for (int i = 0; i < themes.size(); i++) {
+				final IJThemeInfo theme = themes.get(i);
+				if (themeLaf.name.equals(theme.name)) {
+					themesList.setSelectedIndex(i);
+					break;
+				}
+			}
 		}
 
 		// select first theme if none selected
-		if (themesList.getSelectedIndex() < 0) themesList.setSelectedIndex(0);
+		if (themesList.getSelectedIndex() < 0) { themesList.setSelectedIndex(0); }
 
 		// scroll selection into visible area
-		int sel = themesList.getSelectedIndex();
+		final int sel = themesList.getSelectedIndex();
 		if (sel >= 0) {
-			Rectangle bounds = themesList.getCellBounds(sel, sel);
-			if (bounds != null) themesList.scrollRectToVisible(bounds);
+			final Rectangle bounds = themesList.getCellBounds(sel, sel);
+			if (bounds != null) { themesList.scrollRectToVisible(bounds); }
 		}
 	}
 
-	private void themesListValueChanged(ListSelectionEvent e) {
-		IJThemeInfo themeInfo = themesList.getSelectedValue();
-		boolean bundledTheme = (themeInfo != null && themeInfo.resourceName != null);
-
-		if (e.getValueIsAdjusting() || isAdjustingThemesList) return;
+	private void themesListValueChanged(final ListSelectionEvent e) {
+		final IJThemeInfo themeInfo = themesList.getSelectedValue();
+		if (e.getValueIsAdjusting() || isAdjustingThemesList) { return; }
 
 		EventQueue.invokeLater(() -> { setTheme(themeInfo); });
 	}
 
-	private void setTheme(IJThemeInfo themeInfo) {
-		if (themeInfo == null) return;
+	private void setTheme(final IJThemeInfo themeInfo) {
+		if (themeInfo == null) { return; }
 
 		// change look and feel
 		if (themeInfo.lafClassName != null) {
-			if (themeInfo.lafClassName.equals(UIManager.getLookAndFeel().getClass().getName())) return;
+			if (themeInfo.lafClassName.equals(UIManager.getLookAndFeel().getClass().getName())) { return; }
 
 			FlatAnimatedLafChange.showSnapshot();
 
 			try {
 				UIManager.setLookAndFeel(themeInfo.lafClassName);
-			} catch (Exception ex) {
+			} catch (final Exception ex) {
 				ex.printStackTrace();
 				showInformationDialog("Failed to create '" + themeInfo.lafClassName + "'.", ex);
 			}
 		} else if (themeInfo.themeFile != null) {
 			FlatAnimatedLafChange.showSnapshot();
-
+			//cannot test, if errs, can't do anything :(
 			try {
 				if (themeInfo.themeFile.getName().endsWith(".properties")) {
 					FlatLaf.install(new FlatPropertiesLaf(themeInfo.name, themeInfo.themeFile));
-				} else FlatLaf.install(IntelliJTheme.createLaf(new FileInputStream(themeInfo.themeFile)));
+				} else {
+					FlatLaf.install(IntelliJTheme.createLaf(new FileInputStream(themeInfo.themeFile)));
+				}
 
 				DemoPrefs.getState().put(DemoPrefs.KEY_LAF_THEME, DemoPrefs.FILE_PREFIX + themeInfo.themeFile);
-			} catch (Exception ex) {
+			} catch (final Exception ex) {
 				ex.printStackTrace();
 				showInformationDialog("Failed to load '" + themeInfo.themeFile + "'.", ex);
 			}
@@ -270,21 +295,23 @@ public class IJThemesPanel extends JPanel {
 	}
 
 	private void saveTheme() {
-		IJThemeInfo themeInfo = themesList.getSelectedValue();
-		if (themeInfo == null || themeInfo.resourceName == null) return;
+		final IJThemeInfo themeInfo = themesList.getSelectedValue();
+		if (themeInfo == null || themeInfo.resourceName == null) { return; }
 
-		JFileChooser fileChooser = new JFileChooser();
+		final JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setSelectedFile(new File(lastDirectory, themeInfo.resourceName));
-		if (fileChooser.showSaveDialog(SwingUtilities.windowForComponent(this)) != JFileChooser.APPROVE_OPTION) return;
+		if (fileChooser.showSaveDialog(SwingUtilities.windowForComponent(this)) != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
 
-		File file = fileChooser.getSelectedFile();
+		final File file = fileChooser.getSelectedFile();
 		lastDirectory = file.getParentFile();
 
 		// save theme
 		try {
 			Files.copy(getClass().getResourceAsStream(THEMES_PACKAGE + themeInfo.resourceName), file.toPath(),
 					StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			showInformationDialog("Failed to save theme to '" + file + "'.", ex);
 			return;
 		}
@@ -292,11 +319,11 @@ public class IJThemesPanel extends JPanel {
 		// save license
 		if (themeInfo.licenseFile != null) {
 			try {
-				File licenseFile = new File(file.getParentFile(), StringUtils.removeTrailing(file.getName(),
+				final File licenseFile = new File(file.getParentFile(), StringUtils.removeTrailing(file.getName(),
 						".theme.json") + themeInfo.licenseFile.substring(themeInfo.licenseFile.indexOf('.')));
 				Files.copy(getClass().getResourceAsStream(THEMES_PACKAGE + themeInfo.licenseFile), licenseFile.toPath(),
 						StandardCopyOption.REPLACE_EXISTING);
-			} catch (IOException ex) {
+			} catch (final IOException ex) {
 				showInformationDialog("Failed to save theme license to '" + file + "'.", ex);
 				return;
 			}
@@ -304,10 +331,10 @@ public class IJThemesPanel extends JPanel {
 	}
 
 	private void browseSourceCode() {
-		IJThemeInfo themeInfo = themesList.getSelectedValue();
-		if (themeInfo == null || themeInfo.resourceName == null) return;
+		final IJThemeInfo themeInfo = themesList.getSelectedValue();
+		if (themeInfo == null || themeInfo.resourceName == null) { return; }
 
-		String themeUrl = (themeInfo.sourceCodeUrl + '/' + themeInfo.sourceCodePath).replace(" ", "%20");
+		final String themeUrl = (themeInfo.sourceCodeUrl + '/' + themeInfo.sourceCodePath).replace(" ", "%20");
 		try {
 			Desktop.getDesktop().browse(new URI(themeUrl));
 		} catch (IOException | URISyntaxException ex) {
@@ -315,7 +342,7 @@ public class IJThemesPanel extends JPanel {
 		}
 	}
 
-	private void showInformationDialog(String message, Exception ex) {
+	private void showInformationDialog(final String message, final Exception ex) {
 		JOptionPane.showMessageDialog(SwingUtilities.windowForComponent(this), message + "\n\n" + ex.getMessage(),
 				"FlatLaf", JOptionPane.INFORMATION_MESSAGE);
 	}
@@ -328,7 +355,7 @@ public class IJThemesPanel extends JPanel {
 		UIManager.addPropertyChangeListener(lafListener);
 
 		window = SwingUtilities.windowForComponent(this);
-		if (window != null) window.addWindowListener(windowListener);
+		if (window != null) { window.addWindowListener(windowListener); }
 	}
 
 	@Override
@@ -343,31 +370,33 @@ public class IJThemesPanel extends JPanel {
 		}
 	}
 
-	private void lafChanged(PropertyChangeEvent e) {
-		if ("lookAndFeel".equals(e.getPropertyName())) selectedCurrentLookAndFeel();
+	private void lafChanged(final PropertyChangeEvent e) {
+		if ("lookAndFeel".equals(e.getPropertyName())) { selectedCurrentLookAndFeel(); }
 	}
 
 	private void windowActivated() {
 		// refresh themes list on window activation
-		if (themesManager.hasThemesFromDirectoryChanged()) updateThemesList();
+		if (themesManager.hasThemesFromDirectoryChanged()) { updateThemesList(); }
 	}
 
 	private void selectedCurrentLookAndFeel() {
-		LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
-		String theme = UIManager.getLookAndFeelDefaults().getString(DemoPrefs.THEME_UI_KEY);
+		final LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
+		final String theme = UIManager.getLookAndFeelDefaults().getString(DemoPrefs.THEME_UI_KEY);
 
 		if (theme == null && (lookAndFeel instanceof IntelliJTheme.ThemeLaf
-				|| lookAndFeel instanceof FlatPropertiesLaf)) return;
+				|| lookAndFeel instanceof FlatPropertiesLaf)) {
+			return;
+		}
 
 		Predicate<IJThemeInfo> test;
 		if (theme != null && theme.startsWith(DemoPrefs.RESOURCE_PREFIX)) {
-			String resourceName = theme.substring(DemoPrefs.RESOURCE_PREFIX.length());
+			final String resourceName = theme.substring(DemoPrefs.RESOURCE_PREFIX.length());
 			test = ti -> Objects.equals(ti.resourceName, resourceName);
 		} else if (theme != null && theme.startsWith(DemoPrefs.FILE_PREFIX)) {
-			File themeFile = new File(theme.substring(DemoPrefs.FILE_PREFIX.length()));
+			final File themeFile = new File(theme.substring(DemoPrefs.FILE_PREFIX.length()));
 			test = ti -> Objects.equals(ti.themeFile, themeFile);
 		} else {
-			String lafClassName = lookAndFeel.getClass().getName();
+			final String lafClassName = lookAndFeel.getClass().getName();
 			test = ti -> Objects.equals(ti.lafClassName, lafClassName);
 		}
 
@@ -381,8 +410,10 @@ public class IJThemesPanel extends JPanel {
 
 		isAdjustingThemesList = true;
 		if (newSel >= 0) {
-			if (newSel != themesList.getSelectedIndex()) themesList.setSelectedIndex(newSel);
-		} else themesList.clearSelection();
+			if (newSel != themesList.getSelectedIndex()) { themesList.setSelectedIndex(newSel); }
+		} else {
+			themesList.clearSelection();
+		}
 		isAdjustingThemesList = false;
 	}
 
@@ -392,7 +423,7 @@ public class IJThemesPanel extends JPanel {
 
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-		JLabel themesLabel = new JLabel();
+		final JLabel themesLabel = new JLabel();
 		filterComboBox = new JComboBox<>();
 		themesScrollPane = new JScrollPane();
 		themesList = new JList<>();
@@ -420,7 +451,7 @@ public class IJThemesPanel extends JPanel {
 
 			//---- themesList ----
 			themesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			themesList.addListSelectionListener(e -> themesListValueChanged(e));
+			themesList.addListSelectionListener(this::themesListValueChanged);
 			themesScrollPane.setViewportView(themesList);
 		}
 		add(themesScrollPane, "cell 0 1");

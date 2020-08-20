@@ -38,7 +38,7 @@ class ListCellTitledBorder implements Border {
 	private final JList<?> list;
 	private final String title;
 
-	ListCellTitledBorder(JList<?> list, String title) {
+	ListCellTitledBorder(final JList<?> list, final String title) {
 		this.list = list;
 		this.title = title;
 	}
@@ -47,42 +47,43 @@ class ListCellTitledBorder implements Border {
 	public boolean isBorderOpaque() { return true; }
 
 	@Override
-	public Insets getBorderInsets(Component c) {
-		int height = c.getFontMetrics(list.getFont()).getHeight();
+	public Insets getBorderInsets(final Component c) {
+		final int height = c.getFontMetrics(list.getFont()).getHeight();
 		return new Insets(height, 0, 0, 0);
 	}
 
 	@Override
-	public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-		FontMetrics fm = c.getFontMetrics(list.getFont());
-		int titleWidth = fm.stringWidth(title);
-		int titleHeight = fm.getHeight();
+	public void paintBorder(final Component c, final Graphics g, final int x, final int y, final int width,
+			final int height) {
+		final FontMetrics fm = c.getFontMetrics(list.getFont());
+		final int titleWidth = fm.stringWidth(title);
+		final int titleHeight = fm.getHeight();
 
 		// fill background
 		g.setColor(list.getBackground());
 		g.fillRect(x, y, width, titleHeight);
 
-		int gap = UIScale.scale(4);
+		final int gap = UIScale.scale(4);
 
-		Graphics2D g2 = (Graphics2D) g.create();
+		final Graphics2D g2 = (Graphics2D) g.create();
 		try {
 			FlatUIUtils.setRenderingHints(g2);
 
 			g2.setColor(UIManager.getColor("Label.disabledForeground"));
 
 			// paint separator lines
-			int sepWidth = (width - titleWidth) / 2 - gap - gap;
+			final int sepWidth = (width - titleWidth) / 2 - gap - gap;
 			if (sepWidth > 0) {
-				int sy = y + Math.round(titleHeight / 2f);
-				float sepHeight = UIScale.scale((float) 1);
+				final int sy = y + Math.round(titleHeight / 2f);
+				final float sepHeight = UIScale.scale((float) 1);
 
 				g2.fill(new Rectangle2D.Float(x + gap, sy, sepWidth, sepHeight));
 				g2.fill(new Rectangle2D.Float(x + width - gap - sepWidth, sy, sepWidth, sepHeight));
 			}
 
 			// draw title
-			int xt = x + ((width - titleWidth) / 2);
-			int yt = y + fm.getAscent();
+			final int xt = x + (width - titleWidth) / 2;
+			final int yt = y + fm.getAscent();
 
 			FlatUIUtils.drawString(list, g2, title, xt, yt);
 		} finally {

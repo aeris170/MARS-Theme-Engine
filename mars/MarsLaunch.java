@@ -27,6 +27,7 @@ import mars.util.Binary;
 import mars.util.FilenameFinder;
 import mars.util.MemoryDump;
 import mars.venus.VenusUI;
+import themeengine.ThemeEngine;
 
 /*
  * Copyright (c) 2003-2012, Pete Sanderson and Kenneth Vollmar
@@ -155,7 +156,7 @@ public class MarsLaunch {
 		final boolean gui = args.length == 0;
 		Globals.initialize(gui);
 		if (gui) {
-			launchIDE();
+			launchIDE(args);
 		} else { // running from command line.
 			// assure command mode works in headless environment (generates exception if not)
 			System.setProperty("java.awt.headless", "true");
@@ -229,7 +230,8 @@ public class MarsLaunch {
 				continue;
 			}
 			try {
-				final int highAddress = Globals.memory.getAddressOfFirstNull(segInfo[0], segInfo[1]) - Memory.WORD_LENGTH_BYTES;
+				final int highAddress = Globals.memory.getAddressOfFirstNull(segInfo[0], segInfo[1])
+						- Memory.WORD_LENGTH_BYTES;
 				if (highAddress < segInfo[0].intValue()) {
 					out.println("This segment has not been written to, there is nothing to dump.");
 					continue;
@@ -253,10 +255,13 @@ public class MarsLaunch {
 	// There are no command arguments, so run in interactive mode by
 	// launching the GUI-fronted integrated development environment.
 
-	private void launchIDE() {
+	private void launchIDE(String[] args) {
 		// System.setProperty("apple.laf.useScreenMenuBar", "true"); // Puts MARS menu on Mac OS menu bar
 		new MarsSplashScreen(splashDuration).showSplash();
-		SwingUtilities.invokeLater(() -> new VenusUI("MARS " + Globals.version));
+		SwingUtilities.invokeLater(() -> {
+			ThemeEngine.setup(args);
+			new VenusUI("MARS " + Globals.version);
+		});
 		return;
 	}
 

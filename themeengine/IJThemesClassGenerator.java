@@ -30,66 +30,69 @@ import java.nio.file.StandardOpenOption;
  */
 public class IJThemesClassGenerator {
 
-	public static void main(String[] args) {
-		IJThemesManager themesManager = new IJThemesManager();
+	public static void main(final String[] args) {
+		final IJThemesManager themesManager = new IJThemesManager();
 		themesManager.loadBundledThemes();
 
-		String toPath = "../flatlaf-intellij-themes/src/main/java" + IJThemesPanel.THEMES_PACKAGE + "..";
+		final String toPath = "../flatlaf-intellij-themes/src/main/java" + IJThemesPanel.THEMES_PACKAGE + "..";
 
-		StringBuilder allInfos = new StringBuilder();
-		StringBuilder markdownTable = new StringBuilder();
+		final StringBuilder allInfos = new StringBuilder();
+		final StringBuilder markdownTable = new StringBuilder();
 		markdownTable.append("Name | Class\n");
 		markdownTable.append("-----|------\n");
 
-		for (IJThemeInfo ti : themesManager.bundledThemes) {
-			if (ti.sourceCodeUrl == null || ti.sourceCodePath == null) continue;
+		for (final IJThemeInfo ti : themesManager.bundledThemes) {
+			if (ti.sourceCodeUrl == null || ti.sourceCodePath == null) { continue; }
 
 			generateClass(ti, toPath, allInfos, markdownTable);
 		}
 
-		Path out = new File(toPath, "FlatAllIJThemes.java").toPath();
-		String allThemes = CLASS_HEADER + ALL_THEMES_TEMPLATE.replace("${allInfos}", allInfos);
+		final Path out = new File(toPath, "FlatAllIJThemes.java").toPath();
+		final String allThemes = CLASS_HEADER + ALL_THEMES_TEMPLATE.replace("${allInfos}", allInfos);
 		writeFile(out, allThemes);
 
 		System.out.println(markdownTable);
 	}
 
-	private static void generateClass(IJThemeInfo ti, String toPath, StringBuilder allInfos,
-			StringBuilder markdownTable) {
+	private static void generateClass(final IJThemeInfo ti, final String toPath, final StringBuilder allInfos,
+			final StringBuilder markdownTable) {
 		String resourceName = ti.resourceName;
 		String resourcePath = null;
-		int resSep = resourceName.indexOf('/');
+		final int resSep = resourceName.indexOf('/');
 		if (resSep >= 0) {
 			resourcePath = resourceName.substring(0, resSep);
 			resourceName = resourceName.substring(resSep + 1);
 		}
 
 		String name = ti.name;
-		int nameSep = name.indexOf('/');
-		if (nameSep >= 0) name = name.substring(nameSep + 1).trim();
+		final int nameSep = name.indexOf('/');
+		if (nameSep >= 0) { name = name.substring(nameSep + 1).trim(); }
 
-		StringBuilder buf = new StringBuilder();
-		for (String n : name.split(" ")) {
-			if (n.length() == 0 || n.equals("-")) continue;
+		final StringBuilder buf = new StringBuilder();
+		for (final String n : name.split(" ")) {
+			if (n.length() == 0 || n.equals("-")) { continue; }
 
-			if (Character.isUpperCase(n.charAt(0))) buf.append(n);
-			else buf.append(Character.toUpperCase(n.charAt(0))).append(n.substring(1));
+			if (Character.isUpperCase(n.charAt(0))) {
+				buf.append(n);
+			} else {
+				buf.append(Character.toUpperCase(n.charAt(0))).append(n.substring(1));
+			}
 		}
 
-		String subPackage = (resourcePath != null) ? '.' + resourcePath.replace("-", "") : "";
-		String themeClass = "Flat" + buf + "IJTheme";
-		String themeFile = resourceName;
+		final String subPackage = resourcePath != null ? '.' + resourcePath.replace("-", "") : "";
+		final String themeClass = "Flat" + buf + "IJTheme";
+		final String themeFile = resourceName;
 
-		String classBody = CLASS_HEADER + CLASS_TEMPLATE.replace("${subPackage}", subPackage).replace("${themeClass}",
-				themeClass).replace("${themeFile}", themeFile);
+		final String classBody = CLASS_HEADER + CLASS_TEMPLATE.replace("${subPackage}", subPackage).replace(
+				"${themeClass}", themeClass).replace("${themeFile}", themeFile);
 
 		File toDir = new File(toPath);
-		if (resourcePath != null) toDir = new File(toDir, resourcePath.replace("-", ""));
+		if (resourcePath != null) { toDir = new File(toDir, resourcePath.replace("-", "")); }
 
-		Path out = new File(toDir, themeClass + ".java").toPath();
+		final Path out = new File(toDir, themeClass + ".java").toPath();
 		writeFile(out, classBody);
 
-		if (allInfos.length() > 0) allInfos.append('\n');
+		if (allInfos.length() > 0) { allInfos.append('\n'); }
 		allInfos.append(THEME_TEMPLATE.replace("${subPackage}", subPackage).replace("${themeClass}", themeClass)
 				.replace("${themeName}", name));
 
@@ -97,11 +100,11 @@ public class IJThemesClassGenerator {
 				ti.sourceCodeUrl, subPackage, themeClass));
 	}
 
-	private static void writeFile(Path out, String content) {
+	private static void writeFile(final Path out, final String content) {
 		try {
 			Files.write(out, content.getBytes(StandardCharsets.ISO_8859_1), StandardOpenOption.CREATE,
 					StandardOpenOption.TRUNCATE_EXISTING);
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			ex.printStackTrace();
 		}
 	}
