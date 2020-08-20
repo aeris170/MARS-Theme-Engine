@@ -8,8 +8,9 @@
 
 package mars.venus.editors.jeditsyntax.tokenmarker;
 
+import java.util.ArrayList;
+
 import javax.swing.text.Segment;
-import java.util.*;
 
 /**
  * A token marker that splits lines of text into tokens. Each token carries a
@@ -29,60 +30,63 @@ public abstract class TokenMarker {
 	/**
 	 * A wrapper for the lower-level <code>markTokensImpl</code> method that is
 	 * called to split a line up into tokens.
-	 * 
+	 *
 	 * @param line      The line
 	 * @param lineIndex The line number
 	 */
-	public Token markTokens(Segment line, int lineIndex) {
+	public Token markTokens(final Segment line, final int lineIndex) {
 		if (lineIndex >= length) { throw new IllegalArgumentException("Tokenizing invalid line: " + lineIndex); }
 
 		lastToken = null;
 
-		LineInfo info = lineInfo[lineIndex];
+		final LineInfo info = lineInfo[lineIndex];
 		LineInfo prev;
-		if (lineIndex == 0) prev = null;
-		else prev = lineInfo[lineIndex - 1];
+		if (lineIndex == 0) {
+			prev = null;
+		} else {
+			prev = lineInfo[lineIndex - 1];
+		}
 
-		byte oldToken = info.token;
-		byte token = markTokensImpl(prev == null ? Token.NULL : prev.token, line, lineIndex);
+		final byte oldToken = info.token;
+		final byte token = markTokensImpl(prev == null ? Token.NULL : prev.token, line, lineIndex);
 
 		info.token = token;
 
 		/*
 		 * This is a foul hack. It stops nextLineRequested from being cleared if
 		 * the same line is marked twice.
-		 * 
+		 *
 		 * Why is this necessary? It's all JEditTextArea's fault. When something
 		 * is inserted into the text, firing a document event, the
 		 * insertUpdate() method shifts the caret (if necessary) by the amount
 		 * inserted.
-		 * 
+		 *
 		 * All caret movement is handled by the select() method, which
 		 * eventually pipes the new position to scrollTo() and calls repaint().
-		 * 
+		 *
 		 * Note that at this point in time, the new line hasn't yet been
 		 * painted; the caret is moved first.
-		 * 
+		 *
 		 * scrollTo() calls offsetToX(), which tokenizes the line unless it is
 		 * being called on the last line painted (in which case it uses the text
 		 * area's painter cached token list). What scrollTo() does next is
 		 * irrelevant.
-		 * 
+		 *
 		 * After scrollTo() has done it's job, repaint() is called, and
 		 * eventually we end up in paintLine(), whose job is to paint the
 		 * changed line. It, too, calls markTokens().
-		 * 
+		 *
 		 * The problem was that if the line started a multiline token, the first
 		 * markTokens() (done in offsetToX()) would set nextLineRequested
 		 * (because the line end token had changed) but the second would clear
 		 * it (because the line was the same that time) and therefore
 		 * paintLine() would never know that it needed to repaint subsequent
 		 * lines.
-		 * 
+		 *
 		 * This bug took me ages to track down, that's why I wrote all the
 		 * relevant info down so that others wouldn't duplicate it.
 		 */
-		if (!(lastLine == lineIndex && nextLineRequested)) nextLineRequested = (oldToken != token);
+		if (!(lastLine == lineIndex && nextLineRequested)) { nextLineRequested = oldToken != token; }
 
 		lastLine = lineIndex;
 
@@ -122,15 +126,15 @@ public abstract class TokenMarker {
 	/**
 	 * Informs the token marker that lines have been inserted into the document.
 	 * This inserts a gap in the <code>lineInfo</code> array.
-	 * 
+	 *
 	 * @param index The first line number
 	 * @param lines The number of lines
 	 */
-	public void insertLines(int index, int lines) {
-		if (lines <= 0) return;
+	public void insertLines(final int index, final int lines) {
+		if (lines <= 0) { return; }
 		length += lines;
 		ensureCapacity(length);
-		int len = index + lines;
+		final int len = index + lines;
 		System.arraycopy(lineInfo, index, lineInfo, len, lineInfo.length - len);
 
 		for (int i = index + lines - 1; i >= index; i--) {
@@ -141,13 +145,13 @@ public abstract class TokenMarker {
 	/**
 	 * Informs the token marker that line have been deleted from the document. This
 	 * removes the lines in question from the <code>lineInfo</code> array.
-	 * 
+	 *
 	 * @param index The first line number
 	 * @param lines The number of lines
 	 */
-	public void deleteLines(int index, int lines) {
-		if (lines <= 0) return;
-		int len = index + lines;
+	public void deleteLines(final int index, final int lines) {
+		if (lines <= 0) { return; }
+		final int len = index + lines;
 		length -= lines;
 		System.arraycopy(lineInfo, len, lineInfo, index, lineInfo.length - len);
 	}
@@ -168,12 +172,12 @@ public abstract class TokenMarker {
 	 * Construct and return any appropriate help information for the given token.
 	 * This default definition returns null; override it in language-specific
 	 * subclasses.
-	 * 
+	 *
 	 * @param token     the pertinent Token object
 	 * @param tokenText the source String that matched to the token
 	 * @return ArrayList containing PopupHelpItem objects, one per match.
 	 */
-	public ArrayList getTokenExactMatchHelp(Token token, String tokenText) {
+	public ArrayList getTokenExactMatchHelp(final Token token, final String tokenText) {
 		return null;
 	}
 
@@ -181,14 +185,15 @@ public abstract class TokenMarker {
 	 * Construct and return any appropriate help information for the given token or
 	 * "token prefix". Will match instruction prefixes, e.g. "s" matches "sw". This
 	 * default definition returns null; override it in language-specific subclasses.
-	 * 
+	 *
 	 * @param line      String containing current line
 	 * @param tokenList first Token on the current line
 	 * @param token     the pertinent Token object
 	 * @param tokenText the source String that matched to the token
 	 * @return ArrayList containing PopupHelpItem objects, one per match.
 	 */
-	public ArrayList getTokenPrefixMatchHelp(String line, Token tokenList, Token tokenAtOffset, String tokenText) {
+	public ArrayList getTokenPrefixMatchHelp(final String line, final Token tokenList, final Token tokenAtOffset,
+			final String tokenText) {
 		return null;
 	}
 
@@ -248,10 +253,11 @@ public abstract class TokenMarker {
 	 *
 	 * @param index The array index
 	 */
-	protected void ensureCapacity(int index) {
-		if (lineInfo == null) lineInfo = new LineInfo[index + 1];
-		else if (lineInfo.length <= index) {
-			LineInfo[] lineInfoN = new LineInfo[(index + 1) * 2];
+	protected void ensureCapacity(final int index) {
+		if (lineInfo == null) {
+			lineInfo = new LineInfo[index + 1];
+		} else if (lineInfo.length <= index) {
+			final LineInfo[] lineInfoN = new LineInfo[(index + 1) * 2];
 			System.arraycopy(lineInfo, 0, lineInfoN, 0, lineInfo.length);
 			lineInfo = lineInfoN;
 		}
@@ -259,14 +265,14 @@ public abstract class TokenMarker {
 
 	/**
 	 * Adds a token to the token list.
-	 * 
+	 *
 	 * @param length The length of the token
 	 * @param id     The id of the token
 	 */
-	protected void addToken(int length, byte id) {
-		if (id >= Token.INTERNAL_FIRST && id <= Token.INTERNAL_LAST) throw new InternalError("Invalid id: " + id);
+	protected void addToken(final int length, final byte id) {
+		if (id >= Token.INTERNAL_FIRST && id <= Token.INTERNAL_LAST) { throw new InternalError("Invalid id: " + id); }
 
-		if (length == 0 && id != Token.END) return;
+		if (length == 0 && id != Token.END) { return; }
 
 		if (firstToken == null) {
 			firstToken = new Token(length, id);
@@ -298,7 +304,7 @@ public abstract class TokenMarker {
 		/**
 		 * Creates a new LineInfo object with the specified parameters.
 		 */
-		public LineInfo(byte token, Object obj) {
+		public LineInfo(final byte token, final Object obj) {
 			this.token = token;
 			this.obj = obj;
 		}

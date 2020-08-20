@@ -9,10 +9,14 @@
 
 package mars.venus.editors.jeditsyntax;
 
-import mars.venus.editors.jeditsyntax.tokenmarker.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.PlainDocument;
+import javax.swing.text.Segment;
 import javax.swing.undo.UndoableEdit;
+
+import mars.venus.editors.jeditsyntax.tokenmarker.TokenMarker;
 
 /**
  * A document implementation that can be tokenized by the syntax highlighting
@@ -24,6 +28,11 @@ import javax.swing.undo.UndoableEdit;
 public class SyntaxDocument extends PlainDocument {
 
 	/**
+	 *
+	 */
+	private static final long serialVersionUID = 7222918425881723251L;
+
+	/**
 	 * Returns the token marker that is to be used to split lines of this document
 	 * up into tokens. May return null if this document is not to be colorized.
 	 */
@@ -33,12 +42,12 @@ public class SyntaxDocument extends PlainDocument {
 	 * Sets the token marker that is to be used to split lines of this document up
 	 * into tokens. May throw an exception if this is not supported for this type of
 	 * document.
-	 * 
+	 *
 	 * @param tm The new token marker
 	 */
-	public void setTokenMarker(TokenMarker tm) {
+	public void setTokenMarker(final TokenMarker tm) {
 		tokenMarker = tm;
-		if (tm == null) return;
+		if (tm == null) { return; }
 		tokenMarker.insertLines(0, getDefaultRootElement().getElementCount());
 		tokenizeLines();
 	}
@@ -54,26 +63,26 @@ public class SyntaxDocument extends PlainDocument {
 	/**
 	 * Reparses the document, by passing the specified lines to the token marker.
 	 * This should be called after a large quantity of text is first inserted.
-	 * 
+	 *
 	 * @param start The first line to parse
 	 * @param len   The number of lines, after the first one to parse
 	 */
-	public void tokenizeLines(int start, int len) {
-		if (tokenMarker == null || !tokenMarker.supportsMultilineTokens()) return;
+	public void tokenizeLines(final int start, int len) {
+		if (tokenMarker == null || !tokenMarker.supportsMultilineTokens()) { return; }
 
-		Segment lineSegment = new Segment();
-		Element map = getDefaultRootElement();
+		final Segment lineSegment = new Segment();
+		final Element map = getDefaultRootElement();
 
 		len += start;
 
 		try {
 			for (int i = start; i < len; i++) {
-				Element lineElement = map.getElement(i);
-				int lineStart = lineElement.getStartOffset();
+				final Element lineElement = map.getElement(i);
+				final int lineStart = lineElement.getStartOffset();
 				getText(lineStart, lineElement.getEndOffset() - lineStart - 1, lineSegment);
 				tokenMarker.markTokens(lineSegment, i);
 			}
-		} catch (BadLocationException bl) {
+		} catch (final BadLocationException bl) {
 			bl.printStackTrace();
 		}
 	}
@@ -95,11 +104,11 @@ public class SyntaxDocument extends PlainDocument {
 	/**
 	 * Adds an undoable edit to this document's undo list. The edit should be
 	 * ignored if something is currently being undone.
-	 * 
+	 *
 	 * @param edit The undoable edit
 	 * @since jEdit 2.2pre1
 	 */
-	public void addUndoableEdit(UndoableEdit edit) {}
+	public void addUndoableEdit(final UndoableEdit edit) {}
 
 	// protected members
 	protected TokenMarker tokenMarker;
@@ -108,9 +117,10 @@ public class SyntaxDocument extends PlainDocument {
 	 * We overwrite this method to update the token marker state immediately so that
 	 * any event listeners get a consistent token marker.
 	 */
-	protected void fireInsertUpdate(DocumentEvent evt) {
+	@Override
+	protected void fireInsertUpdate(final DocumentEvent evt) {
 		if (tokenMarker != null) {
-			DocumentEvent.ElementChange ch = evt.getChange(getDefaultRootElement());
+			final DocumentEvent.ElementChange ch = evt.getChange(getDefaultRootElement());
 			if (ch != null) {
 				tokenMarker.insertLines(ch.getIndex() + 1, ch.getChildrenAdded().length - ch
 						.getChildrenRemoved().length);
@@ -124,9 +134,10 @@ public class SyntaxDocument extends PlainDocument {
 	 * We overwrite this method to update the token marker state immediately so that
 	 * any event listeners get a consistent token marker.
 	 */
-	protected void fireRemoveUpdate(DocumentEvent evt) {
+	@Override
+	protected void fireRemoveUpdate(final DocumentEvent evt) {
 		if (tokenMarker != null) {
-			DocumentEvent.ElementChange ch = evt.getChange(getDefaultRootElement());
+			final DocumentEvent.ElementChange ch = evt.getChange(getDefaultRootElement());
 			if (ch != null) {
 				tokenMarker.deleteLines(ch.getIndex() + 1, ch.getChildrenRemoved().length - ch
 						.getChildrenAdded().length);

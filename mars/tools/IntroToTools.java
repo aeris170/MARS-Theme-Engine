@@ -1,26 +1,27 @@
 package mars.tools;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import mars.*;
+import java.awt.Font;
+
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 /*
  * Copyright (c) 2003-2006, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,7 +29,7 @@ import mars.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -37,18 +38,22 @@ import mars.*;
  */
 public class IntroToTools extends AbstractMarsToolAndApplication {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 8247622014395245146L;
 	private static String heading = "Introduction to MARS Tools and Applications";
 	private static String version = " Version 1.0";
 
 	/**
 	 * Simple constructor, likely used to run a stand-alone memory reference
 	 * visualizer.
-	 * 
+	 *
 	 * @param title   String containing title for title bar
 	 * @param heading String containing text for heading shown in upper part of
 	 *                window.
 	 */
-	public IntroToTools(String title, String heading) {
+	public IntroToTools(final String title, final String heading) {
 		super(title, heading);
 	}
 
@@ -66,15 +71,16 @@ public class IntroToTools extends AbstractMarsToolAndApplication {
 	 * from the MARS Tools menu. "Pure" means there is no driver program to invoke
 	 * the application.
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		new IntroToTools(heading + ", " + version, heading).go();
 	}
 
 	/**
 	 * Required method to return Tool name.
-	 * 
+	 *
 	 * @return Tool name. MARS will display this in menu item.
 	 */
+	@Override
 	public String getName() { return "Introduction to Tools"; }
 
 	/**
@@ -82,8 +88,9 @@ public class IntroToTools extends AbstractMarsToolAndApplication {
 	 * area of the GUI. It will be placed in the CENTER area of a BorderLayout. The
 	 * title is in the NORTH area, and the controls are in the SOUTH area.
 	 */
+	@Override
 	protected JComponent buildMainDisplayArea() {
-		JTextArea message = new JTextArea();
+		final JTextArea message = new JTextArea();
 		message.setEditable(false);
 		message.setLineWrap(true);
 		message.setWrapStyleWord(true);

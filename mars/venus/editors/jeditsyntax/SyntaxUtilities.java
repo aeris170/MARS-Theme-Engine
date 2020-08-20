@@ -9,12 +9,19 @@
 
 package mars.venus.editors.jeditsyntax;
 
-import mars.venus.editors.jeditsyntax.tokenmarker.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+
+import javax.swing.Popup;
+import javax.swing.text.Segment;
+import javax.swing.text.TabExpander;
+import javax.swing.text.Utilities;
+
 import mars.Globals;
-import javax.swing.text.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import mars.venus.editors.jeditsyntax.tokenmarker.Token;
 
 /**
  * Class with several utility functions used by jEdit's syntax colorizing
@@ -27,16 +34,17 @@ public class SyntaxUtilities {
 
 	/**
 	 * Checks if a subregion of a <code>Segment</code> is equal to a string.
-	 * 
+	 *
 	 * @param ignoreCase True if case should be ignored, false otherwise
 	 * @param text       The segment
 	 * @param offset     The offset into the segment
 	 * @param match      The string to match
 	 */
-	public static boolean regionMatches(boolean ignoreCase, Segment text, int offset, String match) {
-		int length = offset + match.length();
-		char[] textArray = text.array;
-		if (length > text.offset + text.count) return false;
+	public static boolean regionMatches(final boolean ignoreCase, final Segment text, final int offset,
+			final String match) {
+		final int length = offset + match.length();
+		final char[] textArray = text.array;
+		if (length > text.offset + text.count) { return false; }
 		for (int i = offset, j = 0; i < length; i++, j++) {
 			char c1 = textArray[i];
 			char c2 = match.charAt(j);
@@ -44,7 +52,7 @@ public class SyntaxUtilities {
 				c1 = Character.toUpperCase(c1);
 				c2 = Character.toUpperCase(c2);
 			}
-			if (c1 != c2) return false;
+			if (c1 != c2) { return false; }
 		}
 		return true;
 	}
@@ -52,16 +60,17 @@ public class SyntaxUtilities {
 	/**
 	 * Checks if a subregion of a <code>Segment</code> is equal to a character
 	 * array.
-	 * 
+	 *
 	 * @param ignoreCase True if case should be ignored, false otherwise
 	 * @param text       The segment
 	 * @param offset     The offset into the segment
 	 * @param match      The character array to match
 	 */
-	public static boolean regionMatches(boolean ignoreCase, Segment text, int offset, char[] match) {
-		int length = offset + match.length;
-		char[] textArray = text.array;
-		if (length > text.offset + text.count) return false;
+	public static boolean regionMatches(final boolean ignoreCase, final Segment text, final int offset,
+			final char[] match) {
+		final int length = offset + match.length;
+		final char[] textArray = text.array;
+		if (length > text.offset + text.count) { return false; }
 		for (int i = offset, j = 0; i < length; i++, j++) {
 			char c1 = textArray[i];
 			char c2 = match[j];
@@ -69,7 +78,7 @@ public class SyntaxUtilities {
 				c1 = Character.toUpperCase(c1);
 				c2 = Character.toUpperCase(c2);
 			}
-			if (c1 != c2) return false;
+			if (c1 != c2) { return false; }
 		}
 		return true;
 	}
@@ -80,7 +89,7 @@ public class SyntaxUtilities {
 	 * default syntax styles.
 	 */
 	public static SyntaxStyle[] getDefaultSyntaxStyles() {
-		SyntaxStyle[] styles = new SyntaxStyle[Token.ID_COUNT];
+		final SyntaxStyle[] styles = new SyntaxStyle[Token.ID_COUNT];
 
 		// SyntaxStyle constructor params: color, italic?, bold?
 		// All need to be assigned even if not used by language (no gaps in array)
@@ -106,7 +115,7 @@ public class SyntaxUtilities {
 	 * current settings will not be the same as the default settings.
 	 */
 	public static SyntaxStyle[] getCurrentSyntaxStyles() {
-		SyntaxStyle[] styles = new SyntaxStyle[Token.ID_COUNT];
+		final SyntaxStyle[] styles = new SyntaxStyle[Token.ID_COUNT];
 
 		styles[Token.NULL] = Globals.getSettings().getEditorSyntaxStyleByPosition(Token.NULL);
 		styles[Token.COMMENT1] = Globals.getSettings().getEditorSyntaxStyleByPosition(Token.COMMENT1);
@@ -126,7 +135,7 @@ public class SyntaxUtilities {
 	/**
 	 * Paints the specified line onto the graphics context. Note that this method
 	 * munges the offset and count values of the segment.
-	 * 
+	 *
 	 * @param line     The line segment
 	 * @param tokens   The token list for the line
 	 * @param styles   The syntax style list
@@ -139,21 +148,22 @@ public class SyntaxUtilities {
 	public static boolean popupShowing = false;
 	public static Popup popup;
 
-	public static int paintSyntaxLine(Segment line, Token tokens, SyntaxStyle[] styles, TabExpander expander,
-			Graphics gfx, int x, int y) {
-		Font defaultFont = gfx.getFont();
-		Color defaultColor = gfx.getColor();
+	public static int paintSyntaxLine(final Segment line, Token tokens, final SyntaxStyle[] styles,
+			final TabExpander expander, final Graphics gfx, int x, final int y) {
+		final Font defaultFont = gfx.getFont();
+		final Color defaultColor = gfx.getColor();
 
-		int offset = 0;
 		for (;;) {
-			byte id = tokens.id;
-			if (id == Token.END) break;
+			final byte id = tokens.id;
+			if (id == Token.END) { break; }
 
-			int length = tokens.length;
+			final int length = tokens.length;
 			if (id == Token.NULL) {
-				if (!defaultColor.equals(gfx.getColor())) gfx.setColor(defaultColor);
-				if (!defaultFont.equals(gfx.getFont())) gfx.setFont(defaultFont);
-			} else styles[id].setGraphicsFlags(gfx, defaultFont);
+				if (!defaultColor.equals(gfx.getColor())) { gfx.setColor(defaultColor); }
+				if (!defaultFont.equals(gfx.getFont())) { gfx.setFont(defaultFont); }
+			} else {
+				styles[id].setGraphicsFlags(gfx, defaultFont);
+			}
 			line.count = length;
 
 			if (id == Token.KEYWORD1) {
@@ -164,19 +174,19 @@ public class SyntaxUtilities {
 					//                   tip.setTipText("Instruction: "+line);
 					//                   Point screenLocation = paintArea.getLocationOnScreen();
 					//                   PopupFactory popupFactory = PopupFactory.getSharedInstance();
-					//                   popup = popupFactory.getPopup(paintArea, tip, screenLocation.x + x, screenLocation.y + y); 
+					//                   popup = popupFactory.getPopup(paintArea, tip, screenLocation.x + x, screenLocation.y + y);
 					//                   popupShowing = true;
 					//                   popup.show();
-					//                   int delay = 200; //milliseconds 
-					//                   ActionListener taskPerformer = 
-					//                       new ActionListener() { 
-					//                          public void actionPerformed(ActionEvent evt) { 
+					//                   int delay = 200; //milliseconds
+					//                   ActionListener taskPerformer =
+					//                       new ActionListener() {
+					//                          public void actionPerformed(ActionEvent evt) {
 					//                            //popupShowing = false;
 					//                            if (popup!= null) {
 					//                               popup.hide();
 					//                            }
-					//                         } 
-					//                      }; 
+					//                         }
+					//                      };
 					//                   Timer popupTimer = new Timer(delay, taskPerformer);
 					//                   popupTimer.setRepeats(false);
 					//                   popupTimer.start();
@@ -190,8 +200,6 @@ public class SyntaxUtilities {
 
 			x = Utilities.drawTabbedText(line, x, y, gfx, expander, 0);
 			line.offset += length;
-			offset += length;
-
 			tokens = tokens.next;
 		}
 
@@ -204,13 +212,17 @@ public class SyntaxUtilities {
 
 class InstructionMouseEvent extends MouseEvent {
 
-	private Segment line;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -6530857638539683596L;
+	private final Segment line;
 
-	public InstructionMouseEvent(Component component, int x, int y, Segment line) {
+	public InstructionMouseEvent(final Component component, final int x, final int y, final Segment line) {
 		super(component, MouseEvent.MOUSE_MOVED, new java.util.Date().getTime(), 0, x, y, 0, false);
 		System.out.println("Create InstructionMouseEvent " + x + " " + y + " " + line);
 		this.line = line;
 	}
 
-	public Segment getLine() { return this.line; }
+	public Segment getLine() { return line; }
 }

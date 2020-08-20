@@ -1,24 +1,25 @@
 package mars.venus;
 
-import mars.*;
-import java.io.*;
+import java.io.File;
+
+import mars.Globals;
 
 /*
  * Copyright (c) 2003-2006, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,14 +27,14 @@ import java.io.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /**
  * Used to store and return information on the status of the current ASM file
  * that is being edited in the program.
- * 
+ *
  * @author Team JSpim
  **/
 
@@ -81,17 +82,17 @@ public class FileStatus {
 
 	/**
 	 * Set file status. Also updates menu state accordingly.
-	 * 
+	 *
 	 * @param newStatus New status: EDITED, RUNNABLE, etc, see list above.
 	 */
-	public static void set(int newStatus) {
+	public static void set(final int newStatus) {
 		systemStatus = newStatus;
 		Globals.getGui().setMenuState(systemStatus);
 	}
 
 	/**
 	 * Get file status
-	 * 
+	 *
 	 * @return file status EDITED, RUNNABLE, etc, see list above
 	 */
 	public static int get() {
@@ -100,70 +101,70 @@ public class FileStatus {
 
 	/**
 	 * Changes the value of assenbked to the parameter given.
-	 * 
+	 *
 	 * @param b boolean variable that tells what to set assembled to.
 	 */
-	public static void setAssembled(boolean b) { systemAssembled = b; }
+	public static void setAssembled(final boolean b) { systemAssembled = b; }
 
 	/**
 	 * Changes the value of saved to the parameter given.
-	 * 
+	 *
 	 * @param b boolean variable that tells what to set saved to .
 	 */
-	public static void setSaved(boolean b) { systemSaved = b; }
+	public static void setSaved(final boolean b) { systemSaved = b; }
 
 	/**
 	 * Changes the value of edited to the parameter given.
-	 * 
+	 *
 	 * @param b boolean variable that tells what to set edited to.
 	 */
-	public static void setEdited(boolean b) { systemEdited = b; }
+	public static void setEdited(final boolean b) { systemEdited = b; }
 
 	/**
 	 * Changes the value of name to the parameter given.
-	 * 
+	 *
 	 * @param s string variable tells what to set the name of the file to .
 	 */
-	public static void setName(String s) { systemName = s; }
+	public static void setName(final String s) { systemName = s; }
 
 	/**
 	 * Sets the file to the ASM file passed.
-	 * 
+	 *
 	 * @param f file object variable that stores the ASM file.
 	 */
-	public static void setFile(File f) { systemFile = f; }
+	public static void setFile(final File f) { systemFile = f; }
 
 	/**
 	 * Returns the ASM file.
-	 * 
+	 *
 	 * @return The ASM file.
 	 */
 	public static File getFile() { return systemFile; }
 
 	/**
 	 * Returns the name of the file.
-	 * 
+	 *
 	 * @return The name of the ASM file.
 	 */
 	public static String getName() { return systemName; }
 
 	/**
 	 * Tells whether the file has been assembled.
-	 * 
+	 *
 	 * @return Boolean value that is true if the ASM file has been assembled.
 	 */
 	public static boolean isAssembled() { return systemAssembled; }
 
 	/**
 	 * Tells whether the file has been saved.
-	 * 
+	 *
 	 * @return Boolean variable that is true if the ASM file has been saved
 	 */
 	public static boolean isSaved() { return systemSaved; }
 
 	/**
 	 * Tells whether the file has been edited since it has been saved.
-	 * 
+	 *
 	 * @return Boolean value that returns true if the ASM file has been edited.
 	 */
 	public static boolean isEdited() { return systemEdited; }
@@ -184,7 +185,7 @@ public class FileStatus {
 	///////////////////////////////////////////////////////////////////
 
 	// Remaining members are of instantiable class that can be used by
-	// every file that is currently open in the editor.	
+	// every file that is currently open in the editor.
 
 	private int status;
 	private File file;
@@ -203,10 +204,10 @@ public class FileStatus {
 	 * @param status   Initial file status. See FileStatus static constants.
 	 * @param pathname Full file pathname. See setPathname(String newPath) below.
 	 */
-	public FileStatus(int status, String pathname) {
+	public FileStatus(final int status, final String pathname) {
 		this.status = status;
 		if (pathname == null) {
-			this.file = null;
+			file = null;
 		} else {
 			setPathname(pathname);
 		}
@@ -217,14 +218,14 @@ public class FileStatus {
 	 *
 	 * @param newStatus the new status
 	 */
-	public void setFileStatus(int newStatus) { this.status = newStatus; }
+	public void setFileStatus(final int newStatus) { status = newStatus; }
 
 	/**
 	 * Get editing status of this file.
 	 *
 	 * @return current editing status. See FileStatus static constants.
 	 */
-	public int getFileStatus() { return this.status; }
+	public int getFileStatus() { return status; }
 
 	/**
 	 * Determine if file is "new", which means created using New but not yet saved.
@@ -253,7 +254,7 @@ public class FileStatus {
 	 * @param newPath the new pathname. If no directory path, getParent() will
 	 *                return null.
 	 */
-	public void setPathname(String newPath) { this.file = new File(newPath); }
+	public void setPathname(final String newPath) { file = new File(newPath); }
 
 	/**
 	 * Set full file pathname. See java.io.File(String parent, String child) for
@@ -263,8 +264,8 @@ public class FileStatus {
 	 *               return null.
 	 * @param name   the name of the file (no directory path)
 	 */
-	public void setPathname(String parent, String name) {
-		this.file = new File(parent, name);
+	public void setPathname(final String parent, final String name) {
+		file = new File(parent, name);
 	}
 
 	/**
@@ -272,21 +273,21 @@ public class FileStatus {
 	 *
 	 * @return full pathname as a String. Null if
 	 */
-	public String getPathname() { return (this.file == null) ? null : this.file.getPath(); }
+	public String getPathname() { return file == null ? null : file.getPath(); }
 
 	/**
 	 * Get file name with no path information. See java.io.File.getName()
 	 *
 	 * @return filename as a String
 	 */
-	public String getFilename() { return (this.file == null) ? null : this.file.getName(); }
+	public String getFilename() { return file == null ? null : file.getName(); }
 
 	/**
 	 * Get file parent pathname. See java.io.File.getParent()
 	 *
 	 * @return parent full pathname as a String
 	 */
-	public String getParent() { return (this.file == null) ? null : this.file.getParent(); }
+	public String getParent() { return file == null ? null : file.getParent(); }
 
 	/**
 	 * Update static FileStatus fields with values from this FileStatus object To
@@ -294,12 +295,12 @@ public class FileStatus {
 	 */
 
 	public void updateStaticFileStatus() {
-		systemStatus = this.status;
-		systemName = this.file.getPath();
+		systemStatus = status;
+		systemName = file.getPath();
 		systemAssembled = false;
-		systemSaved = (status == NOT_EDITED || status == RUNNABLE || status == RUNNING || status == TERMINATED);
-		systemEdited = (status == NEW_EDITED || status == EDITED);
-		systemFile = this.file;
+		systemSaved = status == NOT_EDITED || status == RUNNABLE || status == RUNNING || status == TERMINATED;
+		systemEdited = status == NEW_EDITED || status == EDITED;
+		systemFile = file;
 
 	}
 

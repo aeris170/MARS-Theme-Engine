@@ -1,30 +1,65 @@
 package mars.tools;
 
-import java.text.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
-import java.awt.geom.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
+import java.awt.AWTException;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.geom.Line2D;
+import java.awt.image.BufferedImage;
+
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
+import javax.swing.border.TitledBorder;
 
 /*
  * Copyright (c) 2003-2007, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +67,7 @@ import javax.swing.border.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -46,38 +81,39 @@ import javax.swing.border.*;
  * can be modified on a button- triggered dialog. It will capture the contents
  * of the underlying MARS graphical user interface, but NOT the contents of
  * other Mars Tools frames.
- * 
+ *
  * @author Pete Sanderson
  * @version 1.0. 9 July 2007.
  */
 public class ScreenMagnifier implements MarsTool {
 
+	@Override
 	public String getName() { return "Screen Magnifier"; }
 
+	@Override
 	public void action() {
-		Magnifier mag = new Magnifier();
+		new Magnifier();
 	}
 
 	// Permits stand-alone execution.
 
-	public static void main(String[] args) {
-		new Thread(new Runnable() {
-
-			public void run() {
-				new ScreenMagnifier().action();
-			}
-		}).start();
+	public static void main(final String[] args) {
+		new Thread(() -> new ScreenMagnifier().action()).start();
 	}
 
 }
-/* Technique comes from the Javaworld article "Capture the Screen: Build a 
-   screen-capture utility based on Java's Robot class".  By Jeff Friesen, 
+/* Technique comes from the Javaworld article "Capture the Screen: Build a
+   screen-capture utility based on Java's Robot class".  By Jeff Friesen,
 	JavaWorld.com, 4/24/06.
    http://www.javaworld.com/javaworld/jw-04-2006/jw-0424-funandgames.html
 */
 
 class Magnifier extends JFrame implements ComponentListener {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -5261462206166838004L;
 	static Robot robot;
 	JButton close, capture, settings;
 	JSpinner scaleAdjuster;
@@ -109,31 +145,21 @@ class Magnifier extends JFrame implements ComponentListener {
 		createSettings();
 		// If running withint MARS, set to its icon image; if not fuggetit.
 		try {
-			this.setIconImage(mars.Globals.getGui().getIconImage());
-		} catch (Exception e) {}
+			setIconImage(mars.Globals.getGui().getIconImage());
+		} catch (final Exception e) {}
 		getContentPane().setLayout(new BorderLayout());
 		// Will capture an image each time frame is moved/resized.
 		addComponentListener(this);
 		try {
 			robot = new Robot();
-		} catch (AWTException e) {} catch (SecurityException e) {}
+		} catch (final AWTException e) {} catch (final SecurityException e) {}
 
 		close = new JButton("Close");
 		close.setToolTipText(CLOSE_TOOLTIP_TEXT);
-		close.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-			}
-		});
+		close.addActionListener(e -> setVisible(false));
 		settings = new JButton("Settings...");
 		settings.setToolTipText(SETTINGS_TOOLTIP_TEXT);
-		settings.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				new SettingsDialog(frame);
-			}
-		});
+		settings.addActionListener(e -> new SettingsDialog(frame));
 		magnifierImage = new MagnifierImage(this);
 		view = new JScrollPane(magnifierImage);
 		viewSize = new Dimension(200, 150);
@@ -141,36 +167,31 @@ class Magnifier extends JFrame implements ComponentListener {
 
 		capture = new JButton("Capture");
 		capture.setToolTipText(CAPTURE_TOOLTIP_TEXT);
-		captureActionListener = new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				magnifierImage.setImage(MagnifierImage.getScaledImage(captureScreenSection(captureLocationSize
-						.getCaptureRectangle(getFrameRectangle())), scale));
-				alignment.setScrollBarValue(view.getHorizontalScrollBar());
-				alignment.setScrollBarValue(view.getVerticalScrollBar());
-			}
+		captureActionListener = e -> {
+			magnifierImage.setImage(MagnifierImage.getScaledImage(captureScreenSection(captureLocationSize
+					.getCaptureRectangle(getFrameRectangle())), scale));
+			alignment.setScrollBarValue(view.getHorizontalScrollBar());
+			alignment.setScrollBarValue(view.getVerticalScrollBar());
 		};
-		JLabel scaleLabel = new JLabel("Scale: ");
-		SpinnerModel scaleModel = new SpinnerNumberModel(SCALE_DEFAULT, SCALE_MINIMUM, SCALE_MAXIMUM, SCALE_INCREMENT);
+		final JLabel scaleLabel = new JLabel("Scale: ");
+		final SpinnerModel scaleModel = new SpinnerNumberModel(SCALE_DEFAULT, SCALE_MINIMUM, SCALE_MAXIMUM,
+				SCALE_INCREMENT);
 		scaleAdjuster = new JSpinner(scaleModel);
 		scaleAdjuster.setToolTipText(SCALE_TOOLTIP_TEXT);
-		JSpinner.NumberEditor scaleEditor = new JSpinner.NumberEditor(scaleAdjuster, "0.0");
+		final JSpinner.NumberEditor scaleEditor = new JSpinner.NumberEditor(scaleAdjuster, "0.0");
 		scaleEditor.getTextField().setEditable(false);
 		scaleAdjuster.setEditor(scaleEditor);
-		scaleAdjuster.addChangeListener(new ChangeListener() {
-
-			public void stateChanged(ChangeEvent e) {
-				scale = ((Double) scaleAdjuster.getValue()).doubleValue();
-				if (captureRescale.isEnabled()) {
-					captureActionListener.actionPerformed(new ActionEvent(frame, 0, "capture"));
-				}
+		scaleAdjuster.addChangeListener(e -> {
+			scale = ((Double) scaleAdjuster.getValue());
+			if (captureRescale.isEnabled()) {
+				captureActionListener.actionPerformed(new ActionEvent(frame, 0, "capture"));
 			}
 		});
-		JPanel scalePanel = new JPanel();
+		final JPanel scalePanel = new JPanel();
 		scalePanel.add(scaleLabel);
 		scalePanel.add(scaleAdjuster);
 		capture.addActionListener(captureActionListener);
-		Box buttonRow = Box.createHorizontalBox();
+		final Box buttonRow = Box.createHorizontalBox();
 		buttonRow.add(Box.createHorizontalStrut(4));
 		buttonRow.add(capture);
 		buttonRow.add(Box.createHorizontalGlue());
@@ -245,13 +266,8 @@ class Magnifier extends JFrame implements ComponentListener {
 				+ "Magnifier does not capture frame contents of other tools.\n"
 				+ "Setting changes are not saved when the tool is closed.\n" + "\n"
 				+ "Contact Pete Sanderson at psanderson@otterbein.edu with\n" + "questions or comments.\n";
-		JButton help = new JButton("Help");
-		help.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(frame, helpContent);
-			}
-		});
+		final JButton help = new JButton("Help");
+		help.addActionListener(e -> JOptionPane.showMessageDialog(frame, helpContent));
 		return help;
 	}
 
@@ -259,11 +275,11 @@ class Magnifier extends JFrame implements ComponentListener {
 	 * Capture the pixels of the specified screen rectangle into an ImageBuffer. The
 	 * trick is the ScreenMagnifier's frame has to be made invisible first so it
 	 * does not show up in the image.
-	 * 
+	 *
 	 * @param section A rectangle specifying the range of pixels to capture.
 	 * @return A BufferedImage containing the captured pixel range.
 	 */
-	BufferedImage captureScreenSection(Rectangle section) {
+	BufferedImage captureScreenSection(final Rectangle section) {
 		// Hide Frame so that it does not appear in the screen capture.
 		setVisible(false);
 		// For some reason, the graphic extent vacated by the above call
@@ -273,7 +289,7 @@ class Magnifier extends JFrame implements ComponentListener {
 		// are no alternatives so just let what would happen, happen.
 		try {
 			mars.Globals.getGui().update(mars.Globals.getGui().getGraphics());
-		} catch (Exception e) {}
+		} catch (final Exception e) {}
 		// Perform the screen capture.
 		BufferedImage imageOfSection;
 		imageOfSection = robot.createScreenCapture(section);
@@ -283,7 +299,7 @@ class Magnifier extends JFrame implements ComponentListener {
 
 	/**
 	 * Place the current frame size and location into a Rectangle object.
-	 * 
+	 *
 	 * @return A Rectangle containing the ScreenMagnifier's location, plus width and
 	 *         height in pixels.
 	 */
@@ -293,18 +309,18 @@ class Magnifier extends JFrame implements ComponentListener {
 
 	/**
 	 * Place the current screen size and location into a Rectangle object.
-	 * 
+	 *
 	 * @return A Rectangle containing the current screen location (0,0), plus width
 	 *         and height in pixels.
 	 */
 	Rectangle getScreenRectangle() { return new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()); }
 
-	//////////////////////////////////////////////////////////////////////   
+	//////////////////////////////////////////////////////////////////////
 	//////
 	////// These four methods are required for ComponentListener interface.
-	////// Note: due to single inheritance, I can't extend ComponentAdaptor. 
+	////// Note: due to single inheritance, I can't extend ComponentAdaptor.
 	//////
-	//////////////////////////////////////////////////////////////////////  
+	//////////////////////////////////////////////////////////////////////
 	/**
 	 * Respond to frame movement event by showing new image based on the screen
 	 * section of interest for this new position. This event may occur once at the
@@ -327,7 +343,8 @@ class Magnifier extends JFrame implements ComponentListener {
 	// such a timer was already running (e.g. is this the
 	// first componentMoved event?) in case it is called multiple
 	// times throughout the move, not just at the end.
-	public void componentMoved(ComponentEvent e) {
+	@Override
+	public void componentMoved(final ComponentEvent e) {
 		if (captureMove.isEnabled()) {
 			captureActionListener.actionPerformed(new ActionEvent(e.getComponent(), e.getID(), "capture"));
 		}
@@ -342,7 +359,8 @@ class Magnifier extends JFrame implements ComponentListener {
 	 */
 	// See comments above for possible technique for assuring only one
 	// capture at the end of the resize.
-	public void componentResized(ComponentEvent e) {
+	@Override
+	public void componentResized(final ComponentEvent e) {
 		if (captureResize.isEnabled()) {
 			captureActionListener.actionPerformed(new ActionEvent(e.getComponent(), e.getID(), "capture"));
 		}
@@ -351,12 +369,14 @@ class Magnifier extends JFrame implements ComponentListener {
 	/**
 	 * Invoked when setVisible(true) is called, do nothing.
 	 */
-	public void componentShown(ComponentEvent e) {}
+	@Override
+	public void componentShown(final ComponentEvent e) {}
 
 	/**
 	 * Invoked when setVisible(false) is called, do nothing.
 	 */
-	public void componentHidden(ComponentEvent e) {}
+	@Override
+	public void componentHidden(final ComponentEvent e) {}
 
 }
 
@@ -366,6 +386,10 @@ class Magnifier extends JFrame implements ComponentListener {
 
 class SettingsDialog extends JDialog {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -4903793398269700038L;
 	JButton applyButton, cancelButton;
 	JCheckBox captureResizeCheckBox, captureMoveCheckBox, captureRescaleCheckBox;
 	JRadioButton captureDisplayCenteredButton, captureDisplayUpperleftButton;
@@ -386,16 +410,16 @@ class SettingsDialog extends JDialog {
 	static final String SETTINGS_SCRIBBLER_COLOR_TOOLTIP_TEXT = "Click here to change Scribbler line color.";
 	static final String SETTINGS_DIALOG_CENTERED_TOOLTIP_TEXT = "Whether to center this dialog over the Magnifier.";
 
-	SettingsDialog(JFrame frame) {
+	SettingsDialog(final JFrame frame) {
 		super(frame, "Magnifier Tool Settings");
 		dialog = this;
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		Container contentPane = this.getContentPane();
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		final Container contentPane = getContentPane();
 		contentPane.setLayout(new BorderLayout());
-		JPanel settingsPanel = new JPanel();
-		JPanel selectionsPanel = new JPanel(new GridLayout(2, 1));
+		new JPanel();
+		final JPanel selectionsPanel = new JPanel(new GridLayout(2, 1));
 		selectionsPanel.add(getCaptureDisplayPanel());
-		JPanel secondRow = new JPanel(new GridLayout(1, 2));
+		final JPanel secondRow = new JPanel(new GridLayout(1, 2));
 		secondRow.add(getAutomaticCaptureSettingsPanel());
 		secondRow.add(getScribblerPanel(this));
 		selectionsPanel.add(secondRow);
@@ -408,46 +432,38 @@ class SettingsDialog extends JDialog {
 
 	// This panel contains the control buttons for the Settings Dialog.
 	private JPanel getButtonRowPanel() {
-		JPanel buttonRow = new JPanel();
+		final JPanel buttonRow = new JPanel();
 		applyButton = new JButton("Apply and Close");
 		applyButton.setToolTipText(SETTINGS_APPLY_TOOLTIP_TEXT);
 		// Action to perform when APply button pressed: commit GUI settings to the models
-		applyButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				// commit settings
-				((Magnifier) getOwner()).captureResize.setEnabled(captureResizeCheckBox.isSelected());
-				((Magnifier) getOwner()).captureMove.setEnabled(captureMoveCheckBox.isSelected());
-				((Magnifier) getOwner()).captureRescale.setEnabled(captureRescaleCheckBox.isSelected());
-				((Magnifier) getOwner()).captureDisplayCenter.setEnabled(captureDisplayCenteredButton.isSelected());
-				((Magnifier) getOwner()).captureDisplayUpperleft.setEnabled(captureDisplayUpperleftButton.isSelected());
-				((Magnifier) getOwner()).dialogDisplayCenter.setEnabled(dialogCentered.isSelected());
-				if (captureDisplayCenteredButton.isSelected()) {
-					((Magnifier) getOwner()).alignment = new CaptureDisplayCentered();
-				} else if (captureDisplayUpperleftButton.isSelected()) {
-					((Magnifier) getOwner()).alignment = new CaptureDisplayUpperleft();
-				}
-				((Magnifier) getOwner()).scribblerSettings.setLineWidth(scribblerLineWidthSettings[lineWidthSetting
-						.getSelectedIndex()].intValue());
-				((Magnifier) getOwner()).scribblerSettings.setLineColor(lineColorSetting.getBackground());
-				dialog.dispose();
+		applyButton.addActionListener(e -> {
+			// commit settings
+			((Magnifier) getOwner()).captureResize.setEnabled(captureResizeCheckBox.isSelected());
+			((Magnifier) getOwner()).captureMove.setEnabled(captureMoveCheckBox.isSelected());
+			((Magnifier) getOwner()).captureRescale.setEnabled(captureRescaleCheckBox.isSelected());
+			((Magnifier) getOwner()).captureDisplayCenter.setEnabled(captureDisplayCenteredButton.isSelected());
+			((Magnifier) getOwner()).captureDisplayUpperleft.setEnabled(captureDisplayUpperleftButton.isSelected());
+			((Magnifier) getOwner()).dialogDisplayCenter.setEnabled(dialogCentered.isSelected());
+			if (captureDisplayCenteredButton.isSelected()) {
+				((Magnifier) getOwner()).alignment = new CaptureDisplayCentered();
+			} else if (captureDisplayUpperleftButton.isSelected()) {
+				((Magnifier) getOwner()).alignment = new CaptureDisplayUpperleft();
 			}
+			((Magnifier) getOwner()).scribblerSettings.setLineWidth(scribblerLineWidthSettings[lineWidthSetting
+					.getSelectedIndex()]);
+			((Magnifier) getOwner()).scribblerSettings.setLineColor(lineColorSetting.getBackground());
+			dialog.dispose();
 		});
 		cancelButton = new JButton("Cancel");
 		cancelButton.setToolTipText(SETTINGS_CANCEL_TOOLTIP_TEXT);
-		cancelButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				dialog.dispose();
-			}
-		});
+		cancelButton.addActionListener(e -> dialog.dispose());
 		// By default, display dialog centered over the Magnifier's frame.  This
 		// can be changed however to display at upper left corner of screen.  Why
 		// would you want to change this?  So you can use the settings dialog to
 		// to change scribbler color and/or width without wiping out current
 		// scribbler marks.  If the dialog is centered, its mere display may
 		// wipe out existing scribbler marks (because they are not repainted
-		// when the underlying image is repainted). 
+		// when the underlying image is repainted).
 		dialogCentered = new JCheckBox("Dialog centered", ((Magnifier) getOwner()).dialogDisplayCenter.isEnabled());
 		dialogCentered.setToolTipText(SETTINGS_DIALOG_CENTERED_TOOLTIP_TEXT);
 		buttonRow.add(applyButton);
@@ -460,16 +476,16 @@ class SettingsDialog extends JDialog {
 	// capture.  These are a convenience, as the image can always be
 	// manually captured by clicking the "Capture" button.
 	private JPanel getAutomaticCaptureSettingsPanel() {
-		JPanel automaticCaptureSettings = new JPanel();
+		final JPanel automaticCaptureSettings = new JPanel();
 		automaticCaptureSettings.setBorder(new TitledBorder("Automatic Capture"));
-		Box automaticCaptureSettingsBox = Box.createHorizontalBox();
+		final Box automaticCaptureSettingsBox = Box.createHorizontalBox();
 		automaticCaptureSettings.add(automaticCaptureSettingsBox);
 		captureResizeCheckBox = new JCheckBox("Capture upon resize", ((Magnifier) getOwner()).captureResize
 				.isEnabled());
 		captureMoveCheckBox = new JCheckBox("Capture upon move", ((Magnifier) getOwner()).captureMove.isEnabled());
 		captureRescaleCheckBox = new JCheckBox("Capture upon rescale", ((Magnifier) getOwner()).captureRescale
 				.isEnabled());
-		JPanel checkboxColumn = new JPanel(new GridLayout(3, 1));
+		final JPanel checkboxColumn = new JPanel(new GridLayout(3, 1));
 		checkboxColumn.add(captureResizeCheckBox);
 		checkboxColumn.add(captureMoveCheckBox);
 		checkboxColumn.add(captureRescaleCheckBox);
@@ -478,25 +494,25 @@ class SettingsDialog extends JDialog {
 	}
 
 	// Panel that contains settings for extent and display of image upon
-	// capture.  In version 1.0, the extent is fixed; it is same as that 
+	// capture.  In version 1.0, the extent is fixed; it is same as that
 	// of the tool's frame itself.  The term "extent" refers to the location
 	// and dimension of the rectangle.
 	private JPanel getCaptureDisplayPanel() {
-		JPanel captureDisplaySetting = new JPanel();
+		final JPanel captureDisplaySetting = new JPanel();
 		captureDisplaySetting.setBorder(new TitledBorder("Capture and Display"));
-		Box captureDisplaySettingsBox = Box.createHorizontalBox();
+		final Box captureDisplaySettingsBox = Box.createHorizontalBox();
 		captureDisplaySetting.add(captureDisplaySettingsBox);
 		captureDisplayCenteredButton = new JRadioButton("Capture area behind magnifier and display centered",
 				((Magnifier) getOwner()).captureDisplayCenter.isEnabled());
 		captureDisplayUpperleftButton = new JRadioButton("Capture area behind magnifier and display upper-left",
 				((Magnifier) getOwner()).captureDisplayUpperleft.isEnabled());
-		ButtonGroup displayButtonGroup = new ButtonGroup();
+		final ButtonGroup displayButtonGroup = new ButtonGroup();
 		displayButtonGroup.add(captureDisplayCenteredButton);
 		displayButtonGroup.add(captureDisplayUpperleftButton);
-		JPanel radioColumn = new JPanel(new GridLayout(2, 1));
+		final JPanel radioColumn = new JPanel(new GridLayout(2, 1));
 		radioColumn.add(captureDisplayCenteredButton);
 		radioColumn.add(captureDisplayUpperleftButton);
-		JPanel radioLabelColumn = new JPanel(new GridLayout(1, 1));
+		new JPanel(new GridLayout(1, 1));
 		captureDisplaySettingsBox.add(radioColumn);
 		return captureDisplaySetting;
 	}
@@ -505,9 +521,9 @@ class SettingsDialog extends JDialog {
 	// The only settings here are choice of line width (thickness) in pixels
 	// and line color.
 	private JPanel getScribblerPanel(final JDialog dialog) {
-		JPanel scribblerSettings = new JPanel();
+		final JPanel scribblerSettings = new JPanel();
 		scribblerSettings.setBorder(new TitledBorder("Scribbler"));
-		Box scribblerSettingsBox = Box.createHorizontalBox();
+		final Box scribblerSettingsBox = Box.createHorizontalBox();
 		scribblerSettings.add(scribblerSettingsBox);
 		lineWidthSetting = new JComboBox(scribblerLineWidthSettings);
 		lineWidthSetting.setToolTipText(SETTINGS_SCRIBBLER_WIDTH_TOOLTIP_TEXT);
@@ -515,19 +531,16 @@ class SettingsDialog extends JDialog {
 		lineColorSetting = new JButton("   ");
 		lineColorSetting.setToolTipText(SETTINGS_SCRIBBLER_COLOR_TOOLTIP_TEXT);
 		lineColorSetting.setBackground(((Magnifier) getOwner()).scribblerSettings.getLineColor());
-		lineColorSetting.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				Color newColor = JColorChooser.showDialog(dialog, "Scribbler line color", lineColorSetting
-						.getBackground());
-				lineColorSetting.setBackground(newColor);
-			}
+		lineColorSetting.addActionListener(e -> {
+			final Color newColor = JColorChooser.showDialog(dialog, "Scribbler line color", lineColorSetting
+					.getBackground());
+			lineColorSetting.setBackground(newColor);
 		});
 		scribblerLineColorSetting = lineColorSetting.getBackground();
-		JPanel settingsColumn = new JPanel(new GridLayout(2, 1, 5, 5));
+		final JPanel settingsColumn = new JPanel(new GridLayout(2, 1, 5, 5));
 		settingsColumn.add(lineWidthSetting);
 		settingsColumn.add(lineColorSetting);
-		JPanel labelColumn = new JPanel(new GridLayout(2, 1, 5, 5));
+		final JPanel labelColumn = new JPanel(new GridLayout(2, 1, 5, 5));
 		labelColumn.add(new JLabel("Line width ", SwingConstants.LEFT));
 		labelColumn.add(new JLabel("Line color ", SwingConstants.LEFT));
 		scribblerSettingsBox.add(labelColumn);
@@ -547,28 +560,28 @@ class CaptureModel {
 
 	/**
 	 * Create a new CaptureModel.
-	 * 
+	 *
 	 * @param set True if capture is to be automatically performed when associated
 	 *            event occurs, false otherwise.
 	 */
-	public CaptureModel(boolean set) {
+	public CaptureModel(final boolean set) {
 		enabled = set;
 	}
 
 	/**
 	 * Determine whether or not capture will automatically occur.
-	 * 
+	 *
 	 * @return True if automatic capture will occur, false otherwise.
 	 */
 	public boolean isEnabled() { return enabled; }
 
 	/**
 	 * Specify whether or not capture will automatically occur.
-	 * 
+	 *
 	 * @param set True if capture is to be automatically performed when associated
 	 *            event occurs, false otherwise.
 	 */
-	public void setEnabled(boolean set) { enabled = set; }
+	public void setEnabled(final boolean set) { enabled = set; }
 
 }
 
@@ -578,8 +591,12 @@ class CaptureModel {
 
 class MagnifierImage extends JPanel {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 3259940124794399168L;
 	// Enclosing JFrame for this panel -- the Screen Magnifier itself.
-	private Magnifier frame;
+	private final Magnifier frame;
 	// Rectangle representing screen pixels to be magnified.
 	private Rectangle screenRectangle;
 	// Robot used to perform the screen capture.
@@ -587,19 +604,20 @@ class MagnifierImage extends JPanel {
 	// Displayed image's Image object, which is actually a BufferedImage.
 	private Image image;
 	// Scribbler for highlighting image using mouse.
-	private Scribbler scribbler;
+	private final Scribbler scribbler;
 
 	/**
 	 * Construct an MagnifierImage component.
 	 */
 
-	public MagnifierImage(Magnifier frame) {
+	public MagnifierImage(final Magnifier frame) {
 		this.frame = frame;
-		this.scribbler = new Scribbler(frame.scribblerSettings);
+		scribbler = new Scribbler(frame.scribblerSettings);
 
 		addMouseListener(new MouseAdapter() {
 
-			public void mousePressed(MouseEvent e) {
+			@Override
+			public void mousePressed(final MouseEvent e) {
 				scribbler.moveto(e.getX(), e.getY()); // Move to click position
 			}
 		});
@@ -607,7 +625,8 @@ class MagnifierImage extends JPanel {
 		// Install a mouse motion listener to draw the scribble.
 		addMouseMotionListener(new MouseMotionAdapter() {
 
-			public void mouseDragged(MouseEvent e) {
+			@Override
+			public void mouseDragged(final MouseEvent e) {
 				scribbler.lineto(e.getX(), e.getY(), (Graphics2D) getGraphics());
 			}
 		});
@@ -627,12 +646,13 @@ class MagnifierImage extends JPanel {
 	 * @param g graphics context
 	 */
 
-	public void paintComponent(Graphics g) {
+	@Override
+	public void paintComponent(final Graphics g) {
 		// Repaint the component's background.
 		super.paintComponent(g);
 		// If an image has been defined, draw that image using the Component
 		// layer of this MagnifierImage object as the ImageObserver.
-		if (image != null) g.drawImage(image, 0, 0, this);
+		if (image != null) { g.drawImage(image, 0, 0, this); }
 	}
 
 	/**
@@ -641,7 +661,7 @@ class MagnifierImage extends JPanel {
 	 * @param image new image's Image reference
 	 */
 
-	public void setImage(Image image) {
+	public void setImage(final Image image) {
 		// Save the image for later repaint.
 		this.image = image;
 		// Set this panel's preferred size to the image's size, to influence the
@@ -656,16 +676,16 @@ class MagnifierImage extends JPanel {
 	/**
 	 * Get a scaled version of the image. Ignores scaling values between .99 and
 	 * 1.01.
-	 * 
+	 *
 	 * @param image          the original image
 	 * @param scale          the magnification scale as a double
 	 * @param scaleAlgorithm Scaling algorithm to use: Image.SCALE_DEFAULT,
 	 *                       Image.SCALE_FAST, Image.SCALE_SMOOTH.
 	 */
-	static Image getScaledImage(Image image, double scale, int scaleAlgorithm) {
+	static Image getScaledImage(final Image image, final double scale, final int scaleAlgorithm) {
 		// Don't bother if it is close to 1.  I anticipate this will be used mainly to
 		// enlarge the image, so short circuit evalution will apply most of the time.
-		return (scale < 1.01 && scale > 0.99) ? image
+		return scale < 1.01 && scale > 0.99 ? image
 				: image.getScaledInstance((int) (image.getWidth(null) * scale), (int) (image.getHeight(null) * scale),
 						scaleAlgorithm);
 	}
@@ -673,11 +693,11 @@ class MagnifierImage extends JPanel {
 	/**
 	 * Get a scaled version of the image using default scaling algorithm. Ignores
 	 * scaling values between .99 and 1.01.
-	 * 
+	 *
 	 * @param image the original image
 	 * @param scale the magnification scale as a double
 	 */
-	static Image getScaledImage(Image image, double scale) {
+	static Image getScaledImage(final Image image, final double scale) {
 		return getScaledImage(image, scale, Image.SCALE_DEFAULT);
 	}
 
@@ -688,12 +708,12 @@ class MagnifierImage extends JPanel {
 	*/
 	private class Scribbler {
 
-		private ScribblerSettings scribblerSettings;
+		private final ScribblerSettings scribblerSettings;
 		private BasicStroke drawingStroke;
-		// coordinates of previous mouse position 
+		// coordinates of previous mouse position
 		protected int last_x, last_y;
 
-		Scribbler(ScribblerSettings scribblerSettings) {
+		Scribbler(final ScribblerSettings scribblerSettings) {
 			this.scribblerSettings = scribblerSettings;
 			drawingStroke = new BasicStroke(scribblerSettings.getLineWidth());
 		}
@@ -705,37 +725,37 @@ class MagnifierImage extends JPanel {
 
 		/** Get the scribbler's line (stroke) width. */
 		public int getLineWidth() {
-			this.drawingStroke = new BasicStroke(scribblerSettings.getLineWidth());
+			drawingStroke = new BasicStroke(scribblerSettings.getLineWidth());
 			return scribblerSettings.getLineWidth();//width;
 		}
 
 		/** Set the scribbler's drawing color. */
-		public void setColor(Color newColor) {
+		public void setColor(final Color newColor) {
 			scribblerSettings.setLineColor(newColor);// this.color = newColor;
 		}
 
 		/** Set the scribbler's line (stroke) width. */
-		public void setLineWidth(int newWidth) {
+		public void setLineWidth(final int newWidth) {
 			scribblerSettings.setLineWidth(newWidth);// this.width = newWidth;
-			this.drawingStroke = new BasicStroke(newWidth);
+			drawingStroke = new BasicStroke(newWidth);
 		}
 
 		/** Get the scribbler's drawing (stroke) object. */
 		private BasicStroke getStroke() { return drawingStroke; }
 
 		/** Set the scribbler's drawing (stroke) object. */
-		private void setStroke(BasicStroke newStroke) {
-			this.drawingStroke = newStroke;
+		private void setStroke(final BasicStroke newStroke) {
+			drawingStroke = newStroke;
 		}
 
 		/** Remember the specified point */
-		public void moveto(int x, int y) {
+		public void moveto(final int x, final int y) {
 			last_x = x;
 			last_y = y;
 		}
 
 		/** Draw from the last point to this point, then remember new point */
-		public void lineto(int x, int y, Graphics2D g2d) {
+		public void lineto(final int x, final int y, final Graphics2D g2d) {
 			// System.out.println(drawingStroke.getLineWidth());
 			g2d.setStroke(new BasicStroke(scribblerSettings.getLineWidth()));
 			g2d.setColor(scribblerSettings.getLineColor()); // Tell it what color to use
@@ -757,7 +777,7 @@ class ScribblerSettings {
 	/**
 	 * Build a new ScribblerSettings object.
 	 */
-	public ScribblerSettings(int width, Color color) {
+	public ScribblerSettings(final int width, final Color color) {
 		this.width = width;
 		this.color = color;
 	}
@@ -775,12 +795,12 @@ class ScribblerSettings {
 	/**
 	 * Set the current line width for the scribbler tool.
 	 */
-	public void setLineWidth(int newWidth) { width = newWidth; }
+	public void setLineWidth(final int newWidth) { width = newWidth; }
 
 	/**
 	 * Set the current line color for the scribbler tool.
 	 */
-	public void setLineColor(Color newColor) { color = newColor; }
+	public void setLineColor(final Color newColor) { color = newColor; }
 }
 
 /**
@@ -789,7 +809,7 @@ class ScribblerSettings {
  */
 interface CaptureRectangleStrategy {
 
-	public Rectangle getCaptureRectangle(Rectangle magnifierRectangle);
+	Rectangle getCaptureRectangle(Rectangle magnifierRectangle);
 }
 
 /**
@@ -798,7 +818,8 @@ interface CaptureRectangleStrategy {
  */
 class CaptureMagnifierRectangle implements CaptureRectangleStrategy {
 
-	public Rectangle getCaptureRectangle(Rectangle magnifierRectangle) {
+	@Override
+	public Rectangle getCaptureRectangle(final Rectangle magnifierRectangle) {
 		return magnifierRectangle;
 	}
 }
@@ -814,7 +835,8 @@ class CaptureMagnifierRectangle implements CaptureRectangleStrategy {
  */
 class CaptureScaledRectangle implements CaptureRectangleStrategy {
 
-	public Rectangle getCaptureRectangle(Rectangle magnifierRectangle) {
+	@Override
+	public Rectangle getCaptureRectangle(final Rectangle magnifierRectangle) {
 		throw new UnsupportedOperationException(); // This is not implementated yet!
 		//return new Rectangle();
 	}
@@ -826,7 +848,7 @@ class CaptureScaledRectangle implements CaptureRectangleStrategy {
  */
 interface CaptureDisplayAlignmentStrategy {
 
-	public void setScrollBarValue(JScrollBar scrollBar);
+	void setScrollBarValue(JScrollBar scrollBar);
 }
 
 /**
@@ -837,10 +859,11 @@ class CaptureDisplayCentered implements CaptureDisplayAlignmentStrategy {
 	/**
 	 * Set the scrollbar value to inticate the captured and scaled image is
 	 * displayed centered in the panel.
-	 * 
+	 *
 	 * @param scrollBar The scrollbar to be adjusted.
 	 */
-	public void setScrollBarValue(JScrollBar scrollBar) {
+	@Override
+	public void setScrollBarValue(final JScrollBar scrollBar) {
 		scrollBar.setValue((scrollBar.getModel().getMaximum() - scrollBar.getModel().getMinimum() - scrollBar.getModel()
 				.getExtent()) / 2);
 	}
@@ -855,10 +878,11 @@ class CaptureDisplayUpperleft implements CaptureDisplayAlignmentStrategy {
 	/**
 	 * Set the scrollbar value to inticate the captured and scaled image is
 	 * displayed with the upper left corner initially visible in the panel.
-	 * 
+	 *
 	 * @param scrollBar The scrollbar to be adjusted.
 	 */
-	public void setScrollBarValue(JScrollBar scrollBar) {
+	@Override
+	public void setScrollBarValue(final JScrollBar scrollBar) {
 		scrollBar.setValue(0);
 	}
 }

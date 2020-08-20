@@ -1,23 +1,23 @@
 package mars.assembler;
 
-import mars.*;
+import mars.MIPSprogram;
 
 /*
  * Copyright (c) 2003-2008, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,7 +25,7 @@ import mars.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -33,7 +33,7 @@ import mars.*;
  * Represents one token in the input MIPS program. Each Token carries, along
  * with its type and value, the position (line, column) in which its source
  * appears in the MIPS program.
- * 
+ *
  * @author Pete Sanderson
  * @version August 2003
  **/
@@ -41,16 +41,16 @@ import mars.*;
 public class Token {
 
 	private TokenTypes type;
-	private String value;
-	private MIPSprogram sourceMIPSprogram;
-	private int sourceLine, sourcePos;
+	private final String value;
+	private final MIPSprogram sourceMIPSprogram;
+	private final int sourceLine, sourcePos;
 	// original program and line will differ from the above if token was defined in an included file
 	private MIPSprogram originalMIPSprogram;
 	private int originalSourceLine;
 
 	/**
 	 * Constructor for Token class.
-	 * 
+	 *
 	 * @param type              The token type that this token has. (e.g.
 	 *                          REGISTER_NAME)
 	 * @param value             The source value for this token (e.g. $t3)
@@ -62,14 +62,15 @@ public class Token {
 	 * @see TokenTypes
 	 **/
 
-	public Token(TokenTypes type, String value, MIPSprogram sourceMIPSprogram, int line, int start) {
+	public Token(final TokenTypes type, final String value, final MIPSprogram sourceMIPSprogram, final int line,
+			final int start) {
 		this.type = type;
 		this.value = value;
 		this.sourceMIPSprogram = sourceMIPSprogram;
-		this.sourceLine = line;
-		this.sourcePos = start;
-		this.originalMIPSprogram = sourceMIPSprogram;
-		this.originalSourceLine = line;
+		sourceLine = line;
+		sourcePos = start;
+		originalMIPSprogram = sourceMIPSprogram;
+		originalSourceLine = line;
 	}
 
 	/**
@@ -77,33 +78,33 @@ public class Token {
 	 * change during pre-assembly as a result of the ".include" directive, and we
 	 * need to keep the original for later reference (error messages, text segment
 	 * display).
-	 * 
+	 *
 	 * @param origProgram    MIPS program containing this token.
 	 * @param origSourceLine Line within that program of this token.
 	 **/
-	public void setOriginal(MIPSprogram origProgram, int origSourceLine) {
-		this.originalMIPSprogram = origProgram;
-		this.originalSourceLine = origSourceLine;
+	public void setOriginal(final MIPSprogram origProgram, final int origSourceLine) {
+		originalMIPSprogram = origProgram;
+		originalSourceLine = origSourceLine;
 	}
 
 	/**
 	 * Produces original program containing this token.
-	 * 
+	 *
 	 * @return MIPSprogram of origin for this token.
 	 **/
-	public MIPSprogram getOriginalProgram() { return this.originalMIPSprogram; }
+	public MIPSprogram getOriginalProgram() { return originalMIPSprogram; }
 
 	/**
 	 * Produces original line number of this token. It could change as result of
 	 * ".include"
-	 * 
+	 *
 	 * @return original line number of this token.
 	 **/
-	public int getOriginalSourceLine() { return this.originalSourceLine; }
+	public int getOriginalSourceLine() { return originalSourceLine; }
 
 	/**
 	 * Produces token type of this token.
-	 * 
+	 *
 	 * @return TokenType of this token.
 	 **/
 	public TokenTypes getType() { return type; }
@@ -111,14 +112,14 @@ public class Token {
 	/**
 	 * Set or modify token type. Generally used to note that an identifier that
 	 * matches an instruction name is actually being used as a label.
-	 * 
+	 *
 	 * @param type new TokenTypes for this token.
 	 **/
-	public void setType(TokenTypes type) { this.type = type; }
+	public void setType(final TokenTypes type) { this.type = type; }
 
 	/**
 	 * Produces source code of this token.
-	 * 
+	 *
 	 * @return String containing source code of this token.
 	 **/
 
@@ -126,17 +127,18 @@ public class Token {
 
 	/**
 	 * Get a String representing the token. This method is equivalent to getValue().
-	 * 
+	 *
 	 * @return String version of the token.
 	 */
 
+	@Override
 	public String toString() {
 		return value;
 	}
 
 	/**
 	 * Produces MIPSprogram object associated with this token.
-	 * 
+	 *
 	 * @return MIPSprogram object associated with this token.
 	 **/
 
@@ -144,7 +146,7 @@ public class Token {
 
 	/**
 	 * Produces line number of MIPS program of this token.
-	 * 
+	 *
 	 * @return line number in source program of this token.
 	 **/
 
@@ -152,7 +154,7 @@ public class Token {
 
 	/**
 	 * Produces position within source line of this token.
-	 * 
+	 *
 	 * @return first character position within source program line of this token.
 	 **/
 

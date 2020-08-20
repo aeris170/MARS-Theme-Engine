@@ -9,17 +9,19 @@
 
 package mars.venus.editors.jeditsyntax;
 
-import javax.swing.KeyStroke;
-import java.awt.event.*;
 import java.awt.Toolkit;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
-import java.util.Properties;
+
+import javax.swing.KeyStroke;
 
 /**
  * The default input handler. It maps sequences of keystrokes into actions and
  * inserts key typed events into the text area.
- * 
+ *
  * @author Slava Pestov
  * @version $Id: DefaultInputHandler.java,v 1.18 1999/12/13 03:40:30 sp Exp $
  */
@@ -35,6 +37,7 @@ public class DefaultInputHandler extends InputHandler {
 	/**
 	 * Sets up the default key bindings.
 	 */
+	@Override
 	public void addDefaultKeyBindings() {
 		addKeyBinding("BACK_SPACE", BACKSPACE);
 		addKeyBinding("C+BACK_SPACE", BACKSPACE_WORD);
@@ -89,42 +92,48 @@ public class DefaultInputHandler extends InputHandler {
 	 * is C for Control, A for Alt, or S for Shift, and key is either a character
 	 * (a-z) or a field name in the KeyEvent class prefixed with VK_ (e.g.,
 	 * BACK_SPACE)
-	 * 
+	 *
 	 * @param keyBinding The key binding
 	 * @param action     The action
 	 */
-	public void addKeyBinding(String keyBinding, ActionListener action) {
+	@Override
+	public void addKeyBinding(final String keyBinding, final ActionListener action) {
 		Hashtable current = bindings;
 
-		StringTokenizer st = new StringTokenizer(keyBinding);
+		final StringTokenizer st = new StringTokenizer(keyBinding);
 		while (st.hasMoreTokens()) {
-			KeyStroke keyStroke = parseKeyStroke(st.nextToken());
-			if (keyStroke == null) return;
+			final KeyStroke keyStroke = parseKeyStroke(st.nextToken());
+			if (keyStroke == null) { return; }
 
 			if (st.hasMoreTokens()) {
 				Object o = current.get(keyStroke);
-				if (o instanceof Hashtable) current = (Hashtable) o;
-				else {
+				if (o instanceof Hashtable) {
+					current = (Hashtable) o;
+				} else {
 					o = new Hashtable();
 					current.put(keyStroke, o);
 					current = (Hashtable) o;
 				}
-			} else current.put(keyStroke, action);
+			} else {
+				current.put(keyStroke, action);
+			}
 		}
 	}
 
 	/**
 	 * Removes a key binding from this input handler. This is not yet implemented.
-	 * 
+	 *
 	 * @param keyBinding The key binding
 	 */
-	public void removeKeyBinding(String keyBinding) {
+	@Override
+	public void removeKeyBinding(final String keyBinding) {
 		throw new InternalError("Not yet implemented");
 	}
 
 	/**
 	 * Removes all key bindings from this input handler.
 	 */
+	@Override
 	public void removeAllKeyBindings() {
 		bindings.clear();
 	}
@@ -133,6 +142,7 @@ public class DefaultInputHandler extends InputHandler {
 	 * Returns a copy of this input handler that shares the same key bindings.
 	 * Setting key bindings in the copy will also set them in the original.
 	 */
+	@Override
 	public InputHandler copy() {
 		return new DefaultInputHandler(this);
 	}
@@ -141,13 +151,16 @@ public class DefaultInputHandler extends InputHandler {
 	 * Handle a key pressed event. This will look up the binding for the key stroke
 	 * and execute it.
 	 */
-	public void keyPressed(KeyEvent evt) {
-		int keyCode = evt.getKeyCode();
-		int modifiers = evt.getModifiers();
+	@Override
+	public void keyPressed(final KeyEvent evt) {
+		final int keyCode = evt.getKeyCode();
+		final int modifiers = evt.getModifiers();
 		if (keyCode == KeyEvent.VK_CONTROL || keyCode == KeyEvent.VK_SHIFT || keyCode == KeyEvent.VK_ALT
-				|| keyCode == KeyEvent.VK_META) return;
+				|| keyCode == KeyEvent.VK_META) {
+			return;
+		}
 
-		if ((modifiers & ~KeyEvent.SHIFT_MASK) != 0 || evt.isActionKey() || keyCode == KeyEvent.VK_BACK_SPACE
+		if ((modifiers & ~InputEvent.SHIFT_MASK) != 0 || evt.isActionKey() || keyCode == KeyEvent.VK_BACK_SPACE
 				|| keyCode == KeyEvent.VK_DELETE || keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_TAB
 				|| keyCode == KeyEvent.VK_ESCAPE) {
 			if (grabAction != null) {
@@ -155,8 +168,8 @@ public class DefaultInputHandler extends InputHandler {
 				return;
 			}
 
-			KeyStroke keyStroke = KeyStroke.getKeyStroke(keyCode, modifiers);
-			Object o = currentBindings.get(keyStroke);
+			final KeyStroke keyStroke = KeyStroke.getKeyStroke(keyCode, modifiers);
+			final Object o = currentBindings.get(keyStroke);
 
 			if (o == null) {
 				// Don't beep if the user presses some
@@ -172,14 +185,14 @@ public class DefaultInputHandler extends InputHandler {
 					evt.consume();
 				}
 				currentBindings = bindings;
-				// No binding for this keyStroke, pass it to menu 
+				// No binding for this keyStroke, pass it to menu
 				// (mnemonic, accelerator).  DPS 4-may-2010
 				mars.Globals.getGui().dispatchEventToMenu(evt);
 				evt.consume();
 				return;
 			} else if (o instanceof ActionListener) {
 				currentBindings = bindings;
-				executeAction(((ActionListener) o), evt.getSource(), null);
+				executeAction((ActionListener) o, evt.getSource(), null);
 
 				evt.consume();
 				return;
@@ -194,14 +207,15 @@ public class DefaultInputHandler extends InputHandler {
 	/**
 	 * Handle a key typed event. This inserts the key into the text area.
 	 */
-	public void keyTyped(KeyEvent evt) {
-		int modifiers = evt.getModifiers();
-		char c = evt.getKeyChar();
-		// This IF statement needed to prevent Macintosh shortcut keyChar from 
+	@Override
+	public void keyTyped(final KeyEvent evt) {
+		final int modifiers = evt.getModifiers();
+		final char c = evt.getKeyChar();
+		// This IF statement needed to prevent Macintosh shortcut keyChar from
 		// being echoed to the text area.  E.g. Command-s, for Save, will echo
-		// the 's' character unless filtered out here.  Command modifier 
+		// the 's' character unless filtered out here.  Command modifier
 		// matches KeyEvent.META_MASK.   DPS 30-Nov-2010
-		if ((modifiers & KeyEvent.META_MASK) != 0) return;
+		if ((modifiers & InputEvent.META_MASK) != 0) { return; }
 		// DPS 9-Jan-2013.  Umberto Villano from Italy describes Alt combinations
 		// not working on Italian Mac keyboards, where # requires Alt (Option).
 		// This is preventing him from writing comments.  Similar complaint from
@@ -240,11 +254,11 @@ public class DefaultInputHandler extends InputHandler {
 		//
 		// Until this is resolved upstream, don't ignore characters
 		// on OS X, which have been entered with the ALT modifier:
-		if (c != KeyEvent.CHAR_UNDEFINED && (((modifiers & KeyEvent.ALT_MASK) == 0) || System.getProperty("os.name")
+		if (c != KeyEvent.CHAR_UNDEFINED && ((modifiers & InputEvent.ALT_MASK) == 0 || System.getProperty("os.name")
 				.contains("OS X"))) {
 			if (c >= 0x20 && c != 0x7f) {
-				KeyStroke keyStroke = KeyStroke.getKeyStroke(Character.toUpperCase(c));
-				Object o = currentBindings.get(keyStroke);
+				final KeyStroke keyStroke = KeyStroke.getKeyStroke(Character.toUpperCase(c));
+				final Object o = currentBindings.get(keyStroke);
 
 				if (o instanceof Hashtable) {
 					currentBindings = (Hashtable) o;
@@ -265,7 +279,7 @@ public class DefaultInputHandler extends InputHandler {
 				// 0-9 adds another 'digit' to the repeat number
 				if (repeat && Character.isDigit(c)) {
 					repeatCount *= 10;
-					repeatCount += (c - '0');
+					repeatCount += c - '0';
 					return;
 				}
 				executeAction(INSERT_CHAR, evt.getSource(), String.valueOf(evt.getKeyChar()));
@@ -281,13 +295,13 @@ public class DefaultInputHandler extends InputHandler {
 	 * A for Alt, C for Control, S for Shift or M for Meta, and <i>shortcut</i> is
 	 * either a single character, or a keycode name from the <code>KeyEvent</code>
 	 * class, without the <code>VK_</code> prefix.
-	 * 
+	 *
 	 * @param keyStroke A string description of the key stroke
 	 */
-	public static KeyStroke parseKeyStroke(String keyStroke) {
-		if (keyStroke == null) return null;
+	public static KeyStroke parseKeyStroke(final String keyStroke) {
+		if (keyStroke == null) { return null; }
 		int modifiers = 0;
-		int index = keyStroke.indexOf('+');
+		final int index = keyStroke.indexOf('+');
 		if (index != -1) {
 			for (int i = 0; i < index; i++) {
 				switch (Character.toUpperCase(keyStroke.charAt(i))) {
@@ -306,11 +320,14 @@ public class DefaultInputHandler extends InputHandler {
 				}
 			}
 		}
-		String key = keyStroke.substring(index + 1);
+		final String key = keyStroke.substring(index + 1);
 		if (key.length() == 1) {
-			char ch = Character.toUpperCase(key.charAt(0));
-			if (modifiers == 0) return KeyStroke.getKeyStroke(ch);
-			else return KeyStroke.getKeyStroke(ch, modifiers);
+			final char ch = Character.toUpperCase(key.charAt(0));
+			if (modifiers == 0) {
+				return KeyStroke.getKeyStroke(ch);
+			} else {
+				return KeyStroke.getKeyStroke(ch, modifiers);
+			}
 		} else if (key.length() == 0) {
 			System.err.println("Invalid key stroke: " + keyStroke);
 			return null;
@@ -319,7 +336,7 @@ public class DefaultInputHandler extends InputHandler {
 
 			try {
 				ch = KeyEvent.class.getField("VK_".concat(key)).getInt(null);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				System.err.println("Invalid key stroke: " + keyStroke);
 				return null;
 			}
@@ -329,10 +346,10 @@ public class DefaultInputHandler extends InputHandler {
 	}
 
 	// private members
-	private Hashtable bindings;
+	private final Hashtable bindings;
 	private Hashtable currentBindings;
 
-	private DefaultInputHandler(DefaultInputHandler copy) {
+	private DefaultInputHandler(final DefaultInputHandler copy) {
 		bindings = currentBindings = copy.bindings;
 	}
 }

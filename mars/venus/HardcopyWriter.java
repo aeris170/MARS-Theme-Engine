@@ -3,7 +3,7 @@
  * Edition" by David Flanagan. Publisher is O'Reilly, ISBN is 0-596-00620-9.
  * Published Jan 2004. Web page for the book is:
  * http://www.oreilly.com/catalog/jenut3/
- * 
+ *
  * Concerning my use of their code, the O'Reilly policy is described at:
  * http://www.oreilly.com/pub/a/oreilly/ask_tim/2001/codepolicy.html
  *
@@ -26,11 +26,21 @@
  */
 package mars.venus;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.JobAttributes;
+import java.awt.PageAttributes;
+import java.awt.PrintJob;
+import java.awt.Toolkit;
+import java.io.FileReader;
+import java.io.Writer;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Properties;
+import java.util.TimeZone;
 
 /*
  * HardcopyWriter class from the book "Java Examples in a Nutshell, 3rd Edition"
@@ -76,42 +86,45 @@ public class HardcopyWriter extends Writer {
 	 * on-screen font sizes are. The margins are specified in inches (or fractions
 	 * of inches).
 	 **/
-	public HardcopyWriter(Frame frame, String jobname, int fontsize, double leftmargin, double rightmargin,
-			double topmargin, double bottommargin) throws HardcopyWriter.PrintCanceledException {
+	public HardcopyWriter(final Frame frame, final String jobname, int fontsize, final double leftmargin,
+			final double rightmargin, final double topmargin, final double bottommargin)
+			throws HardcopyWriter.PrintCanceledException {
 		// Get the PrintJob object with which we'll do all the printing.
 		// The call is synchronized on the static printprops object, which
 		// means that only one print dialog can be popped up at a time.
 		// If the user clicks Cancel in the print dialog, throw an exception.
-		Toolkit toolkit = frame.getToolkit(); // get Toolkit from Frame
+		final Toolkit toolkit = frame.getToolkit(); // get Toolkit from Frame
 		synchronized (printprops) {
 			//job = toolkit.getPrintJob(frame, jobname, printprops);
 			//*******************************************
 			// SANDERSON MOD 8-17-2004:
 			// Currently we will ignore user specifications from Print dialog
-			// such as page ranges and number of copies.  But ja and pa can be 
-			// queried to get and act upon them (in future release).  
-			JobAttributes ja = new JobAttributes();
-			PageAttributes pa = new PageAttributes();
+			// such as page ranges and number of copies.  But ja and pa can be
+			// queried to get and act upon them (in future release).
+			final JobAttributes ja = new JobAttributes();
+			final PageAttributes pa = new PageAttributes();
 			job = toolkit.getPrintJob(frame, jobname, ja, pa);
 			//*******************************************
 		}
-		if (job == null) throw new PrintCanceledException("User cancelled print request");
-		/*******************************************************
-		 * SANDERSON OVERRIDE 8-17-2004: I didn't like the results produced by the code
-		 * below, so am commenting it out and just setting pagedpi to 72. This assures,
-		 * among other things, that the client asking for 10 point font will really get
-		 * 10 point font! pagesize = job.getPageDimension( ); // query the page size
-		 * pagedpi = job.getPageResolution( ); // query the page resolution // Bug
-		 * Workaround: // On Windows, getPageDimension( ) and getPageResolution don't
-		 * work, so // we've got to fake them. if
-		 * (System.getProperty("os.name").regionMatches(true,0,"windows",0,7)){ // Use
-		 * screen dpi, which is what the PrintJob tries to emulate pagedpi =
-		 * toolkit.getScreenResolution( ); // Assume a 8.5" x 11" page size. A4 paper
-		 * users must change this. pagesize = new Dimension((int)(8.5 * pagedpi),
-		 * 11*pagedpi); // We also have to adjust the fontsize. It is specified in
-		 * points, // (1 point = 1/72 of an inch) but Windows measures it in pixels.
-		 * fontsize = fontsize * pagedpi / 72; }
-		 ***********************************/
+		if (job == null) {
+			throw new PrintCanceledException("User cancelled print request");
+			/*******************************************************
+			 * SANDERSON OVERRIDE 8-17-2004: I didn't like the results produced by the code
+			 * below, so am commenting it out and just setting pagedpi to 72. This assures,
+			 * among other things, that the client asking for 10 point font will really get
+			 * 10 point font! pagesize = job.getPageDimension( ); // query the page size
+			 * pagedpi = job.getPageResolution( ); // query the page resolution // Bug
+			 * Workaround: // On Windows, getPageDimension( ) and getPageResolution don't
+			 * work, so // we've got to fake them. if
+			 * (System.getProperty("os.name").regionMatches(true,0,"windows",0,7)){ // Use
+			 * screen dpi, which is what the PrintJob tries to emulate pagedpi =
+			 * toolkit.getScreenResolution( ); // Assume a 8.5" x 11" page size. A4 paper
+			 * users must change this. pagesize = new Dimension((int)(8.5 * pagedpi),
+			 * 11*pagedpi); // We also have to adjust the fontsize. It is specified in
+			 * points, // (1 point = 1/72 of an inch) but Windows measures it in pixels.
+			 * fontsize = fontsize * pagedpi / 72; }
+			 ***********************************/
+		}
 
 		pagedpi = 72;
 		pagesize = new Dimension((int) (8.5 * pagedpi), 11 * pagedpi);
@@ -140,7 +153,7 @@ public class HardcopyWriter extends Writer {
 		headermetrics = frame.getFontMetrics(headerfont);
 		headery = y0 - (int) (0.125 * pagedpi) - headermetrics.getHeight() + headermetrics.getAscent();
 		// Compute the date/time string to display in the page header
-		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT);
+		final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT);
 		df.setTimeZone(TimeZone.getDefault());
 		time = df.format(new Date());
 		this.jobname = jobname; // save name
@@ -151,31 +164,35 @@ public class HardcopyWriter extends Writer {
 	 * This is the write( ) method of the stream. All Writer subclasses implement
 	 * this. All other versions of write( ) are variants of this one
 	 **/
-	public void write(char[] buffer, int index, int len) {
-		synchronized (this.lock) { // For thread safety
+	@Override
+	public void write(final char[] buffer, final int index, final int len) {
+		synchronized (lock) { // For thread safety
 			// Loop through all the characters passed to us
 			for (int i = index; i < index + len; i++) {
 				// If we haven't begun a page (or a new page), do that now.
-				if (page == null) newpage();
+				if (page == null) { newpage(); }
 				// If the character is a line terminator, then begin new line,
 				// unless it is a \n immediately after a \r.
 				if (buffer[i] == '\n') {
-					if (!last_char_was_return) newline();
+					if (!last_char_was_return) { newline(); }
 					continue;
 				}
 				if (buffer[i] == '\r') {
 					newline();
 					last_char_was_return = true;
 					continue;
-				} else last_char_was_return = false;
+				} else {
+					last_char_was_return = false;
+				}
 				// If it's some other non-printing character, ignore it.
-				if (Character.isWhitespace(buffer[i]) && !Character.isSpaceChar(buffer[i]) && (buffer[i] != '\t'))
+				if (Character.isWhitespace(buffer[i]) && !Character.isSpaceChar(buffer[i]) && buffer[i] != '\t') {
 					continue;
+				}
 				// If no more characters will fit on the line, start new line.
 				if (charnum >= chars_per_line) {
 					newline();
 					// Also start a new page, if necessary
-					if (page == null) newpage();
+					if (page == null) { newpage(); }
 				}
 				// Now print the character:
 				// If it is a space, skip one space, without output.
@@ -184,10 +201,12 @@ public class HardcopyWriter extends Writer {
 				// It is inefficient to draw only one character at a time, but
 				// because our FontMetrics don't match up exactly to what the
 				// printer uses, we need to position each character individually
-				if (Character.isSpaceChar(buffer[i])) charnum++;
-				else if (buffer[i] == '\t') charnum += chars_per_tab - (charnum % chars_per_tab);
-				else {
-					page.drawChars(buffer, i, 1, x0 + charnum * charwidth, y0 + (linenum * lineheight) + lineascent);
+				if (Character.isSpaceChar(buffer[i])) {
+					charnum++;
+				} else if (buffer[i] == '\t') {
+					charnum += chars_per_tab - charnum % chars_per_tab;
+				} else {
+					page.drawChars(buffer, i, 1, x0 + charnum * charwidth, y0 + linenum * lineheight + lineascent);
 					charnum++;
 				}
 			}
@@ -199,15 +218,19 @@ public class HardcopyWriter extends Writer {
 	 * is no way to flush a PrintJob without prematurely printing the page, so we
 	 * don't do anything.
 	 **/
+	@Override
 	public void flush() { /* do nothing */ }
 
 	/**
 	 * This is the close( ) method that all Writer subclasses must implement. Print
 	 * the pending page (if any) and terminate the PrintJob.
 	 */
+	@Override
 	public void close() {
-		synchronized (this.lock) {
-			if (page != null) page.dispose(); // Send page to the printer
+		synchronized (lock) {
+			if (page != null) {
+				page.dispose(); // Send page to the printer
+			}
 			job.end(); // Terminate the job
 		}
 	}
@@ -218,34 +241,34 @@ public class HardcopyWriter extends Writer {
 	 * style. This method relies on all styles of the Monospaced font having the
 	 * same metrics.
 	 **/
-	public void setFontStyle(int style) {
-		synchronized (this.lock) {
+	public void setFontStyle(final int style) {
+		synchronized (lock) {
 			// Try to set a new font, but restore current one if it fails
-			Font current = font;
+			final Font current = font;
 			try {
 				font = new Font("Monospaced", style, fontsize);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				font = current;
 			}
 			// If a page is pending, set the new font. Otherwise newpage( ) will
-			if (page != null) page.setFont(font);
+			if (page != null) { page.setFont(font); }
 		}
 	}
 
 	/** End the current page. Subsequent output will be on a new page. */
 	public void pageBreak() {
-		synchronized (this.lock) {
+		synchronized (lock) {
 			newpage();
 		}
 	}
 
 	/** Return the number of columns of characters that fit on the page */
 	public int getCharactersPerLine() {
-		return this.chars_per_line;
+		return chars_per_line;
 	}
 
 	/** Return the number of lines that fit on a page */
-	public int getLinesPerPage() { return this.lines_per_page; }
+	public int getLinesPerPage() { return lines_per_page; }
 
 	/** This internal method begins a new line */
 	protected void newline() {
@@ -265,13 +288,13 @@ public class HardcopyWriter extends Writer {
 		pagenum++; // Increment page number
 		page.setFont(headerfont); // Set the header font.
 		page.drawString(jobname, x0, headery); // Print job name left justified
-		String s = "- " + pagenum + " -"; // Print the page # centered.
+		final String s = "- " + pagenum + " -"; // Print the page # centered.
 		int w = headermetrics.stringWidth(s);
-		page.drawString(s, x0 + (this.width - w) / 2, headery);
+		page.drawString(s, x0 + (width - w) / 2, headery);
 		w = headermetrics.stringWidth(time); // Print date right justified
 		page.drawString(time, x0 + width - w, headery);
 		// Draw a line beneath the header
-		int y = headery + headermetrics.getDescent() + 1;
+		final int y = headery + headermetrics.getDescent() + 1;
 		page.drawLine(x0, y, x0 + width, y);
 		// Set the basic monospaced font for the rest of the page.
 		page.setFont(font);
@@ -283,7 +306,12 @@ public class HardcopyWriter extends Writer {
 	 **/
 	public static class PrintCanceledException extends Exception {
 
-		public PrintCanceledException(String msg) {
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = -4771540608728339470L;
+
+		public PrintCanceledException(final String msg) {
 			super(msg);
 		}
 	}
@@ -292,26 +320,28 @@ public class HardcopyWriter extends Writer {
 	 * A program that prints the specified file using HardcopyWriter
 	 **/
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		try {
-			if (args.length != 1) throw new IllegalArgumentException("Wrong # of arguments");
-			FileReader in = new FileReader(args[0]);
+			if (args.length != 1) { throw new IllegalArgumentException("Wrong # of arguments"); }
+			final FileReader in = new FileReader(args[0]);
 			HardcopyWriter out = null;
-			Frame f = new Frame("PrintFile: " + args[0]);
+			final Frame f = new Frame("PrintFile: " + args[0]);
 			f.setSize(200, 50);
 			f.setVisible(true);
 			try {
 				out = new HardcopyWriter(f, args[0], 10, .5, .5, .5, .5);
-			} catch (HardcopyWriter.PrintCanceledException e) {
+			} catch (final HardcopyWriter.PrintCanceledException e) {
 				System.exit(0);
 			}
 			f.setVisible(false);
-			char[] buffer = new char[4096];
+			final char[] buffer = new char[4096];
 			int numchars;
-			while ((numchars = in.read(buffer)) != -1) out.write(buffer, 0, numchars);
+			while ((numchars = in.read(buffer)) != -1) {
+				out.write(buffer, 0, numchars);
+			}
 			in.close();
 			out.close();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			System.err.println(e);
 			System.err.println("Usage: " + "java HardcopyWriter$PrintFile <filename>");
 			System.exit(1);

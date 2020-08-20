@@ -1,25 +1,27 @@
 package mars.assembler;
 
-import mars.*;
-import mars.util.*;
-import mars.mips.hardware.*;
+import mars.Globals;
+import mars.mips.hardware.Coprocessor1;
+import mars.mips.hardware.Register;
+import mars.mips.hardware.RegisterFile;
+import mars.util.Binary;
 
 /*
  * Copyright (c) 2003-2008, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,14 +29,14 @@ import mars.mips.hardware.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /**
  * Constants to identify the types of tokens found in MIPS programs. If Java had
  * enumerated types, that's how these would probably be implemented.
- * 
+ *
  * @author Pete Sanderson
  * @version August 2003
  **/
@@ -70,47 +72,47 @@ public final class TokenTypes {
 	public static final TokenTypes ERROR = new TokenTypes("ERROR");
 	public static final TokenTypes MACRO_PARAMETER = new TokenTypes("MACRO_PARAMETER");
 
-	private String descriptor;
+	private final String descriptor;
 
 	private TokenTypes() {
 		// private ctor assures no objects can be created other than those above.
 		descriptor = "generic";
 	}
 
-	private TokenTypes(String name) {
+	private TokenTypes(final String name) {
 		descriptor = name;
 	}
 
 	/**
 	 * Produces String equivalent of this token type, which is its name.
-	 * 
+	 *
 	 * @return String containing descriptive name for token type.
 	 **/
+	@Override
 	public String toString() {
 		return descriptor;
 	}
 
 	/**
 	 * Classifies the given token into one of the MIPS types.
-	 * 
+	 *
 	 * @param value String containing candidate language element, extracted from
 	 *              MIPS program.
 	 * @return Returns the corresponding TokenTypes object if the parameter matches
 	 *         a defined MIPS token type, else returns <tt>null</tt>.
 	 **/
 
-	public static TokenTypes matchTokenType(String value) {
+	public static TokenTypes matchTokenType(final String value) {
 
-		TokenTypes type = null;
 		// If it starts with single quote ('), it is a mal-formed character literal
-		// because a well-formed character literal was converted to string-ified 
+		// because a well-formed character literal was converted to string-ified
 		// integer before getting here...
-		if (value.charAt(0) == '\'') return TokenTypes.ERROR;
+		if (value.charAt(0) == '\'') { return TokenTypes.ERROR; }
 
 		// See if it is a comment
-		if (value.charAt(0) == '#') return TokenTypes.COMMENT;
+		if (value.charAt(0) == '#') { return TokenTypes.COMMENT; }
 
-		// See if it is one of the simple tokens 
+		// See if it is one of the simple tokens
 		if (value.length() == 1) {
 			switch (value.charAt(0)) {
 			case '(':
@@ -126,18 +128,23 @@ public final class TokenTypes {
 			}
 		}
 
-		// See if it is a macro parameter  
-		if (Macro.tokenIsMacroParameter(value, false)) return TokenTypes.MACRO_PARAMETER;
+		// See if it is a macro parameter
+		if (Macro.tokenIsMacroParameter(value, false)) { return TokenTypes.MACRO_PARAMETER; }
 
 		// See if it is a register
 		Register reg = RegisterFile.getUserRegister(value);
-		if (reg != null) if (reg.getName().equals(value)) return TokenTypes.REGISTER_NAME;
-		else return TokenTypes.REGISTER_NUMBER;
+		if (reg != null) {
+			if (reg.getName().equals(value)) {
+				return TokenTypes.REGISTER_NAME;
+			} else {
+				return TokenTypes.REGISTER_NUMBER;
+			}
+		}
 
 		// See if it is a floating point register
 
 		reg = Coprocessor1.getRegister(value);
-		if (reg != null) return TokenTypes.FP_REGISTER_NAME;
+		if (reg != null) { return TokenTypes.FP_REGISTER_NAME; }
 
 		// See if it is an immediate (constant) integer value
 		// Classify based on # bits needed to represent in binary
@@ -145,7 +152,7 @@ public final class TokenTypes {
 		// others limited to 5 bits unsigned (shift amounts) others 32 bits.
 		try {
 
-			int i = Binary.stringToInt(value);   // KENV 1/6/05
+			final int i = Binary.stringToInt(value);   // KENV 1/6/05
 
 			/***************************************************************************
 			 * MODIFICATION AND COMMENT, DPS 3-July-2008 The modifications of January 2005
@@ -180,7 +187,7 @@ public final class TokenTypes {
 			if (i >= DataTypes.MIN_UHALF_VALUE && i <= DataTypes.MAX_UHALF_VALUE) { return TokenTypes.INTEGER_16U; }
 			if (i >= DataTypes.MIN_HALF_VALUE && i <= DataTypes.MAX_HALF_VALUE) { return TokenTypes.INTEGER_16; }
 			return TokenTypes.INTEGER_32;  // default when no other type is applicable
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 			// NO ACTION -- exception suppressed
 		}
 
@@ -189,24 +196,24 @@ public final class TokenTypes {
 		try {
 			Double.parseDouble(value);
 			return TokenTypes.REAL_NUMBER;
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 			// NO ACTION -- exception suppressed
 		}
 
 		// See if it is an instruction operator
-		if (Globals.instructionSet.matchOperator(value) != null) return TokenTypes.OPERATOR;
+		if (Globals.instructionSet.matchOperator(value) != null) { return TokenTypes.OPERATOR; }
 
 		// See if it is a directive
 		if (value.charAt(0) == '.' && Directives.matchDirective(value) != null) { return TokenTypes.DIRECTIVE; }
 
 		// See if it is a quoted string
-		if (value.charAt(0) == '"') return TokenTypes.QUOTED_STRING;
+		if (value.charAt(0) == '"') { return TokenTypes.QUOTED_STRING; }
 
-		// Test for identifier goes last because I have defined tokens for various 
+		// Test for identifier goes last because I have defined tokens for various
 		// MIPS constructs (such as operators and directives) that also could fit
 		// the lexical specifications of an identifier, and those need to be
 		// recognized first.
-		if (isValidIdentifier(value)) return TokenTypes.IDENTIFIER;
+		if (isValidIdentifier(value)) { return TokenTypes.IDENTIFIER; }
 
 		// Matches no MIPS language token.
 		return TokenTypes.ERROR;
@@ -219,7 +226,7 @@ public final class TokenTypes {
 	 * @param type the TokenType of interest
 	 * @return true if type is an integer type, false otherwise.
 	 **/
-	public static boolean isIntegerTokenType(TokenTypes type) {
+	public static boolean isIntegerTokenType(final TokenTypes type) {
 		return type == TokenTypes.INTEGER_5 || type == TokenTypes.INTEGER_16 || type == TokenTypes.INTEGER_16U
 				|| type == TokenTypes.INTEGER_32;
 	}
@@ -230,25 +237,27 @@ public final class TokenTypes {
 	 * @param type the TokenType of interest
 	 * @return true if type is an floating point type, false otherwise.
 	 **/
-	public static boolean isFloatingTokenType(TokenTypes type) {
+	public static boolean isFloatingTokenType(final TokenTypes type) {
 		return type == TokenTypes.REAL_NUMBER;
 	}
 
 	// COD2, A-51:  "Identifiers are a sequence of alphanumeric characters,
 	//               underbars (_), and dots (.) that do not begin with a number."
 	// Ideally this would be in a separate Identifier class but I did not see an immediate
-	// need beyond this method (refactoring effort would probably identify other uses 
+	// need beyond this method (refactoring effort would probably identify other uses
 	// related to symbol table).
 	//
 	// DPS 14-Jul-2008: added '$' as valid symbol.  Permits labels to include $.
-	//                  MIPS-target GCC will produce labels that start with $. 
-	public static boolean isValidIdentifier(String value) {
-		boolean result = (Character.isLetter(value.charAt(0)) || value.charAt(0) == '_' || value.charAt(0) == '.'
-				|| value.charAt(0) == '$');
+	//                  MIPS-target GCC will produce labels that start with $.
+	public static boolean isValidIdentifier(final String value) {
+		boolean result = Character.isLetter(value.charAt(0)) || value.charAt(0) == '_' || value.charAt(0) == '.'
+				|| value.charAt(0) == '$';
 		int index = 1;
 		while (result && index < value.length()) {
 			if (!(Character.isLetterOrDigit(value.charAt(index)) || value.charAt(index) == '_' || value.charAt(
-					index) == '.' || value.charAt(index) == '$')) result = false;
+					index) == '.' || value.charAt(index) == '$')) {
+				result = false;
+			}
 			index++;
 		}
 		return result;

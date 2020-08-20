@@ -1,30 +1,46 @@
 package mars.simulator;
 
-import mars.*;
-import mars.venus.*;
-import mars.util.*;
-import mars.mips.hardware.*;
-import mars.mips.instructions.*;
-import java.util.*;
-import javax.swing.*;
-import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Observable;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
+
+import mars.ErrorList;
+import mars.ErrorMessage;
+import mars.Globals;
+import mars.MIPSprogram;
+import mars.ProcessingException;
+import mars.ProgramStatement;
+import mars.mips.hardware.AddressErrorException;
+import mars.mips.hardware.Coprocessor0;
+import mars.mips.hardware.Memory;
+import mars.mips.hardware.RegisterFile;
+import mars.mips.instructions.BasicInstruction;
+import mars.util.Binary;
+import mars.util.SystemIO;
+import mars.venus.RunGoAction;
+import mars.venus.RunSpeedPanel;
+import mars.venus.RunStepAction;
 
 /*
  * Copyright (c) 2003-2010, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,13 +48,13 @@ import java.awt.event.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /**
  * Used to simulate the execution of an assembled MIPS program.
- * 
+ *
  * @author Pete Sanderson
  * @version August 2005
  **/
@@ -98,7 +114,7 @@ public class Simulator extends Observable {
 	/**
 	 * Simulate execution of given MIPS program. It must have already been
 	 * assembled.
-	 * 
+	 *
 	 * @param p           The MIPSprogram to be simulated.
 	 * @param pc          address of first instruction to simulate; this goes into
 	 *                    program counter
@@ -112,19 +128,21 @@ public class Simulator extends Observable {
 	 * @throws ProcessingException Throws exception if run-time exception occurs.
 	 **/
 
-	public boolean simulate(MIPSprogram p, int pc, int maxSteps, int[] breakPoints, AbstractAction actor)
-			throws ProcessingException {
+	public boolean simulate(final MIPSprogram p, final int pc, final int maxSteps, final int[] breakPoints,
+			final AbstractAction actor) throws ProcessingException {
 		simulatorThread = new SimThread(p, pc, maxSteps, breakPoints, actor);
 		simulatorThread.start();
 
 		// Condition should only be true if run from command-line instead of GUI.
 		// If so, just stick around until execution thread is finished.
 		if (actor == null) {
-			Object dun = simulatorThread.get(); // this should emulate join()
-			ProcessingException pe = simulatorThread.pe;
-			boolean done = simulatorThread.done;
-			if (done) SystemIO.resetFiles(); // close any files opened in MIPS progra
-			this.simulatorThread = null;
+			simulatorThread.get();
+			final ProcessingException pe = simulatorThread.pe;
+			final boolean done = simulatorThread.done;
+			if (done) {
+				SystemIO.resetFiles(); // close any files opened in MIPS progra
+			}
+			simulatorThread = null;
 			if (pe != null) { throw pe; }
 			return done;
 		}
@@ -137,11 +155,11 @@ public class Simulator extends Observable {
 	 * execution thread will depart gracefully so the main thread handling the GUI
 	 * can take over. This is used by both STOP and PAUSE features.
 	 */
-	public void stopExecution(AbstractAction actor) {
+	public void stopExecution(final AbstractAction actor) {
 
 		if (simulatorThread != null) {
 			simulatorThread.setStop(actor);
-			for (StopListener l : stopListeners) {
+			for (final StopListener l : stopListeners) {
 				l.stopped(this);
 			}
 			simulatorThread = null;
@@ -157,13 +175,13 @@ public class Simulator extends Observable {
 		void stopped(Simulator s);
 	}
 
-	private ArrayList<StopListener> stopListeners = new ArrayList<StopListener>(1);
+	private final ArrayList<StopListener> stopListeners = new ArrayList<>(1);
 
-	public void addStopListener(StopListener l) {
+	public void addStopListener(final StopListener l) {
 		stopListeners.add(l);
 	}
 
-	public void removeStopListener(StopListener l) {
+	public void removeStopListener(final StopListener l) {
 		stopListeners.remove(l);
 	}
 
@@ -174,14 +192,14 @@ public class Simulator extends Observable {
 	// "stop" just means it is leaving execution state; this could be triggered
 	// by Stop button, by Pause button, by Step button, by runtime exception, by
 	// instruction count limit, by breakpoint, or by end of simulation (truly done).
-	private void notifyObserversOfExecutionStart(int maxSteps, int programCounter) {
-		this.setChanged();
+	private void notifyObserversOfExecutionStart(final int maxSteps, final int programCounter) {
+		setChanged();
 		this.notifyObservers(new SimulatorNotice(SimulatorNotice.SIMULATOR_START, maxSteps, RunSpeedPanel.getInstance()
 				.getRunSpeed(), programCounter));
 	}
 
-	private void notifyObserversOfExecutionStop(int maxSteps, int programCounter) {
-		this.setChanged();
+	private void notifyObserversOfExecutionStop(final int maxSteps, final int programCounter) {
+		setChanged();
 		this.notifyObservers(new SimulatorNotice(SimulatorNotice.SIMULATOR_STOP, maxSteps, RunSpeedPanel.getInstance()
 				.getRunSpeed(), programCounter));
 	}
@@ -197,14 +215,14 @@ public class Simulator extends Observable {
 
 	class SimThread extends SwingWorker {
 
-		private MIPSprogram p;
-		private int pc, maxSteps;
+		private final MIPSprogram p;
+		private final int pc, maxSteps;
 		private int[] breakPoints;
 		private boolean done;
 		private ProcessingException pe;
 		private volatile boolean stop = false;
 		private volatile AbstractAction stopper;
-		private AbstractAction starter;
+		private final AbstractAction starter;
 		private int constructReturnReason;
 
 		/**
@@ -220,16 +238,17 @@ public class Simulator extends Observable {
 		 * @param starter     the GUI component responsible for this call, usually GO or
 		 *                    STEP. null if none.
 		 */
-		SimThread(MIPSprogram p, int pc, int maxSteps, int[] breakPoints, AbstractAction starter) {
+		SimThread(final MIPSprogram p, final int pc, final int maxSteps, final int[] breakPoints,
+				final AbstractAction starter) {
 			super(Globals.getGui() != null);
 			this.p = p;
 			this.pc = pc;
 			this.maxSteps = maxSteps;
 			this.breakPoints = breakPoints;
-			this.done = false;
-			this.pe = null;
+			done = false;
+			pe = null;
 			this.starter = starter;
-			this.stopper = null;
+			stopper = null;
 		}
 
 		/**
@@ -239,7 +258,7 @@ public class Simulator extends Observable {
 		 *
 		 * @param actor the Swing component responsible for this call.
 		 */
-		public void setStop(AbstractAction actor) {
+		public void setStop(final AbstractAction actor) {
 			stop = true;
 			stopper = actor;
 		}
@@ -252,6 +271,7 @@ public class Simulator extends Observable {
 		 * @return boolean value true if execution done, false otherwise
 		 */
 
+		@Override
 		public Object construct() {
 			// The next two statements are necessary for GUI to be consistently updated
 			// before the simulation gets underway.  Without them, this happens only intermittently,
@@ -272,18 +292,18 @@ public class Simulator extends Observable {
 			ProgramStatement statement = null;
 			try {
 				statement = Globals.memory.getStatement(RegisterFile.getProgramCounter());
-			} catch (AddressErrorException e) {
-				ErrorList el = new ErrorList();
+			} catch (final AddressErrorException e) {
+				final ErrorList el = new ErrorList();
 				el.add(new ErrorMessage((MIPSprogram) null, 0, 0, "invalid program counter value: " + Binary
 						.intToHexString(RegisterFile.getProgramCounter())));
-				this.pe = new ProcessingException(el, e);
+				pe = new ProcessingException(el, e);
 				// Next statement is a hack.  Previous statement sets EPC register to ProgramCounter-4
 				// because it assumes the bad address comes from an operand so the ProgramCounter has already been
 				// incremented.  In this case, bad address is the instruction fetch itself so Program Counter has
 				// not yet been incremented.  We'll set the EPC directly here.  DPS 8-July-2013
 				Coprocessor0.updateRegister(Coprocessor0.EPC, RegisterFile.getProgramCounter());
-				this.constructReturnReason = EXCEPTION;
-				this.done = true;
+				constructReturnReason = EXCEPTION;
+				done = true;
 				SystemIO.resetFiles(); // close any files opened in MIPS program
 				Simulator.getInstance().notifyObserversOfExecutionStop(maxSteps, pc);
 				return new Boolean(done);
@@ -326,17 +346,17 @@ public class Simulator extends Observable {
 				pc = RegisterFile.getProgramCounter(); // added: 7/26/06 (explanation above)
 				RegisterFile.incrementPC();
 				// Perform the MIPS instruction in synchronized block.  If external threads agree
-				// to access MIPS memory and registers only through synchronized blocks on same 
-				// lock variable, then full (albeit heavy-handed) protection of MIPS memory and 
+				// to access MIPS memory and registers only through synchronized blocks on same
+				// lock variable, then full (albeit heavy-handed) protection of MIPS memory and
 				// registers is assured.  Not as critical for reading from those resources.
 				synchronized (Globals.memoryAndRegistersLock) {
 					try {
 						if (Simulator.externalInterruptingDevice != NO_DEVICE) {
-							int deviceInterruptCode = externalInterruptingDevice;
+							final int deviceInterruptCode = externalInterruptingDevice;
 							Simulator.externalInterruptingDevice = NO_DEVICE;
 							throw new ProcessingException(statement, "External Interrupt", deviceInterruptCode);
 						}
-						BasicInstruction instruction = (BasicInstruction) statement.getInstruction();
+						final BasicInstruction instruction = (BasicInstruction) statement.getInstruction();
 						if (instruction == null) {
 							throw new ProcessingException(statement, "undefined instruction (" + Binary.intToHexString(
 									statement.getBinaryStatement()) + ")", Exceptions.RESERVED_INSTRUCTION_EXCEPTION);
@@ -348,10 +368,10 @@ public class Simulator extends Observable {
 						if (Globals.getSettings().getBackSteppingEnabled()) {
 							Globals.program.getBackStepper().addDoNothing(pc);
 						}
-					} catch (ProcessingException pe) {
+					} catch (final ProcessingException pe) {
 						if (pe.errors() == null) {
-							this.constructReturnReason = NORMAL_TERMINATION;
-							this.done = true;
+							constructReturnReason = NORMAL_TERMINATION;
+							done = true;
 							SystemIO.resetFiles(); // close any files opened in MIPS program
 							Simulator.getInstance().notifyObserversOfExecutionStop(maxSteps, pc);
 							return new Boolean(done); // execution completed without error.
@@ -364,13 +384,13 @@ public class Simulator extends Observable {
 							ProgramStatement exceptionHandler = null;
 							try {
 								exceptionHandler = Globals.memory.getStatement(Memory.exceptionHandlerAddress);
-							} catch (AddressErrorException aee) {} // will not occur with this well-known addres
+							} catch (final AddressErrorException aee) {} // will not occur with this well-known addres
 							if (exceptionHandler != null) {
 								RegisterFile.setProgramCounter(Memory.exceptionHandlerAddress);
 							} else {
-								this.constructReturnReason = EXCEPTION;
+								constructReturnReason = EXCEPTION;
 								this.pe = pe;
-								this.done = true;
+								done = true;
 								SystemIO.resetFiles(); // close any files opened in MIPS program
 								Simulator.getInstance().notifyObserversOfExecutionStop(maxSteps, pc);
 								return new Boolean(done);
@@ -388,16 +408,15 @@ public class Simulator extends Observable {
 				// Volatile variable initialized false but can be set true by the main thread.
 				// Used to stop or pause a running MIPS program.  See stopSimulation() above.
 				if (stop == true) {
-					this.constructReturnReason = PAUSE_OR_STOP;
-					this.done = false;
+					constructReturnReason = PAUSE_OR_STOP;
+					done = false;
 					Simulator.getInstance().notifyObserversOfExecutionStop(maxSteps, pc);
 					return new Boolean(done);
 				}
-				//	Return if we've reached a breakpoint.					
-				if ((breakPoints != null) && (Arrays.binarySearch(breakPoints, RegisterFile
-						.getProgramCounter()) >= 0)) {
-					this.constructReturnReason = BREAKPOINT;
-					this.done = false;
+				//	Return if we've reached a breakpoint.
+				if (breakPoints != null && Arrays.binarySearch(breakPoints, RegisterFile.getProgramCounter()) >= 0) {
+					constructReturnReason = BREAKPOINT;
+					done = false;
 					Simulator.getInstance().notifyObserversOfExecutionStop(maxSteps, pc);
 					return new Boolean(done); // false;
 				}
@@ -405,8 +424,8 @@ public class Simulator extends Observable {
 				if (maxSteps > 0) {
 					steps++;
 					if (steps >= maxSteps) {
-						this.constructReturnReason = MAX_STEPS;
-						this.done = false;
+						constructReturnReason = MAX_STEPS;
+						done = false;
 						Simulator.getInstance().notifyObserversOfExecutionStop(maxSteps, pc);
 						return new Boolean(done);// false;
 					}
@@ -415,7 +434,7 @@ public class Simulator extends Observable {
 				// schedule GUI update only if: there is in fact a GUI! AND
 				//                              using Run,  not Step (maxSteps > 1) AND
 				//                              running slowly enough for GUI to keep up
-				//if (Globals.getGui() != null && maxSteps != 1 &&             
+				//if (Globals.getGui() != null && maxSteps != 1 &&
 				if (interactiveGUIUpdater != null && maxSteps != 1 && RunSpeedPanel.getInstance()
 						.getRunSpeed() < RunSpeedPanel.UNLIMITED_SPEED) {
 					SwingUtilities.invokeLater(interactiveGUIUpdater);
@@ -424,7 +443,7 @@ public class Simulator extends Observable {
 					if (maxSteps != 1 && RunSpeedPanel.getInstance().getRunSpeed() < RunSpeedPanel.UNLIMITED_SPEED) {
 						try {
 							Thread.sleep((int) (1000 / RunSpeedPanel.getInstance().getRunSpeed())); // make sure it's never zero!
-						} catch (InterruptedException e) {}
+						} catch (final InterruptedException e) {}
 					}
 				}
 
@@ -432,18 +451,18 @@ public class Simulator extends Observable {
 
 				try {
 					statement = Globals.memory.getStatement(RegisterFile.getProgramCounter());
-				} catch (AddressErrorException e) {
-					ErrorList el = new ErrorList();
+				} catch (final AddressErrorException e) {
+					final ErrorList el = new ErrorList();
 					el.add(new ErrorMessage((MIPSprogram) null, 0, 0, "invalid program counter value: " + Binary
 							.intToHexString(RegisterFile.getProgramCounter())));
-					this.pe = new ProcessingException(el, e);
+					pe = new ProcessingException(el, e);
 					// Next statement is a hack.  Previous statement sets EPC register to ProgramCounter-4
 					// because it assumes the bad address comes from an operand so the ProgramCounter has already been
 					// incremented.  In this case, bad address is the instruction fetch itself so Program Counter has
 					// not yet been incremented.  We'll set the EPC directly here.  DPS 8-July-2013
 					Coprocessor0.updateRegister(Coprocessor0.EPC, RegisterFile.getProgramCounter());
-					this.constructReturnReason = EXCEPTION;
-					this.done = true;
+					constructReturnReason = EXCEPTION;
+					done = true;
 					SystemIO.resetFiles(); // close any files opened in MIPS program
 					Simulator.getInstance().notifyObserversOfExecutionStop(maxSteps, pc);
 					return new Boolean(done);
@@ -455,10 +474,10 @@ public class Simulator extends Observable {
 			// because that's what MARS does when execution drops off the bottom.
 			if (DelayedBranch.isTriggered() || DelayedBranch.isRegistered()) { DelayedBranch.clear(); }
 			// If we got here it was due to null statement, which means program
-			// counter "fell off the end" of the program.  NOTE: Assumes the 
+			// counter "fell off the end" of the program.  NOTE: Assumes the
 			// "while" loop contains no "break;" statements.
-			this.constructReturnReason = CLIFF_TERMINATION;
-			this.done = true;
+			constructReturnReason = CLIFF_TERMINATION;
+			done = true;
 			SystemIO.resetFiles(); // close any files opened in MIPS program
 			Simulator.getInstance().notifyObserversOfExecutionStop(maxSteps, pc);
 			return new Boolean(done); // true;  // execution completed
@@ -473,10 +492,11 @@ public class Simulator extends Observable {
 		 * first place.
 		 */
 
+		@Override
 		public void finished() {
 			// If running from the command-line, then there is no GUI to update.
 			if (Globals.getGui() == null) { return; }
-			String starterName = (String) starter.getValue(AbstractAction.NAME);
+			final String starterName = (String) starter.getValue(Action.NAME);
 			if (starterName.equals("Step")) { ((RunStepAction) starter).stepped(done, constructReturnReason, pe); }
 			if (starterName.equals("Go")) {
 				if (done) {
@@ -484,7 +504,7 @@ public class Simulator extends Observable {
 				} else if (constructReturnReason == BREAKPOINT) {
 					((RunGoAction) starter).paused(done, constructReturnReason, pe);
 				} else {
-					String stopperName = (String) stopper.getValue(AbstractAction.NAME);
+					final String stopperName = (String) stopper.getValue(Action.NAME);
 					if ("Pause".equals(stopperName)) {
 						((RunGoAction) starter).paused(done, constructReturnReason, pe);
 					} else if ("Stop".equals(stopperName)) {
@@ -499,6 +519,7 @@ public class Simulator extends Observable {
 
 	private class UpdateGUI implements Runnable {
 
+		@Override
 		public void run() {
 			if (Globals.getGui().getRegistersPane().getSelectedComponent() == Globals.getGui().getMainPane()
 					.getExecutePane().getRegistersWindow()) {

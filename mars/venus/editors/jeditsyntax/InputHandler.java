@@ -9,11 +9,17 @@
 
 package mars.venus.editors.jeditsyntax;
 
-import javax.swing.text.*;
-import javax.swing.JPopupMenu;
-import java.awt.event.*;
 import java.awt.Component;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.Enumeration;
+import java.util.EventObject;
+import java.util.Hashtable;
+
+import javax.swing.JPopupMenu;
+import javax.swing.text.BadLocationException;
 
 /**
  * An input handler converts the user's key strokes into concrete actions. It
@@ -22,7 +28,7 @@ import java.util.*;
  * This class provides all the necessary support code for an input handler, but
  * doesn't actually do any key binding logic. It is up to the implementations of
  * this class to do so.
- * 
+ *
  * @author Slava Pestov
  * @version $Id: InputHandler.java,v 1.14 1999/12/13 03:40:30 sp Exp $
  * @see org.syntax.jedit.DefaultInputHandler 08/12/2002 Clipboard actions
@@ -126,24 +132,24 @@ public abstract class InputHandler extends KeyAdapter {
 
 	/**
 	 * Returns a named text area action.
-	 * 
+	 *
 	 * @param name The action name
 	 */
-	public static ActionListener getAction(String name) {
+	public static ActionListener getAction(final String name) {
 		return (ActionListener) actions.get(name);
 	}
 
 	/**
 	 * Returns the name of the specified text area action.
-	 * 
+	 *
 	 * @param listener The action
 	 */
-	public static String getActionName(ActionListener listener) {
-		Enumeration enumeration = getActions();
+	public static String getActionName(final ActionListener listener) {
+		final Enumeration enumeration = getActions();
 		while (enumeration.hasMoreElements()) {
-			String name = (String) enumeration.nextElement();
-			ActionListener _listener = getAction(name);
-			if (_listener == listener) return name;
+			final String name = (String) enumeration.nextElement();
+			final ActionListener _listener = getAction(name);
+			if (_listener == listener) { return name; }
 		}
 		return null;
 	}
@@ -162,7 +168,7 @@ public abstract class InputHandler extends KeyAdapter {
 
 	/**
 	 * Adds a key binding to this input handler.
-	 * 
+	 *
 	 * @param keyBinding The key binding (the format of this is input-handler
 	 *                   specific)
 	 * @param action     The action
@@ -171,7 +177,7 @@ public abstract class InputHandler extends KeyAdapter {
 
 	/**
 	 * Removes a key binding from this input handler.
-	 * 
+	 *
 	 * @param keyBinding The key binding
 	 */
 	public abstract void removeKeyBinding(String keyBinding);
@@ -184,10 +190,10 @@ public abstract class InputHandler extends KeyAdapter {
 	/**
 	 * Grabs the next key typed event and invokes the specified action with the key
 	 * as a the action command.
-	 * 
+	 *
 	 * @param action The action
 	 */
-	public void grabNextKeyStroke(ActionListener listener) {
+	public void grabNextKeyStroke(final ActionListener listener) {
 		grabAction = listener;
 	}
 
@@ -203,19 +209,19 @@ public abstract class InputHandler extends KeyAdapter {
 	 * multiple times. Once repeating is enabled, the input handler should read a
 	 * number from the keyboard.
 	 */
-	public void setRepeatEnabled(boolean repeat) { this.repeat = repeat; }
+	public void setRepeatEnabled(final boolean repeat) { this.repeat = repeat; }
 
 	/**
 	 * Returns the number of times the next action will be repeated.
 	 */
-	public int getRepeatCount() { return (repeat ? Math.max(1, repeatCount) : 1); }
+	public int getRepeatCount() { return repeat ? Math.max(1, repeatCount) : 1; }
 
 	/**
 	 * Sets the number of times the next action will be repeated.
-	 * 
+	 *
 	 * @param repeatCount The repeat count
 	 */
-	public void setRepeatCount(int repeatCount) { this.repeatCount = repeatCount; }
+	public void setRepeatCount(final int repeatCount) { this.repeatCount = repeatCount; }
 
 	/**
 	 * Returns the macro recorder. If this is non-null, all executed actions should
@@ -226,10 +232,10 @@ public abstract class InputHandler extends KeyAdapter {
 	/**
 	 * Sets the macro recorder. If this is non-null, all executed actions should be
 	 * forwarded to the recorder.
-	 * 
+	 *
 	 * @param recorder The macro recorder
 	 */
-	public void setMacroRecorder(InputHandler.MacroRecorder recorder) { this.recorder = recorder; }
+	public void setMacroRecorder(final InputHandler.MacroRecorder recorder) { this.recorder = recorder; }
 
 	/**
 	 * Returns a copy of this input handler that shares the same key bindings.
@@ -239,14 +245,14 @@ public abstract class InputHandler extends KeyAdapter {
 
 	/**
 	 * Executes the specified action, repeating and recording it as necessary.
-	 * 
+	 *
 	 * @param listener      The action listener
 	 * @param source        The event source
 	 * @param actionCommand The action command
 	 */
-	public void executeAction(ActionListener listener, Object source, String actionCommand) {
+	public void executeAction(final ActionListener listener, final Object source, final String actionCommand) {
 		// create event
-		ActionEvent evt = new ActionEvent(source, ActionEvent.ACTION_PERFORMED, actionCommand);
+		final ActionEvent evt = new ActionEvent(source, ActionEvent.ACTION_PERFORMED, actionCommand);
 
 		// don't do anything if the action is a wrapper
 		// (like EditAction.Wrapper)
@@ -256,14 +262,16 @@ public abstract class InputHandler extends KeyAdapter {
 		}
 
 		// remember old values, in case action changes them
-		boolean _repeat = repeat;
-		int _repeatCount = getRepeatCount();
+		final boolean _repeat = repeat;
+		final int _repeatCount = getRepeatCount();
 
 		// execute the action
 		if (listener instanceof InputHandler.NonRepeatable) {
 			listener.actionPerformed(evt);
 		} else {
-			for (int i = 0; i < Math.max(1, repeatCount); i++) listener.actionPerformed(evt);
+			for (int i = 0; i < Math.max(1, repeatCount); i++) {
+				listener.actionPerformed(evt);
+			}
 		}
 
 		// do recording. Notice that we do no recording whatsoever
@@ -271,7 +279,7 @@ public abstract class InputHandler extends KeyAdapter {
 		if (grabAction == null) {
 			if (recorder != null) {
 				if (!(listener instanceof InputHandler.NonRecordable)) {
-					if (_repeatCount != 1) recorder.actionPerformed(REPEAT, String.valueOf(_repeatCount));
+					if (_repeatCount != 1) { recorder.actionPerformed(REPEAT, String.valueOf(_repeatCount)); }
 
 					recorder.actionPerformed(listener, actionCommand);
 				}
@@ -288,20 +296,24 @@ public abstract class InputHandler extends KeyAdapter {
 
 	/**
 	 * Returns the text area that fired the specified event.
-	 * 
+	 *
 	 * @param evt The event
 	 */
-	public static JEditTextArea getTextArea(EventObject evt) {
+	public static JEditTextArea getTextArea(final EventObject evt) {
 		if (evt != null) {
-			Object o = evt.getSource();
+			final Object o = evt.getSource();
 			if (o instanceof Component) {
 				// find the parent text area
 				Component c = (Component) o;
 				for (;;) {
-					if (c instanceof JEditTextArea) return (JEditTextArea) c;
-					else if (c == null) break;
-					if (c instanceof JPopupMenu) c = ((JPopupMenu) c).getInvoker();
-					else c = c.getParent();
+					if (c instanceof JEditTextArea) {
+						return (JEditTextArea) c;
+					} else if (c == null) { break; }
+					if (c instanceof JPopupMenu) {
+						c = ((JPopupMenu) c).getInvoker();
+					} else {
+						c = c.getParent();
+					}
 				}
 			}
 		}
@@ -319,10 +331,10 @@ public abstract class InputHandler extends KeyAdapter {
 	 * key event. It executes the grab action with the typed character as the
 	 * parameter.
 	 */
-	protected void handleGrabAction(KeyEvent evt) {
+	protected void handleGrabAction(final KeyEvent evt) {
 		// Clear it *before* it is executed so that executeAction()
 		// resets the repeat count
-		ActionListener _grabAction = grabAction;
+		final ActionListener _grabAction = grabAction;
 		grabAction = null;
 		executeAction(_grabAction, evt.getSource(), String.valueOf(evt.getKeyChar()));
 	}
@@ -347,7 +359,7 @@ public abstract class InputHandler extends KeyAdapter {
 
 	/**
 	 * For use by EditAction.Wrapper only.
-	 * 
+	 *
 	 * @since jEdit 2.2final
 	 */
 	public interface Wrapper {}
@@ -362,8 +374,9 @@ public abstract class InputHandler extends KeyAdapter {
 
 	public static class backspace implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 
 			if (!textArea.isEditable()) {
 				textArea.getToolkit().beep();
@@ -373,14 +386,14 @@ public abstract class InputHandler extends KeyAdapter {
 			if (textArea.getSelectionStart() != textArea.getSelectionEnd()) {
 				textArea.setSelectedText("");
 			} else {
-				int caret = textArea.getCaretPosition();
+				final int caret = textArea.getCaretPosition();
 				if (caret == 0) {
 					textArea.getToolkit().beep();
 					return;
 				}
 				try {
 					textArea.getDocument().remove(caret - 1, 1);
-				} catch (BadLocationException bl) {
+				} catch (final BadLocationException bl) {
 					bl.printStackTrace();
 				}
 			}
@@ -389,16 +402,17 @@ public abstract class InputHandler extends KeyAdapter {
 
 	public static class backspace_word implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
-			int start = textArea.getSelectionStart();
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
+			final int start = textArea.getSelectionStart();
 			if (start != textArea.getSelectionEnd()) { textArea.setSelectedText(""); }
 
-			int line = textArea.getCaretLine();
-			int lineStart = textArea.getLineStartOffset(line);
+			final int line = textArea.getCaretLine();
+			final int lineStart = textArea.getLineStartOffset(line);
 			int caret = start - lineStart;
 
-			String lineText = textArea.getLineText(textArea.getCaretLine());
+			final String lineText = textArea.getLineText(textArea.getCaretLine());
 
 			if (caret == 0) {
 				if (lineStart == 0) {
@@ -407,13 +421,13 @@ public abstract class InputHandler extends KeyAdapter {
 				}
 				caret--;
 			} else {
-				String noWordSep = (String) textArea.getDocument().getProperty("noWordSep");
+				final String noWordSep = (String) textArea.getDocument().getProperty("noWordSep");
 				caret = TextUtilities.findWordStart(lineText, caret, noWordSep);
 			}
 
 			try {
 				textArea.getDocument().remove(caret + lineStart, start - (caret + lineStart));
-			} catch (BadLocationException bl) {
+			} catch (final BadLocationException bl) {
 				bl.printStackTrace();
 			}
 		}
@@ -421,8 +435,9 @@ public abstract class InputHandler extends KeyAdapter {
 
 	public static class delete implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 
 			if (!textArea.isEditable()) {
 				textArea.getToolkit().beep();
@@ -432,14 +447,14 @@ public abstract class InputHandler extends KeyAdapter {
 			if (textArea.getSelectionStart() != textArea.getSelectionEnd()) {
 				textArea.setSelectedText("");
 			} else {
-				int caret = textArea.getCaretPosition();
+				final int caret = textArea.getCaretPosition();
 				if (caret == textArea.getDocumentLength()) {
 					textArea.getToolkit().beep();
 					return;
 				}
 				try {
 					textArea.getDocument().remove(caret, 1);
-				} catch (BadLocationException bl) {
+				} catch (final BadLocationException bl) {
 					bl.printStackTrace();
 				}
 			}
@@ -448,16 +463,17 @@ public abstract class InputHandler extends KeyAdapter {
 
 	public static class delete_word implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
-			int start = textArea.getSelectionStart();
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
+			final int start = textArea.getSelectionStart();
 			if (start != textArea.getSelectionEnd()) { textArea.setSelectedText(""); }
 
-			int line = textArea.getCaretLine();
-			int lineStart = textArea.getLineStartOffset(line);
+			final int line = textArea.getCaretLine();
+			final int lineStart = textArea.getLineStartOffset(line);
 			int caret = start - lineStart;
 
-			String lineText = textArea.getLineText(textArea.getCaretLine());
+			final String lineText = textArea.getLineText(textArea.getCaretLine());
 
 			if (caret == lineText.length()) {
 				if (lineStart + caret == textArea.getDocumentLength()) {
@@ -466,13 +482,13 @@ public abstract class InputHandler extends KeyAdapter {
 				}
 				caret++;
 			} else {
-				String noWordSep = (String) textArea.getDocument().getProperty("noWordSep");
+				final String noWordSep = (String) textArea.getDocument().getProperty("noWordSep");
 				caret = TextUtilities.findWordEnd(lineText, caret, noWordSep);
 			}
 
 			try {
-				textArea.getDocument().remove(start, (caret + lineStart) - start);
-			} catch (BadLocationException bl) {
+				textArea.getDocument().remove(start, caret + lineStart - start);
+			} catch (final BadLocationException bl) {
 				bl.printStackTrace();
 			}
 		}
@@ -480,113 +496,143 @@ public abstract class InputHandler extends KeyAdapter {
 
 	public static class end implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public end(boolean select) {
+		public end(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 
 			int caret = textArea.getCaretPosition();
 
-			int lastOfLine = textArea.getLineEndOffset(textArea.getCaretLine()) - 1;
+			final int lastOfLine = textArea.getLineEndOffset(textArea.getCaretLine()) - 1;
 			int lastVisibleLine = textArea.getFirstLine() + textArea.getVisibleLines();
 			if (lastVisibleLine >= textArea.getLineCount()) {
 				lastVisibleLine = Math.min(textArea.getLineCount() - 1, lastVisibleLine);
-			} else lastVisibleLine -= (textArea.getElectricScroll() + 1);
+			} else {
+				lastVisibleLine -= textArea.getElectricScroll() + 1;
+			}
 
-			int lastVisible = textArea.getLineEndOffset(lastVisibleLine) - 1;
-			int lastDocument = textArea.getDocumentLength();
+			final int lastVisible = textArea.getLineEndOffset(lastVisibleLine) - 1;
+			final int lastDocument = textArea.getDocumentLength();
 
 			if (caret == lastDocument) {
 				textArea.getToolkit().beep();
 				return;
-			} else if (!Boolean.TRUE.equals(textArea.getClientProperty(SMART_HOME_END_PROPERTY))) caret = lastOfLine;
-			else if (caret == lastVisible) caret = lastDocument;
-			else if (caret == lastOfLine) caret = lastVisible;
-			else caret = lastOfLine;
+			} else if (!Boolean.TRUE.equals(textArea.getClientProperty(SMART_HOME_END_PROPERTY))) {
+				caret = lastOfLine;
+			} else if (caret == lastVisible) {
+				caret = lastDocument;
+			} else if (caret == lastOfLine) {
+				caret = lastVisible;
+			} else {
+				caret = lastOfLine;
+			}
 
-			if (select) textArea.select(textArea.getMarkPosition(), caret);
-			else textArea.setCaretPosition(caret);
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), caret);
+			} else {
+				textArea.setCaretPosition(caret);
+			}
 		}
 	}
 
 	public static class select_all implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.selectAll();
 		}
 	}
 
 	public static class document_end implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public document_end(boolean select) {
+		public document_end(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
-			if (select) textArea.select(textArea.getMarkPosition(), textArea.getDocumentLength());
-			else textArea.setCaretPosition(textArea.getDocumentLength());
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), textArea.getDocumentLength());
+			} else {
+				textArea.setCaretPosition(textArea.getDocumentLength());
+			}
 		}
 	}
 
 	public static class home implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public home(boolean select) {
+		public home(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 
 			int caret = textArea.getCaretPosition();
 
-			int firstLine = textArea.getFirstLine();
+			final int firstLine = textArea.getFirstLine();
 
-			int firstOfLine = textArea.getLineStartOffset(textArea.getCaretLine());
-			int firstVisibleLine = (firstLine == 0 ? 0 : firstLine + textArea.getElectricScroll());
-			int firstVisible = textArea.getLineStartOffset(firstVisibleLine);
+			final int firstOfLine = textArea.getLineStartOffset(textArea.getCaretLine());
+			final int firstVisibleLine = firstLine == 0 ? 0 : firstLine + textArea.getElectricScroll();
+			final int firstVisible = textArea.getLineStartOffset(firstVisibleLine);
 
 			if (caret == 0) {
 				textArea.getToolkit().beep();
 				return;
-			} else if (!Boolean.TRUE.equals(textArea.getClientProperty(SMART_HOME_END_PROPERTY))) caret = firstOfLine;
-			else if (caret == firstVisible) caret = 0;
-			else if (caret == firstOfLine) caret = firstVisible;
-			else caret = firstOfLine;
+			} else if (!Boolean.TRUE.equals(textArea.getClientProperty(SMART_HOME_END_PROPERTY))) {
+				caret = firstOfLine;
+			} else if (caret == firstVisible) {
+				caret = 0;
+			} else if (caret == firstOfLine) {
+				caret = firstVisible;
+			} else {
+				caret = firstOfLine;
+			}
 
-			if (select) textArea.select(textArea.getMarkPosition(), caret);
-			else textArea.setCaretPosition(caret);
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), caret);
+			} else {
+				textArea.setCaretPosition(caret);
+			}
 		}
 	}
 
 	public static class document_home implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public document_home(boolean select) {
+		public document_home(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
-			if (select) textArea.select(textArea.getMarkPosition(), 0);
-			else textArea.setCaretPosition(0);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), 0);
+			} else {
+				textArea.setCaretPosition(0);
+			}
 		}
 	}
 
 	public static class insert_break implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 
 			if (!textArea.isEditable()) {
 				textArea.getToolkit().beep();
@@ -599,8 +645,9 @@ public abstract class InputHandler extends KeyAdapter {
 
 	public static class insert_tab implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 
 			if (!textArea.isEditable()) {
 				textArea.getToolkit().beep();
@@ -613,37 +660,42 @@ public abstract class InputHandler extends KeyAdapter {
 
 	public static class next_char implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public next_char(boolean select) {
+		public next_char(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
-			int caret = textArea.getCaretPosition();
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
+			final int caret = textArea.getCaretPosition();
 			if (caret == textArea.getDocumentLength()) {
 				textArea.getToolkit().beep();
 				return;
 			}
 
-			if (select) textArea.select(textArea.getMarkPosition(), caret + 1);
-			else textArea.setCaretPosition(caret + 1);
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), caret + 1);
+			} else {
+				textArea.setCaretPosition(caret + 1);
+			}
 		}
 	}
 
 	public static class next_line implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public next_line(boolean select) {
+		public next_line(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			int caret = textArea.getCaretPosition();
-			int line = textArea.getCaretLine();
+			final int line = textArea.getCaretLine();
 
 			if (line == textArea.getLineCount() - 1) {
 				textArea.getToolkit().beep();
@@ -654,55 +706,63 @@ public abstract class InputHandler extends KeyAdapter {
 			if (magic == -1) { magic = textArea.offsetToX(line, caret - textArea.getLineStartOffset(line)); }
 
 			caret = textArea.getLineStartOffset(line + 1) + textArea.xToOffset(line + 1, magic);
-			if (select) textArea.select(textArea.getMarkPosition(), caret);
-			else textArea.setCaretPosition(caret);
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), caret);
+			} else {
+				textArea.setCaretPosition(caret);
+			}
 			textArea.setMagicCaretPosition(magic);
 		}
 	}
 
 	public static class next_page implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public next_page(boolean select) {
+		public next_page(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
-			int lineCount = textArea.getLineCount();
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
+			final int lineCount = textArea.getLineCount();
 			int firstLine = textArea.getFirstLine();
-			int visibleLines = textArea.getVisibleLines();
-			int line = textArea.getCaretLine();
+			final int visibleLines = textArea.getVisibleLines();
+			final int line = textArea.getCaretLine();
 
 			firstLine += visibleLines;
 
-			if (firstLine + visibleLines >= lineCount - 1) firstLine = lineCount - visibleLines;
+			if (firstLine + visibleLines >= lineCount - 1) { firstLine = lineCount - visibleLines; }
 
 			textArea.setFirstLine(firstLine);
 
-			int caret = textArea.getLineStartOffset(Math.min(textArea.getLineCount() - 1, line + visibleLines));
-			if (select) textArea.select(textArea.getMarkPosition(), caret);
-			else textArea.setCaretPosition(caret);
+			final int caret = textArea.getLineStartOffset(Math.min(textArea.getLineCount() - 1, line + visibleLines));
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), caret);
+			} else {
+				textArea.setCaretPosition(caret);
+			}
 		}
 	}
 
 	public static class next_word implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public next_word(boolean select) {
+		public next_word(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			int caret = textArea.getCaretPosition();
-			int line = textArea.getCaretLine();
-			int lineStart = textArea.getLineStartOffset(line);
+			final int line = textArea.getCaretLine();
+			final int lineStart = textArea.getLineStartOffset(line);
 			caret -= lineStart;
 
-			String lineText = textArea.getLineText(textArea.getCaretLine());
+			final String lineText = textArea.getLineText(textArea.getCaretLine());
 
 			if (caret == lineText.length()) {
 				if (lineStart + caret == textArea.getDocumentLength()) {
@@ -711,56 +771,65 @@ public abstract class InputHandler extends KeyAdapter {
 				}
 				caret++;
 			} else {
-				String noWordSep = (String) textArea.getDocument().getProperty("noWordSep");
+				final String noWordSep = (String) textArea.getDocument().getProperty("noWordSep");
 				caret = TextUtilities.findWordEnd(lineText, caret, noWordSep);
 			}
 
-			if (select) textArea.select(textArea.getMarkPosition(), lineStart + caret);
-			else textArea.setCaretPosition(lineStart + caret);
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), lineStart + caret);
+			} else {
+				textArea.setCaretPosition(lineStart + caret);
+			}
 		}
 	}
 
 	public static class overwrite implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.setOverwriteEnabled(!textArea.isOverwriteEnabled());
 		}
 	}
 
 	public static class prev_char implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public prev_char(boolean select) {
+		public prev_char(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
-			int caret = textArea.getCaretPosition();
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
+			final int caret = textArea.getCaretPosition();
 			if (caret == 0) {
 				textArea.getToolkit().beep();
 				return;
 			}
 
-			if (select) textArea.select(textArea.getMarkPosition(), caret - 1);
-			else textArea.setCaretPosition(caret - 1);
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), caret - 1);
+			} else {
+				textArea.setCaretPosition(caret - 1);
+			}
 		}
 	}
 
 	public static class prev_line implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public prev_line(boolean select) {
+		public prev_line(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			int caret = textArea.getCaretPosition();
-			int line = textArea.getCaretLine();
+			final int line = textArea.getCaretLine();
 
 			if (line == 0) {
 				textArea.getToolkit().beep();
@@ -771,52 +840,60 @@ public abstract class InputHandler extends KeyAdapter {
 			if (magic == -1) { magic = textArea.offsetToX(line, caret - textArea.getLineStartOffset(line)); }
 
 			caret = textArea.getLineStartOffset(line - 1) + textArea.xToOffset(line - 1, magic);
-			if (select) textArea.select(textArea.getMarkPosition(), caret);
-			else textArea.setCaretPosition(caret);
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), caret);
+			} else {
+				textArea.setCaretPosition(caret);
+			}
 			textArea.setMagicCaretPosition(magic);
 		}
 	}
 
 	public static class prev_page implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public prev_page(boolean select) {
+		public prev_page(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			int firstLine = textArea.getFirstLine();
-			int visibleLines = textArea.getVisibleLines();
-			int line = textArea.getCaretLine();
+			final int visibleLines = textArea.getVisibleLines();
+			final int line = textArea.getCaretLine();
 
-			if (firstLine < visibleLines) firstLine = visibleLines;
+			if (firstLine < visibleLines) { firstLine = visibleLines; }
 
 			textArea.setFirstLine(firstLine - visibleLines);
 
-			int caret = textArea.getLineStartOffset(Math.max(0, line - visibleLines));
-			if (select) textArea.select(textArea.getMarkPosition(), caret);
-			else textArea.setCaretPosition(caret);
+			final int caret = textArea.getLineStartOffset(Math.max(0, line - visibleLines));
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), caret);
+			} else {
+				textArea.setCaretPosition(caret);
+			}
 		}
 	}
 
 	public static class prev_word implements ActionListener {
 
-		private boolean select;
+		private final boolean select;
 
-		public prev_word(boolean select) {
+		public prev_word(final boolean select) {
 			this.select = select;
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			int caret = textArea.getCaretPosition();
-			int line = textArea.getCaretLine();
-			int lineStart = textArea.getLineStartOffset(line);
+			final int line = textArea.getCaretLine();
+			final int lineStart = textArea.getLineStartOffset(line);
 			caret -= lineStart;
 
-			String lineText = textArea.getLineText(textArea.getCaretLine());
+			final String lineText = textArea.getLineText(textArea.getCaretLine());
 
 			if (caret == 0) {
 				if (lineStart == 0) {
@@ -825,43 +902,51 @@ public abstract class InputHandler extends KeyAdapter {
 				}
 				caret--;
 			} else {
-				String noWordSep = (String) textArea.getDocument().getProperty("noWordSep");
+				final String noWordSep = (String) textArea.getDocument().getProperty("noWordSep");
 				caret = TextUtilities.findWordStart(lineText, caret, noWordSep);
 			}
 
-			if (select) textArea.select(textArea.getMarkPosition(), lineStart + caret);
-			else textArea.setCaretPosition(lineStart + caret);
+			if (select) {
+				textArea.select(textArea.getMarkPosition(), lineStart + caret);
+			} else {
+				textArea.setCaretPosition(lineStart + caret);
+			}
 		}
 	}
 
 	public static class repeat implements ActionListener, InputHandler.NonRecordable {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.getInputHandler().setRepeatEnabled(true);
-			String actionCommand = evt.getActionCommand();
+			final String actionCommand = evt.getActionCommand();
 			if (actionCommand != null) { textArea.getInputHandler().setRepeatCount(Integer.parseInt(actionCommand)); }
 		}
 	}
 
 	public static class toggle_rect implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.setSelectionRectangular(!textArea.isSelectionRectangular());
 		}
 	}
 
 	public static class insert_char implements ActionListener, InputHandler.NonRepeatable {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
-			String str = evt.getActionCommand();
-			int repeatCount = textArea.getInputHandler().getRepeatCount();
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
+			final String str = evt.getActionCommand();
+			final int repeatCount = textArea.getInputHandler().getRepeatCount();
 
 			if (textArea.isEditable()) {
-				StringBuffer buf = new StringBuffer();
-				for (int i = 0; i < repeatCount; i++) buf.append(str);
+				final StringBuffer buf = new StringBuffer();
+				for (int i = 0; i < repeatCount; i++) {
+					buf.append(str);
+				}
 				textArea.overwriteSetSelectedText(buf.toString());
 			} else {
 				textArea.getToolkit().beep();
@@ -871,24 +956,27 @@ public abstract class InputHandler extends KeyAdapter {
 
 	public static class clip_copy implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.copy();
 		}
 	}
 
 	public static class clip_paste implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.paste();
 		}
 	}
 
 	public static class clip_cut implements ActionListener {
 
-		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+		@Override
+		public void actionPerformed(final ActionEvent evt) {
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.cut();
 		}
 	}

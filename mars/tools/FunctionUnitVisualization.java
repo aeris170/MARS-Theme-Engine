@@ -1,7 +1,6 @@
 package mars.tools;
 
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -9,12 +8,16 @@ import javax.swing.border.EmptyBorder;
 
 public class FunctionUnitVisualization extends JFrame {
 
-	private JPanel contentPane;
-	private String instruction;
-	private int register = 1;
-	private int control = 2;
-	private int aluControl = 3;
-	private int alu = 4;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -16106172057142922L;
+	private final JPanel contentPane;
+	private final String instruction;
+	private final int register = 1;
+	private final int control = 2;
+	private final int aluControl = 3;
+	private final int alu = 4;
 	private int currentUnit;
 
 	/**
@@ -24,7 +27,7 @@ public class FunctionUnitVisualization extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public FunctionUnitVisualization(String instruction, int functionalUnit) {
+	public FunctionUnitVisualization(final String instruction, final int functionalUnit) {
 		this.instruction = instruction;
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 840, 575);
@@ -34,19 +37,19 @@ public class FunctionUnitVisualization extends JFrame {
 		setContentPane(contentPane);
 		if (functionalUnit == register) {
 			currentUnit = register;
-			UnitAnimation reg = new UnitAnimation(instruction, register);
+			final UnitAnimation reg = new UnitAnimation(instruction, register);
 			contentPane.add(reg);
 			reg.startAnimation(instruction);
 		} else if (functionalUnit == control) {
 			currentUnit = control;
-			UnitAnimation reg = new UnitAnimation(instruction, control);
+			final UnitAnimation reg = new UnitAnimation(instruction, control);
 			contentPane.add(reg);
 			reg.startAnimation(instruction);
 		}
 
 		else if (functionalUnit == aluControl) {
 			currentUnit = aluControl;
-			UnitAnimation reg = new UnitAnimation(instruction, aluControl);
+			final UnitAnimation reg = new UnitAnimation(instruction, aluControl);
 			contentPane.add(reg);
 			reg.startAnimation(instruction);
 		}
@@ -55,9 +58,9 @@ public class FunctionUnitVisualization extends JFrame {
 
 	public void run() {
 		try {
-			FunctionUnitVisualization frame = new FunctionUnitVisualization(instruction, currentUnit);
+			final FunctionUnitVisualization frame = new FunctionUnitVisualization(instruction, currentUnit);
 			frame.setVisible(true);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}

@@ -9,9 +9,11 @@
 
 package mars.venus.editors.jeditsyntax;
 
-import mars.Settings;
-import javax.swing.JPopupMenu;
 import java.awt.Color;
+
+import javax.swing.JPopupMenu;
+
+import mars.Settings;
 
 /**
  * Encapsulates default settings for a text area. This can be passed to the
@@ -61,7 +63,7 @@ public class TextAreaDefaults {
 
 		DEFAULTS.blockCaret = false;
 		DEFAULTS.caretVisible = true;
-		DEFAULTS.caretBlinks = (mars.Globals.getSettings().getCaretBlinkRate() != 0);
+		DEFAULTS.caretBlinks = mars.Globals.getSettings().getCaretBlinkRate() != 0;
 		DEFAULTS.caretBlinkRate = mars.Globals.getSettings().getCaretBlinkRate();
 		DEFAULTS.tabSize = mars.Globals.getSettings().getEditorTabSize();
 		DEFAULTS.electricScroll = 0;// was 3.  Will begin scrolling when cursor is this many lines from the edge.

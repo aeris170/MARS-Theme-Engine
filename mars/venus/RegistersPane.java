@@ -1,31 +1,23 @@
 package mars.venus;
 
-import mars.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.undo.*;
-import java.text.*;
-import java.util.*;
-import java.io.*;
+import javax.swing.JTabbedPane;
 
 /*
  * Copyright (c) 2003-2006, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,32 +25,37 @@ import java.io.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /**
  * Contains tabbed areas in the UI to display register contents
- * 
+ *
  * @author Sanderson
  * @version August 2005
  **/
 
 public class RegistersPane extends JTabbedPane {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -9118962176262515698L;
 	RegistersWindow regsTab;
 	Coprocessor1Window cop1Tab;
 	Coprocessor0Window cop0Tab;
 
-	private VenusUI mainUI;
+	private final VenusUI mainUI;
 
 	/**
 	 * Constructor for the RegistersPane class.
 	 **/
 
-	public RegistersPane(VenusUI appFrame, RegistersWindow regs, Coprocessor1Window cop1, Coprocessor0Window cop0) {
+	public RegistersPane(final VenusUI appFrame, final RegistersWindow regs, final Coprocessor1Window cop1,
+			final Coprocessor0Window cop0) {
 		super();
-		this.mainUI = appFrame;
+		mainUI = appFrame;
 		regsTab = regs;
 		cop1Tab = cop1;
 		cop0Tab = cop0;
@@ -68,9 +65,9 @@ public class RegistersPane extends JTabbedPane {
 		this.addTab("Registers", regsTab);
 		this.addTab("Coproc 1", cop1Tab);
 		this.addTab("Coproc 0", cop0Tab);
-		this.setToolTipTextAt(0, "CPU registers");
-		this.setToolTipTextAt(1, "Coprocessor 1 (floating point unit) registers");
-		this.setToolTipTextAt(2, "selected Coprocessor 0 (exceptions and interrupts) registers");
+		setToolTipTextAt(0, "CPU registers");
+		setToolTipTextAt(1, "Coprocessor 1 (floating point unit) registers");
+		setToolTipTextAt(2, "selected Coprocessor 0 (exceptions and interrupts) registers");
 	}
 
 	/**

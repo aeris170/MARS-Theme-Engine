@@ -1,30 +1,41 @@
 package mars.tools;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import mars.tools.*;
-import mars.mips.hardware.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.util.Observable;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
+import mars.mips.hardware.AccessNotice;
+import mars.mips.hardware.Memory;
+import mars.mips.hardware.MemoryAccessNotice;
 
 /*
  * Copyright (c) 2010-2011, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +43,7 @@ import mars.mips.hardware.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -45,6 +56,10 @@ import mars.mips.hardware.*;
  */
 public class BitmapDisplay extends AbstractMarsToolAndApplication {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -5302410800700629891L;
 	private static String version = "Version 1.0";
 	private static String heading = "Bitmap Display";
 
@@ -56,9 +71,9 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	private JPanel results;
 
 	// Some GUI settings
-	private EmptyBorder emptyBorder = new EmptyBorder(4, 4, 4, 4);
-	private Font countFonts = new Font("Times", Font.BOLD, 12);
-	private Color backgroundColor = Color.WHITE;
+	private final EmptyBorder emptyBorder = new EmptyBorder(4, 4, 4, 4);
+	private final Font countFonts = new Font("Times", Font.BOLD, 12);
+	private final Color backgroundColor = Color.WHITE;
 
 	// Values for Combo Boxes
 
@@ -90,12 +105,12 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 
 	/**
 	 * Simple constructor, likely used to run a stand-alone bitmap display tool.
-	 * 
+	 *
 	 * @param title   String containing title for title bar
 	 * @param heading String containing text for heading shown in upper part of
 	 *                window.
 	 */
-	public BitmapDisplay(String title, String heading) {
+	public BitmapDisplay(final String title, final String heading) {
 		super(title, heading);
 	}
 
@@ -112,15 +127,16 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	 * go() method. "stand-alone" means it is not invoked from the MARS Tools menu.
 	 * "Pure" means there is no driver program to invoke the application.
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		new BitmapDisplay("Bitmap Display stand-alone, " + version, heading).go();
 	}
 
 	/**
 	 * Required MarsTool method to return Tool name.
-	 * 
+	 *
 	 * @return Tool name. MARS will display this in menu item.
 	 */
+	@Override
 	public String getName() { return "Bitmap Display"; }
 
 	/**
@@ -134,6 +150,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	 * "Connect" button on MarsTool or the "Assemble and Run" button on a Mars-based
 	 * app.
 	 */
+	@Override
 	protected void addAsObserver() {
 		int highAddress = baseAddress + theGrid.getRows() * theGrid.getColumns() * Memory.WORD_LENGTH_BYTES;
 		// Special case: baseAddress<0 means we're in kernel memory (0x80000000 and up) and most likely
@@ -149,9 +166,10 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	 * two major components: the display configuration which an be modified using
 	 * combo boxes, and the visualization display which is updated as the attached
 	 * MIPS program executes.
-	 * 
+	 *
 	 * @return the GUI component containing these two areas
 	 */
+	@Override
 	protected JComponent buildMainDisplayArea() {
 		results = new JPanel();
 		results.add(buildOrganizationArea());
@@ -166,12 +184,13 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 
 	/**
 	 * Update display when connected MIPS program accesses (data) memory.
-	 * 
+	 *
 	 * @param memory       the attached memory
 	 * @param accessNotice information provided by memory in MemoryAccessNotice
 	 *                     object
 	 */
-	protected void processMIPSUpdate(Observable memory, AccessNotice accessNotice) {
+	@Override
+	protected void processMIPSUpdate(final Observable memory, final AccessNotice accessNotice) {
 		if (accessNotice.getAccessType() == AccessNotice.WRITE) {
 			updateColorForAddress((MemoryAccessNotice) accessNotice);
 		}
@@ -181,6 +200,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	 * Initialize all JComboBox choice structures not already initialized at
 	 * declaration. Overrides inherited method that does nothing.
 	 */
+	@Override
 	protected void initializePreGUI() {
 		initializeDisplayBaseChoices();
 		// NOTE: Can't call "createNewGrid()" here because it uses settings from
@@ -195,6 +215,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	 * method that does nothing.
 	 */
 
+	@Override
 	protected void initializePostGUI() {
 		theGrid = createNewGrid();
 		updateBaseAddress();
@@ -204,6 +225,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	 * Method to reset counters and display when the Reset button selected.
 	 * Overrides inherited method that does nothing.
 	 */
+	@Override
 	protected void reset() {
 		resetCounts();
 		updateDisplay();
@@ -215,6 +237,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	 * when Mars is running in timed mode. Overrides inherited method that does
 	 * nothing.
 	 */
+	@Override
 	protected void updateDisplay() {
 		canvas.repaint();
 	}
@@ -222,6 +245,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	/**
 	 * Overrides default method, to provide a Help button for this tool/app.
 	 */
+	@Override
 	protected JComponent getHelpComponent() {
 		final String helpContent = "Use this program to simulate a basic bitmap display where\n"
 				+ "each memory word in a specified address space corresponds to\n"
@@ -241,13 +265,8 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 				+ "Reference Visualization tool's code.  Feel free to improve it and\n"
 				+ "send me your code for consideration in the next MARS release.\n" + "\n"
 				+ "Contact Pete Sanderson at psanderson@otterbein.edu with\n" + "questions or comments.\n";
-		JButton help = new JButton("Help");
-		help.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(theWindow, helpContent);
-			}
-		});
+		final JButton help = new JButton("Help");
+		help.addActionListener(e -> JOptionPane.showMessageDialog(theWindow, helpContent));
 		return help;
 	}
 
@@ -257,113 +276,98 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 
 	// UI components and layout for left half of GUI, where settings are specified.
 	private JComponent buildOrganizationArea() {
-		JPanel organization = new JPanel(new GridLayout(8, 1));
+		final JPanel organization = new JPanel(new GridLayout(8, 1));
 
 		visualizationUnitPixelWidthSelector = new JComboBox(visualizationUnitPixelWidthChoices);
 		visualizationUnitPixelWidthSelector.setEditable(false);
 		visualizationUnitPixelWidthSelector.setBackground(backgroundColor);
 		visualizationUnitPixelWidthSelector.setSelectedIndex(defaultVisualizationUnitPixelWidthIndex);
 		visualizationUnitPixelWidthSelector.setToolTipText("Width in pixels of rectangle representing memory word");
-		visualizationUnitPixelWidthSelector.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				unitPixelWidth = getIntComboBoxSelection(visualizationUnitPixelWidthSelector);
-				theGrid = createNewGrid();
-				updateDisplay();
-			}
+		visualizationUnitPixelWidthSelector.addActionListener(e -> {
+			unitPixelWidth = getIntComboBoxSelection(visualizationUnitPixelWidthSelector);
+			theGrid = createNewGrid();
+			updateDisplay();
 		});
 		visualizationUnitPixelHeightSelector = new JComboBox(visualizationUnitPixelHeightChoices);
 		visualizationUnitPixelHeightSelector.setEditable(false);
 		visualizationUnitPixelHeightSelector.setBackground(backgroundColor);
 		visualizationUnitPixelHeightSelector.setSelectedIndex(defaultVisualizationUnitPixelHeightIndex);
 		visualizationUnitPixelHeightSelector.setToolTipText("Height in pixels of rectangle representing memory word");
-		visualizationUnitPixelHeightSelector.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				unitPixelHeight = getIntComboBoxSelection(visualizationUnitPixelHeightSelector);
-				theGrid = createNewGrid();
-				updateDisplay();
-			}
+		visualizationUnitPixelHeightSelector.addActionListener(e -> {
+			unitPixelHeight = getIntComboBoxSelection(visualizationUnitPixelHeightSelector);
+			theGrid = createNewGrid();
+			updateDisplay();
 		});
 		visualizationPixelWidthSelector = new JComboBox(displayAreaPixelWidthChoices);
 		visualizationPixelWidthSelector.setEditable(false);
 		visualizationPixelWidthSelector.setBackground(backgroundColor);
 		visualizationPixelWidthSelector.setSelectedIndex(defaultDisplayWidthIndex);
 		visualizationPixelWidthSelector.setToolTipText("Total width in pixels of display area");
-		visualizationPixelWidthSelector.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				displayAreaWidthInPixels = getIntComboBoxSelection(visualizationPixelWidthSelector);
-				canvas.setPreferredSize(getDisplayAreaDimension());
-				canvas.setSize(getDisplayAreaDimension());
-				theGrid = createNewGrid();
-				updateDisplay();
-			}
+		visualizationPixelWidthSelector.addActionListener(e -> {
+			displayAreaWidthInPixels = getIntComboBoxSelection(visualizationPixelWidthSelector);
+			canvas.setPreferredSize(getDisplayAreaDimension());
+			canvas.setSize(getDisplayAreaDimension());
+			theGrid = createNewGrid();
+			updateDisplay();
 		});
 		visualizationPixelHeightSelector = new JComboBox(displayAreaPixelHeightChoices);
 		visualizationPixelHeightSelector.setEditable(false);
 		visualizationPixelHeightSelector.setBackground(backgroundColor);
 		visualizationPixelHeightSelector.setSelectedIndex(defaultDisplayHeightIndex);
 		visualizationPixelHeightSelector.setToolTipText("Total height in pixels of display area");
-		visualizationPixelHeightSelector.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				displayAreaHeightInPixels = getIntComboBoxSelection(visualizationPixelHeightSelector);
-				canvas.setPreferredSize(getDisplayAreaDimension());
-				canvas.setSize(getDisplayAreaDimension());
-				theGrid = createNewGrid();
-				updateDisplay();
-			}
+		visualizationPixelHeightSelector.addActionListener(e -> {
+			displayAreaHeightInPixels = getIntComboBoxSelection(visualizationPixelHeightSelector);
+			canvas.setPreferredSize(getDisplayAreaDimension());
+			canvas.setSize(getDisplayAreaDimension());
+			theGrid = createNewGrid();
+			updateDisplay();
 		});
 		displayBaseAddressSelector = new JComboBox(displayBaseAddressChoices);
 		displayBaseAddressSelector.setEditable(false);
 		displayBaseAddressSelector.setBackground(backgroundColor);
 		displayBaseAddressSelector.setSelectedIndex(defaultBaseAddressIndex);
 		displayBaseAddressSelector.setToolTipText("Base address for display area (upper left corner)");
-		displayBaseAddressSelector.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				// This may also affect what address range we should be registered as an Observer
-				// for.  The default (inherited) address range is the MIPS static data segment 
-				// starting at 0x10010000. To change this requires override of
-				// AbstractMarsToolAndApplication.addAsObserver().  The no-argument version of 
-				// that method is called automatically  when "Connect" button is clicked for MarsTool 
-				// and when "Assemble and Run" button is clicked for Mars application.
-				updateBaseAddress();
-				// If display base address is changed while connected to MIPS (this can only occur
-				// when being used as a MarsTool), we have to delete ourselves as an observer and re-register.
-				if (connectButton != null && connectButton.isConnected()) {
-					deleteAsObserver();
-					addAsObserver();
-				}
-				theGrid = createNewGrid();
-				updateDisplay();
+		displayBaseAddressSelector.addActionListener(e -> {
+			// This may also affect what address range we should be registered as an Observer
+			// for.  The default (inherited) address range is the MIPS static data segment
+			// starting at 0x10010000. To change this requires override of
+			// AbstractMarsToolAndApplication.addAsObserver().  The no-argument version of
+			// that method is called automatically  when "Connect" button is clicked for MarsTool
+			// and when "Assemble and Run" button is clicked for Mars application.
+			updateBaseAddress();
+			// If display base address is changed while connected to MIPS (this can only occur
+			// when being used as a MarsTool), we have to delete ourselves as an observer and re-register.
+			if (connectButton != null && connectButton.isConnected()) {
+				deleteAsObserver();
+				addAsObserver();
 			}
+			theGrid = createNewGrid();
+			updateDisplay();
 		});
 
 		// ALL COMPONENTS FOR "ORGANIZATION" SECTION
 
-		JPanel unitWidthInPixelsRow = getPanelWithBorderLayout();
+		final JPanel unitWidthInPixelsRow = getPanelWithBorderLayout();
 		unitWidthInPixelsRow.setBorder(emptyBorder);
 		unitWidthInPixelsRow.add(new JLabel("Unit Width in Pixels "), BorderLayout.WEST);
 		unitWidthInPixelsRow.add(visualizationUnitPixelWidthSelector, BorderLayout.EAST);
 
-		JPanel unitHeightInPixelsRow = getPanelWithBorderLayout();
+		final JPanel unitHeightInPixelsRow = getPanelWithBorderLayout();
 		unitHeightInPixelsRow.setBorder(emptyBorder);
 		unitHeightInPixelsRow.add(new JLabel("Unit Height in Pixels "), BorderLayout.WEST);
 		unitHeightInPixelsRow.add(visualizationUnitPixelHeightSelector, BorderLayout.EAST);
 
-		JPanel widthInPixelsRow = getPanelWithBorderLayout();
+		final JPanel widthInPixelsRow = getPanelWithBorderLayout();
 		widthInPixelsRow.setBorder(emptyBorder);
 		widthInPixelsRow.add(new JLabel("Display Width in Pixels "), BorderLayout.WEST);
 		widthInPixelsRow.add(visualizationPixelWidthSelector, BorderLayout.EAST);
 
-		JPanel heightInPixelsRow = getPanelWithBorderLayout();
+		final JPanel heightInPixelsRow = getPanelWithBorderLayout();
 		heightInPixelsRow.setBorder(emptyBorder);
 		heightInPixelsRow.add(new JLabel("Display Height in Pixels "), BorderLayout.WEST);
 		heightInPixelsRow.add(visualizationPixelHeightSelector, BorderLayout.EAST);
 
-		JPanel baseAddressRow = getPanelWithBorderLayout();
+		final JPanel baseAddressRow = getPanelWithBorderLayout();
 		baseAddressRow.setBorder(emptyBorder);
 		baseAddressRow.add(new JLabel("Base address for display "), BorderLayout.WEST);
 		baseAddressRow.add(displayBaseAddressSelector, BorderLayout.EAST);
@@ -386,15 +390,15 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	}
 
 	// For greatest flexibility, initialize the display base choices directly from
-	// the constants defined in the Memory class.  This method called prior to 
+	// the constants defined in the Memory class.  This method called prior to
 	// building the GUI.  Here are current values from Memory.java:
 	//dataSegmentBaseAddress=0x10000000, globalPointer=0x10008000
-	//dataBaseAddress=0x10010000, heapBaseAddress=0x10040000, memoryMapBaseAddress=0xffff0000	
+	//dataBaseAddress=0x10010000, heapBaseAddress=0x10040000, memoryMapBaseAddress=0xffff0000
 	private void initializeDisplayBaseChoices() {
-		int[] displayBaseAddressArray = { Memory.dataSegmentBaseAddress, Memory.globalPointer, Memory.dataBaseAddress,
-				Memory.heapBaseAddress, Memory.memoryMapBaseAddress };
+		final int[] displayBaseAddressArray = { Memory.dataSegmentBaseAddress, Memory.globalPointer,
+				Memory.dataBaseAddress, Memory.heapBaseAddress, Memory.memoryMapBaseAddress };
 		// Must agree with above in number and order...
-		String[] descriptions = { " (global data)", " ($gp)", " (static data)", " (heap)", " (memory map)" };
+		final String[] descriptions = { " (global data)", " ($gp)", " (static data)", " (heap)", " (memory map)" };
 		displayBaseAddresses = displayBaseAddressArray;
 		displayBaseAddressChoices = new String[displayBaseAddressArray.length];
 		for (int i = 0; i < displayBaseAddressChoices.length; i++) {
@@ -430,10 +434,10 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 
 	// Will return int equivalent of specified combo box's current selection.
 	// The selection must be a String that parses to an int.
-	private int getIntComboBoxSelection(JComboBox comboBox) {
+	private int getIntComboBoxSelection(final JComboBox comboBox) {
 		try {
 			return Integer.parseInt((String) comboBox.getSelectedItem());
-		} catch (NumberFormatException nfe) {
+		} catch (final NumberFormatException nfe) {
 			// Can occur only if initialization list contains badly formatted numbers.  This
 			// is a developer's error, not a user error, and better be caught before release.
 			return 1;
@@ -444,22 +448,22 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	private JPanel getPanelWithBorderLayout() { return new JPanel(new BorderLayout(2, 2)); }
 
 	// Method to determine grid dimensions based on current control settings.
-	// Each grid element corresponds to one visualization unit. 
+	// Each grid element corresponds to one visualization unit.
 	private Grid createNewGrid() {
-		int rows = displayAreaHeightInPixels / unitPixelHeight;
-		int columns = displayAreaWidthInPixels / unitPixelWidth;
+		final int rows = displayAreaHeightInPixels / unitPixelHeight;
+		final int columns = displayAreaWidthInPixels / unitPixelWidth;
 		return new Grid(rows, columns);
 	}
 
 	// Given memory address, update color for the corresponding grid element.
-	private void updateColorForAddress(MemoryAccessNotice notice) {
-		int address = notice.getAddress();
-		int value = notice.getValue();
-		int offset = (address - baseAddress) / Memory.WORD_LENGTH_BYTES;
+	private void updateColorForAddress(final MemoryAccessNotice notice) {
+		final int address = notice.getAddress();
+		final int value = notice.getValue();
+		final int offset = (address - baseAddress) / Memory.WORD_LENGTH_BYTES;
 		try {
 			theGrid.setElement(offset / theGrid.getColumns(), offset % theGrid.getColumns(), value);
-		} catch (IndexOutOfBoundsException e) {
-			// If address is out of range for display, do nothing.  
+		} catch (final IndexOutOfBoundsException e) {
+			// If address is out of range for display, do nothing.
 		}
 	}
 
@@ -472,14 +476,20 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 	//  patterns.
 	private class GraphicsPanel extends JPanel {
 
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = -556742225839489594L;
+
 		// override default paint method to assure display updated correctly every time
 		// the panel is repainted.
-		public void paint(Graphics g) {
+		@Override
+		public void paint(final Graphics g) {
 			paintGrid(g, theGrid);
 		}
 
 		// Paint the color codes.
-		private void paintGrid(Graphics g, Grid grid) {
+		private void paintGrid(final Graphics g, final Grid grid) {
 			int upperLeftX = 0, upperLeftY = 0;
 			for (int i = 0; i < grid.getRows(); i++) {
 				for (int j = 0; j < grid.getColumns(); j++) {
@@ -501,7 +511,7 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 		Color[][] grid;
 		int rows, columns;
 
-		private Grid(int rows, int columns) {
+		private Grid(final int rows, final int columns) {
 			grid = new Color[rows][columns];
 			this.rows = rows;
 			this.columns = columns;
@@ -512,25 +522,25 @@ public class BitmapDisplay extends AbstractMarsToolAndApplication {
 
 		private int getColumns() { return columns; }
 
-		// Returns value in given grid element; null if row or column is out of range.			
-		private Color getElement(int row, int column) {
-			return (row >= 0 && row <= rows && column >= 0 && column <= columns) ? grid[row][column] : null;
+		// Returns value in given grid element; null if row or column is out of range.
+		private Color getElement(final int row, final int column) {
+			return row >= 0 && row <= rows && column >= 0 && column <= columns ? grid[row][column] : null;
 		}
 
 		// Returns value in given grid element without doing any row/column index checking.
 		// Is faster than getElement but will throw array index out of bounds exception if
-		// parameter values are outside the bounds of the grid.			
-		private Color getElementFast(int row, int column) {
+		// parameter values are outside the bounds of the grid.
+		private Color getElementFast(final int row, final int column) {
 			return grid[row][column];
 		}
 
 		// Set the grid element.
-		private void setElement(int row, int column, int color) {
+		private void setElement(final int row, final int column, final int color) {
 			grid[row][column] = new Color(color);
 		}
 
 		// Set the grid element.
-		private void setElement(int row, int column, Color color) {
+		private void setElement(final int row, final int column, final Color color) {
 			grid[row][column] = color;
 		}
 

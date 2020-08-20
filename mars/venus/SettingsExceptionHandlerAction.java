@@ -1,31 +1,42 @@
 package mars.venus;
 
-import mars.simulator.*;
-import mars.*;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.border.*;
-import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+
+import javax.swing.Box;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
+import javax.swing.border.EmptyBorder;
+
+import mars.Globals;
 
 /*
  * Copyright (c) 2003-2006, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,7 +44,7 @@ import java.io.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -43,6 +54,10 @@ import java.io.*;
  */
 public class SettingsExceptionHandlerAction extends GuiAction {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 8321314886544115279L;
 	JDialog exceptionHandlerDialog;
 	JCheckBox exceptionHandlerSetting;
 	JButton exceptionHandlerSelectionButton;
@@ -51,21 +66,23 @@ public class SettingsExceptionHandlerAction extends GuiAction {
 	boolean initialSelected; // state of check box when dialog initiated.
 	String initialPathname;  // selected exception handler when dialog initiated.
 
-	public SettingsExceptionHandlerAction(String name, Icon icon, String descrip, Integer mnemonic, KeyStroke accel,
-			VenusUI gui) {
+	public SettingsExceptionHandlerAction(final String name, final Icon icon, final String descrip,
+			final Integer mnemonic, final KeyStroke accel, final VenusUI gui) {
 		super(name, icon, descrip, mnemonic, accel, gui);
 	}
 
 	// launch dialog for setting and filename specification
-	public void actionPerformed(ActionEvent e) {
+	@Override
+	public void actionPerformed(final ActionEvent e) {
 		initialSelected = Globals.getSettings().getExceptionHandlerEnabled();
 		initialPathname = Globals.getSettings().getExceptionHandler();
 		exceptionHandlerDialog = new JDialog(Globals.getGui(), "Exception Handler", true);
 		exceptionHandlerDialog.setContentPane(buildDialogPanel());
-		exceptionHandlerDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		exceptionHandlerDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		exceptionHandlerDialog.addWindowListener(new WindowAdapter() {
 
-			public void windowClosing(WindowEvent we) {
+			@Override
+			public void windowClosing(final WindowEvent we) {
 				closeDialog();
 			}
 		});
@@ -76,7 +93,7 @@ public class SettingsExceptionHandlerAction extends GuiAction {
 
 	// The dialog box that appears when menu item is selected.
 	private JPanel buildDialogPanel() {
-		JPanel contents = new JPanel(new BorderLayout(20, 20));
+		final JPanel contents = new JPanel(new BorderLayout(20, 20));
 		contents.setBorder(new EmptyBorder(10, 10, 10, 10));
 		// Top row - the check box for setting...
 		exceptionHandlerSetting = new JCheckBox("Include this exception handler file in all assemble operations");
@@ -84,7 +101,7 @@ public class SettingsExceptionHandlerAction extends GuiAction {
 		exceptionHandlerSetting.addActionListener(new ExceptionHandlerSettingAction());
 		contents.add(exceptionHandlerSetting, BorderLayout.NORTH);
 		// Middle row - the button and text field for exception handler file selection
-		JPanel specifyHandlerFile = new JPanel();
+		final JPanel specifyHandlerFile = new JPanel();
 		exceptionHandlerSelectionButton = new JButton("Browse");
 		exceptionHandlerSelectionButton.setEnabled(exceptionHandlerSetting.isSelected());
 		exceptionHandlerSelectionButton.addActionListener(new ExceptionHandlerSelectionAction());
@@ -95,22 +112,14 @@ public class SettingsExceptionHandlerAction extends GuiAction {
 		specifyHandlerFile.add(exceptionHandlerDisplay);
 		contents.add(specifyHandlerFile, BorderLayout.CENTER);
 		// Bottom row - the control buttons for OK and Cancel
-		Box controlPanel = Box.createHorizontalBox();
-		JButton okButton = new JButton("OK");
-		okButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				performOK();
-				closeDialog();
-			}
+		final Box controlPanel = Box.createHorizontalBox();
+		final JButton okButton = new JButton("OK");
+		okButton.addActionListener(e -> {
+			performOK();
+			closeDialog();
 		});
-		JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				closeDialog();
-			}
-		});
+		final JButton cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(e -> closeDialog());
 		controlPanel.add(Box.createHorizontalGlue());
 		controlPanel.add(okButton);
 		controlPanel.add(Box.createHorizontalGlue());
@@ -122,8 +131,8 @@ public class SettingsExceptionHandlerAction extends GuiAction {
 
 	// User has clicked "OK" button, so record status of the checkbox and text field.
 	private void performOK() {
-		boolean finalSelected = exceptionHandlerSetting.isSelected();
-		String finalPathname = exceptionHandlerDisplay.getText();
+		final boolean finalSelected = exceptionHandlerSetting.isSelected();
+		final String finalPathname = exceptionHandlerDisplay.getText();
 		// If nothing has changed then don't modify setting variables or properties file.
 		if (initialSelected != finalSelected || initialPathname == null && finalPathname != null
 				|| initialPathname != null && !initialPathname.equals(finalPathname)) {
@@ -139,11 +148,12 @@ public class SettingsExceptionHandlerAction extends GuiAction {
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////
-	// Associated action class: exception handler setting.  Attached to check box.   	
+	// Associated action class: exception handler setting.  Attached to check box.
 	private class ExceptionHandlerSettingAction implements ActionListener {
 
-		public void actionPerformed(ActionEvent e) {
-			boolean selected = ((JCheckBox) e.getSource()).isSelected();
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final boolean selected = ((JCheckBox) e.getSource()).isSelected();
 			exceptionHandlerSelectionButton.setEnabled(selected);
 			exceptionHandlerDisplay.setEnabled(selected);
 		}
@@ -153,14 +163,15 @@ public class SettingsExceptionHandlerAction extends GuiAction {
 	// Associated action class: selecting exception handler file.  Attached to handler selector.
 	private class ExceptionHandlerSelectionAction implements ActionListener {
 
-		public void actionPerformed(ActionEvent e) {
-			JFileChooser chooser = new JFileChooser();
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JFileChooser chooser = new JFileChooser();
 			String pathname = Globals.getSettings().getExceptionHandler();
 			if (pathname != null) {
-				File file = new File(pathname);
-				if (file.exists()) chooser.setSelectedFile(file);
+				final File file = new File(pathname);
+				if (file.exists()) { chooser.setSelectedFile(file); }
 			}
-			int result = chooser.showOpenDialog(Globals.getGui());
+			final int result = chooser.showOpenDialog(Globals.getGui());
 			if (result == JFileChooser.APPROVE_OPTION) {
 				pathname = chooser.getSelectedFile().getPath();//.replaceAll("\\\\","/");
 				exceptionHandlerDisplay.setText(pathname);

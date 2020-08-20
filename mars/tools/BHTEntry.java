@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2009, Ingo Kofler, ITEC, Klagenfurt University, Austria
- * 
+ *
  * Developed by Ingo Kofler (ingo.kofler@itec.uni-klu.ac.at)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,7 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -44,7 +44,7 @@ package mars.tools;// .bhtsim;
  * {@link BHTEntry#getStatsPredCorrect()},
  * {@link BHTEntry#getStatsPredIncorrect()} and
  * {@link BHTEntry#getStatsPredPrecision()}.
- * 
+ *
  * @author ingo.kofler@itec.uni-klu.ac.at
  */
 
@@ -55,7 +55,7 @@ public class BHTEntry {
 	 * taken or not. The value at index n-1 represents the most recent branch
 	 * outcome.
 	 */
-	private boolean m_history[];
+	private final boolean m_history[];
 
 	/** the current prediction */
 	private boolean m_prediction;
@@ -69,11 +69,11 @@ public class BHTEntry {
 	/**
 	 * Constructs a BHT entry with a given history size. The size of the history can
 	 * only be set via the constructor and cannot be changed afterwards.
-	 * 
+	 *
 	 * @param historySize number of past branch outcomes to remember
 	 * @param initVal     the initial value of the entry (take or do not take)
 	 */
-	public BHTEntry(int historySize, boolean initVal) {
+	public BHTEntry(final int historySize, final boolean initVal) {
 		m_prediction = initVal;
 		m_history = new boolean[historySize];
 
@@ -85,7 +85,7 @@ public class BHTEntry {
 
 	/**
 	 * Returns the branch prediction based on the history.
-	 * 
+	 *
 	 * @return true if prediction is to take the branch, false otherwise
 	 */
 	public boolean getPrediction() { return m_prediction; }
@@ -94,10 +94,10 @@ public class BHTEntry {
 	 * Updates the entry's history and prediction. This method provides feedback for
 	 * a prediction. The history and the statistics are updated accordingly. Based
 	 * on the updated history a new prediction is calculated
-	 * 
+	 *
 	 * @param branchTaken signals if the branch was taken (true) or not (false)
 	 */
-	public void updatePrediction(boolean branchTaken) {
+	public void updatePrediction(final boolean branchTaken) {
 
 		// update history
 		for (int i = 0; i < m_history.length - 1; i++) {
@@ -115,49 +115,49 @@ public class BHTEntry {
 			boolean changePrediction = true;
 
 			for (int i = 0; i < m_history.length; i++) {
-				if (m_history[i] != branchTaken) changePrediction = false;
+				if (m_history[i] != branchTaken) { changePrediction = false; }
 			}
 
-			if (changePrediction) m_prediction = !m_prediction;
+			if (changePrediction) { m_prediction = !m_prediction; }
 
 		}
 	}
 
 	/**
 	 * Get the absolute number of mispredictions.
-	 * 
+	 *
 	 * @return number of incorrect predictions (mispredictions)
 	 */
 	public int getStatsPredIncorrect() { return m_incorrect; }
 
 	/**
 	 * Get the absolute number of correct predictions.
-	 * 
+	 *
 	 * @return number of correct predictions
 	 */
 	public int getStatsPredCorrect() { return m_correct; }
 
 	/**
 	 * Get the percentage of correct predictions.
-	 * 
+	 *
 	 * @return the percentage of correct predictions
 	 */
 	public double getStatsPredPrecision() {
-		int sum = m_incorrect + m_correct;
-		return (sum == 0) ? 0 : m_correct * 100.0 / sum;
+		final int sum = m_incorrect + m_correct;
+		return sum == 0 ? 0 : m_correct * 100.0 / sum;
 	}
 
 	/***
 	 * Builds a string representation of the BHT entry's history. The history is a
 	 * sequence of flags that signal if the branch was taken (T) or not taken (NT).
-	 * 
+	 *
 	 * @return a string representation of the BHT entry's history
 	 */
 	public String getHistoryAsStr() {
 		String result = "";
 
 		for (int i = 0; i < m_history.length; i++) {
-			if (i > 0) result = result + ", ";
+			if (i > 0) { result = result + ", "; }
 			result += m_history[i] ? "T" : "NT";
 		}
 		return result;
@@ -166,7 +166,7 @@ public class BHTEntry {
 	/***
 	 * Returns a string representation of the BHT entry's current prediction. The
 	 * prediction can be either to TAKE or do NOT TAKE the branch.
-	 * 
+	 *
 	 * @return a string representation of the BHT entry's current prediction
 	 */
 	public String getPredictionAsStr() { return m_prediction ? "TAKE" : "NOT TAKE"; }

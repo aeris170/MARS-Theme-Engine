@@ -2,20 +2,20 @@ package mars.mips.instructions;
 
 /*
  * Copyright (c) 2003-2013, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,7 +23,7 @@ package mars.mips.instructions;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -31,23 +31,23 @@ package mars.mips.instructions;
  * Class to represent a basic instruction in the MIPS instruction set. Basic
  * instruction means it translates directly to a 32-bit binary machine
  * instruction.
- * 
+ *
  * @author Pete Sanderson and Ken Vollmar
  * @version August 2003
  */
 public class BasicInstruction extends Instruction {
 
 	private String instructionName;
-	private BasicInstructionFormat instructionFormat;
-	private String operationMask;
-	private SimulationCode simulationCode;
+	private final BasicInstructionFormat instructionFormat;
+	private final String operationMask;
+	private final SimulationCode simulationCode;
 
-	private int opcodeMask;  // integer with 1's where constants required (0/1 become 1, f/s/t become 0)
-	private int opcodeMatch; // integer matching constants required (0/1 become 0/1, f/s/t become 0)
+	private final int opcodeMask;  // integer with 1's where constants required (0/1 become 1, f/s/t become 0)
+	private final int opcodeMatch; // integer matching constants required (0/1 become 0/1, f/s/t become 0)
 
 	/**
 	 * BasicInstruction constructor.
-	 * 
+	 *
 	 * @param example     An example usage of the instruction, as a String.
 	 * @param instrFormat The format is R, I, I-branch or J.
 	 * @param operMask    The opcode mask is a 32 character string that contains the
@@ -72,26 +72,26 @@ public class BasicInstruction extends Instruction {
 	 * It can also be used at runtime to match a binary machine instruction to the correct
 	 * instruction simulator -- it needs to match all and only the 0's and 1's.
 	 */
-	public BasicInstruction(String example, String description, BasicInstructionFormat instrFormat, String operMask,
-			SimulationCode simCode) {
-		this.exampleFormat = example;
-		this.mnemonic = this.extractOperator(example);
+	public BasicInstruction(final String example, final String description, final BasicInstructionFormat instrFormat,
+			final String operMask, final SimulationCode simCode) {
+		exampleFormat = example;
+		mnemonic = extractOperator(example);
 		this.description = description;
-		this.instructionFormat = instrFormat;
-		this.operationMask = operMask.replaceAll(" ", ""); // squeeze out any/all spaces
+		instructionFormat = instrFormat;
+		operationMask = operMask.replaceAll(" ", ""); // squeeze out any/all spaces
 		if (operationMask.length() != Instruction.INSTRUCTION_LENGTH_BITS) {
 			System.out.println(example + " mask not " + Instruction.INSTRUCTION_LENGTH_BITS + " bits!");
 		}
-		this.simulationCode = simCode;
+		simulationCode = simCode;
 
-		this.opcodeMask = (int) Long.parseLong(this.operationMask.replaceAll("[01]", "1").replaceAll("[^01]", "0"), 2);
-		this.opcodeMatch = (int) Long.parseLong(this.operationMask.replaceAll("[^1]", "0"), 2);
+		opcodeMask = (int) Long.parseLong(operationMask.replaceAll("[01]", "1").replaceAll("[^01]", "0"), 2);
+		opcodeMatch = (int) Long.parseLong(operationMask.replaceAll("[^1]", "0"), 2);
 	}
 
 	// Temporary constructor so that instructions without description yet will compile.
 
-	public BasicInstruction(String example, BasicInstructionFormat instrFormat, String operMask,
-			SimulationCode simCode) {
+	public BasicInstruction(final String example, final BasicInstructionFormat instrFormat, final String operMask,
+			final SimulationCode simCode) {
 		this(example, "", instrFormat, operMask, simCode);
 	}
 
@@ -123,14 +123,14 @@ public class BasicInstruction extends Instruction {
 	 * Gets the SimulationCode object. It is really an object of an anonymous class
 	 * that implements the SimulationCode interface. Such an object has but one
 	 * method: Simulate().
-	 * 
+	 *
 	 * @return the SimulationCode object for this instruction.
 	 * @see SimulationCode
 	 **/
 
 	public SimulationCode getSimulationCode() { return simulationCode; }
 
-	public int getOpcodeMask() { return this.opcodeMask; }
+	public int getOpcodeMask() { return opcodeMask; }
 
-	public int getOpcodeMatch() { return this.opcodeMatch; }
+	public int getOpcodeMatch() { return opcodeMatch; }
 }

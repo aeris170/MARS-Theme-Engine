@@ -1,26 +1,29 @@
 package mars.mips.instructions;
 
-import mars.mips.instructions.syscalls.*;
-import mars.*;
-import mars.util.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import mars.Globals;
+import mars.mips.instructions.syscalls.Syscall;
+import mars.mips.instructions.syscalls.SyscallNumberOverride;
+import mars.util.FilenameFinder;
 
 /*
  * Copyright (c) 2003-2006, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,13 +31,13 @@ import java.util.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /****************************************************************************/
 /* This class provides functionality to bring external Syscall definitions
- * into MARS.  This permits anyone with knowledge of the Mars public interfaces, 
+ * into MARS.  This permits anyone with knowledge of the Mars public interfaces,
  * in particular of the Memory and Register classes, to write custom MIPS syscall
  * functions. This is adapted from the ToolLoader class, which is in turn adapted
  * from Bret Barker's GameServer class from the book "Developing Games In Java".
@@ -59,31 +62,31 @@ class SyscallLoader {
 	void loadSyscalls() {
 		syscallList = new ArrayList();
 		// grab all class files in the same directory as Syscall
-		ArrayList candidates = FilenameFinder.getFilenameList(this.getClass().getClassLoader(), SYSCALLS_DIRECTORY_PATH,
-				CLASS_EXTENSION);
-		HashMap syscalls = new HashMap();
+		final ArrayList candidates = FilenameFinder.getFilenameList(this.getClass().getClassLoader(),
+				SYSCALLS_DIRECTORY_PATH, CLASS_EXTENSION);
+		final HashMap syscalls = new HashMap();
 		for (int i = 0; i < candidates.size(); i++) {
-			String file = (String) candidates.get(i);
+			final String file = (String) candidates.get(i);
 			// Do not add class if already encountered (happens if run in MARS development directory)
 			if (syscalls.containsKey(file)) {
 				continue;
 			} else {
 				syscalls.put(file, file);
 			}
-			if ((!file.equals(SYSCALL_INTERFACE)) && (!file.equals(SYSCALL_ABSTRACT))) {
+			if (!file.equals(SYSCALL_INTERFACE) && !file.equals(SYSCALL_ABSTRACT)) {
 				try {
 					// grab the class, make sure it implements Syscall, instantiate, add to list
-					String syscallClassName = CLASS_PREFIX + file.substring(0, file.indexOf(CLASS_EXTENSION) - 1);
-					Class clas = Class.forName(syscallClassName);
+					final String syscallClassName = CLASS_PREFIX + file.substring(0, file.indexOf(CLASS_EXTENSION) - 1);
+					final Class clas = Class.forName(syscallClassName);
 					if (!Syscall.class.isAssignableFrom(clas)) { continue; }
-					Syscall syscall = (Syscall) clas.newInstance();
+					final Syscall syscall = (Syscall) clas.newInstance();
 					if (findSyscall(syscall.getNumber()) == null) {
 						syscallList.add(syscall);
 					} else {
 						throw new Exception("Duplicate service number: " + syscall.getNumber()
 								+ " already registered to " + findSyscall(syscall.getNumber()).getName());
 					}
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					System.out.println("Error instantiating Syscall from file " + file + ": " + e);
 					System.exit(0);
 				}
@@ -95,8 +98,8 @@ class SyscallLoader {
 
 	// Will get any syscall number override specifications from MARS config file and
 	// process them.  This will alter syscallList entry for affected names.
-	private ArrayList processSyscallNumberOverrides(ArrayList syscallList) {
-		ArrayList overrides = new Globals().getSyscallOverrides();
+	private ArrayList processSyscallNumberOverrides(final ArrayList syscallList) {
+		final ArrayList overrides = new Globals().getSyscallOverrides();
 		SyscallNumberOverride override;
 		Syscall syscall;
 		for (int index = 0; index < overrides.size(); index++) {
@@ -143,7 +146,7 @@ class SyscallLoader {
 	 * Method to find Syscall object associated with given service number.
 	 * Returns null if no associated object found.
 	 */
-	Syscall findSyscall(int number) {
+	Syscall findSyscall(final int number) {
 		// linear search is OK since number of syscalls is small.
 		Syscall service, match = null;
 		if (syscallList == null) { loadSyscalls(); }

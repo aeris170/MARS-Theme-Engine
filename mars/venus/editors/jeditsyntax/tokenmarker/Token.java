@@ -21,8 +21,8 @@ package mars.venus.editors.jeditsyntax.tokenmarker;
 
 public class Token {
 	// NOTE from DPS 13-May-2010.
-	// Please do not modify any of these constants!  It's not fatal or 
-	// anything, but will cause funny results in the MARS Settings 
+	// Please do not modify any of these constants!  It's not fatal or
+	// anything, but will cause funny results in the MARS Settings
 	// mechanism (at least temporarily until changed).  The
 	// associated values here are appended into the key names for
 	// persistent storage (e.g. registry) of syntax style information
@@ -134,11 +134,11 @@ public class Token {
 
 	/**
 	 * Creates a new token.
-	 * 
+	 *
 	 * @param length The length of the token
 	 * @param id     The id of the token
 	 */
-	public Token(int length, byte id) {
+	public Token(final int length, final byte id) {
 		this.length = length;
 		this.id = id;
 	}
@@ -146,6 +146,7 @@ public class Token {
 	/**
 	 * Returns a string representation of this token.
 	 */
+	@Override
 	public String toString() {
 		return "[id=" + id + ",length=" + length + "]";
 	}

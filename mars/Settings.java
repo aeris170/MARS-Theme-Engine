@@ -1,30 +1,33 @@
 package mars;
 
-import mars.*;
-import mars.util.*;
-import mars.venus.editors.jeditsyntax.*;
-import java.io.*;
-import java.util.*;
-import java.util.prefs.*;
 import java.awt.Color;
 import java.awt.Font;
+import java.util.Observable;
+import java.util.StringTokenizer;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+
+import mars.util.Binary;
+import mars.util.EditorFont;
+import mars.venus.editors.jeditsyntax.SyntaxStyle;
+import mars.venus.editors.jeditsyntax.SyntaxUtilities;
 
 /*
  * Copyright (c) 2003-2013, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +35,7 @@ import java.awt.Font;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -47,7 +50,7 @@ import java.awt.Font;
  * implementation of the Preference objects is platform-dependent. For Windows,
  * they are stored in Registry. To see, run regedit and browse to:
  * HKEY_CURRENT_USER\Software\JavaSoft\Prefs\mars
- * 
+ *
  * @author Pete Sanderson
  **/
 
@@ -58,7 +61,7 @@ public class Settings extends Observable {
 	/////////////////////////////  PROPERTY ARRAY INDEXES /////////////////////////////
 	// Because MARS is programmed to Java 1.4, we cannot use an enumerated type.
 
-	// BOOLEAN SETTINGS...  
+	// BOOLEAN SETTINGS...
 	/**
 	 * Flag to determine whether or not program being assembled is limited to basic
 	 * MIPS instructions and formats.
@@ -283,14 +286,14 @@ public class Settings extends Observable {
 	private static String[] defaultColorSettingsValues = { "0x00e0e0e0", "0", "0x00ffffff", "0", "0x00ffff99", "0",
 			"0x0033ff00", "0", "0x0099ccff", "0", "0x0099cc55", "0" };
 
-	private boolean[] booleanSettingsValues;
-	private String[] stringSettingsValues;
-	private String[] fontFamilySettingsValues;
-	private String[] fontStyleSettingsValues;
-	private String[] fontSizeSettingsValues;
-	private String[] colorSettingsValues;
+	private final boolean[] booleanSettingsValues;
+	private final String[] stringSettingsValues;
+	private final String[] fontFamilySettingsValues;
+	private final String[] fontStyleSettingsValues;
+	private final String[] fontSizeSettingsValues;
+	private final String[] colorSettingsValues;
 
-	private Preferences preferences;
+	private final Preferences preferences;
 
 	/**
 	 * Create Settings object and set to saved values. If saved values not found,
@@ -305,12 +308,12 @@ public class Settings extends Observable {
 	 * Create Settings object and set to saved values. If saved values not found,
 	 * will set based on defaults stored in Settings.properties file. If file
 	 * problems, will set based on defaults stored in this class.
-	 * 
+	 *
 	 * @param gui true if running the graphical IDE, false if running from command
 	 *            line. Ignored as of release 3.6 but retained for compatability.
 	 */
 
-	public Settings(boolean gui) {
+	public Settings(final boolean gui) {
 		booleanSettingsValues = new boolean[booleanSettingsKeys.length];
 		stringSettingsValues = new String[stringSettingsKeys.length];
 		fontFamilySettingsValues = new String[fontFamilySettingsKeys.length];
@@ -324,8 +327,8 @@ public class Settings extends Observable {
 		// The gui parameter, formerly passed to initialize(), is no longer needed
 		// because I removed (1/21/09) the call to generate the Font object for the text editor.
 		// Font objects are now generated only on demand so the "if (gui)" guard
-		// is no longer necessary.  Originally added by Berkeley b/c they were running it on a 
-		// headless server and running in command mode.  The Font constructor resulted in Swing 
+		// is no longer necessary.  Originally added by Berkeley b/c they were running it on a
+		// headless server and running in command mode.  The Font constructor resulted in Swing
 		// initialization which caused problems.  Now this will only occur on demand from
 		// Venus, which happens only when running as GUI.
 		initialize();
@@ -335,33 +338,33 @@ public class Settings extends Observable {
 	 * Return whether backstepping is permitted at this time. Backstepping is
 	 * ability to undo execution steps one at a time. Available only in the IDE.
 	 * This is not a persistent setting and is not under MARS user control.
-	 * 
+	 *
 	 * @return true if backstepping is permitted, false otherwise.
 	 */
 	public boolean getBackSteppingEnabled() {
-		return (Globals.program != null && Globals.program.getBackStepper() != null && Globals.program.getBackStepper()
-				.enabled());
+		return Globals.program != null && Globals.program.getBackStepper() != null && Globals.program.getBackStepper()
+				.enabled();
 	}
 
 	/**
 	 * Reset settings to default values, as described in the constructor comments.
-	 * 
+	 *
 	 * @param gui true if running from GUI IDE and false if running from command
 	 *            mode. Ignored as of release 3.6 but retained for compatibility.
 	 */
-	public void reset(boolean gui) {
+	public void reset(final boolean gui) {
 		initialize();
 	}
 
 	/* **************************************************************************
 	This section contains all code related to syntax highlighting styles settings.
 	A style includes 3 components: color, bold (t/f), italic (t/f)
-	
+
 	The fallback defaults will come not from an array here, but from the
 	existing static method SyntaxUtilities.getDefaultSyntaxStyles()
 	in the mars.venus.editors.jeditsyntax package.  It returns an array
 	of SyntaxStyle objects.
-	
+
 	*/
 	private String[] syntaxStyleColorSettingsValues;
 	private boolean[] syntaxStyleBoldSettingsValues;
@@ -376,32 +379,32 @@ public class Settings extends Observable {
 	private static boolean[] defaultSyntaxStyleBoldSettingsValues;
 	private static boolean[] defaultSyntaxStyleItalicSettingsValues;
 
-	public void setEditorSyntaxStyleByPosition(int index, SyntaxStyle syntaxStyle) {
+	public void setEditorSyntaxStyleByPosition(final int index, final SyntaxStyle syntaxStyle) {
 		syntaxStyleColorSettingsValues[index] = syntaxStyle.getColorAsHexString();
 		syntaxStyleItalicSettingsValues[index] = syntaxStyle.isItalic();
 		syntaxStyleBoldSettingsValues[index] = syntaxStyle.isBold();
 		saveEditorSyntaxStyle(index);
 	}
 
-	public SyntaxStyle getEditorSyntaxStyleByPosition(int index) {
+	public SyntaxStyle getEditorSyntaxStyleByPosition(final int index) {
 		return new SyntaxStyle(getColorValueByPosition(index, syntaxStyleColorSettingsValues),
 				syntaxStyleItalicSettingsValues[index], syntaxStyleBoldSettingsValues[index]);
 	}
 
-	public SyntaxStyle getDefaultEditorSyntaxStyleByPosition(int index) {
+	public SyntaxStyle getDefaultEditorSyntaxStyleByPosition(final int index) {
 		return new SyntaxStyle(getColorValueByPosition(index, defaultSyntaxStyleColorSettingsValues),
 				defaultSyntaxStyleItalicSettingsValues[index], defaultSyntaxStyleBoldSettingsValues[index]);
 	}
 
-	private void saveEditorSyntaxStyle(int index) {
+	private void saveEditorSyntaxStyle(final int index) {
 		try {
 			preferences.put(syntaxStyleColorSettingsKeys[index], syntaxStyleColorSettingsValues[index]);
 			preferences.putBoolean(syntaxStyleBoldSettingsKeys[index], syntaxStyleBoldSettingsValues[index]);
 			preferences.putBoolean(syntaxStyleItalicSettingsKeys[index], syntaxStyleItalicSettingsValues[index]);
 			preferences.flush();
-		} catch (SecurityException se) {
+		} catch (final SecurityException se) {
 			// cannot write to persistent storage for security reasons
-		} catch (BackingStoreException bse) {
+		} catch (final BackingStoreException bse) {
 			// unable to communicate with persistent storage (strange days)
 		}
 	}
@@ -410,13 +413,13 @@ public class Settings extends Observable {
 	// Taking care not to explicitly create a Color object, since it may trigger
 	// Swing initialization (that caused problems for UC Berkeley when we
 	// created Font objects here).  It shouldn't, but then again Font shouldn't
-	// either but they said it did.  (see HeadlessException)   
+	// either but they said it did.  (see HeadlessException)
 	// On othe other hand, the first statement of this method causes Color objects
-	// to be created!  It is possible but a real pain in the rear to avoid using 
+	// to be created!  It is possible but a real pain in the rear to avoid using
 	// Color objects totally.  Requires new methods for the SyntaxUtilities class.
 	private void initializeEditorSyntaxStyles() {
-		SyntaxStyle syntaxStyle[] = SyntaxUtilities.getDefaultSyntaxStyles();
-		int tokens = syntaxStyle.length;
+		final SyntaxStyle syntaxStyle[] = SyntaxUtilities.getDefaultSyntaxStyles();
+		final int tokens = syntaxStyle.length;
 		syntaxStyleColorSettingsKeys = new String[tokens];
 		syntaxStyleBoldSettingsKeys = new String[tokens];
 		syntaxStyleItalicSettingsKeys = new String[tokens];
@@ -451,16 +454,16 @@ public class Settings extends Observable {
 
 	////////////////////////////////////////////////////////////////////////
 	//  Setting Getters
-	////////////////////////////////////////////////////////////////////////   	
+	////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Fetch value of a boolean setting given its identifier.
-	 * 
+	 *
 	 * @param id int containing the setting's identifier (constants listed above)
 	 * @return corresponding boolean setting.
 	 * @throws IllegalArgumentException if identifier is invalid.
 	 */
-	public boolean getBooleanSetting(int id) {
+	public boolean getBooleanSetting(final int id) {
 		if (id >= 0 && id < booleanSettingsValues.length) {
 			return booleanSettingsValues[id];
 		} else {
@@ -472,61 +475,66 @@ public class Settings extends Observable {
 	 * Setting for whether user programs limited to "bare machine" formatted basic
 	 * instructions. This was added 8 Aug 2006 but is fixed at false for now, due to
 	 * uncertainty as to what exactly constitutes "bare machine".
-	 * 
+	 *
 	 * @return true if only bare machine instructions allowed, false otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.BARE_MACHINE_ENABLED</code>)
 	 */
+	@Deprecated
 	public boolean getBareMachineEnabled() { return booleanSettingsValues[BARE_MACHINE_ENABLED]; }
 
 	/**
 	 * Setting for whether user programs can use pseudo-instructions or extended
 	 * addressing modes or alternative instruction formats (all are implemented as
 	 * pseudo-instructions).
-	 * 
+	 *
 	 * @return true if pseudo-instructions and formats permitted, false otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.EXTENDED_ASSEMBLER_ENABLED</code>)
 	 */
+	@Deprecated
 	public boolean getExtendedAssemblerEnabled() { return booleanSettingsValues[EXTENDED_ASSEMBLER_ENABLED]; }
 
 	/**
 	 * Setting for whether selected program will be automatically assembled upon
 	 * opening. This can be useful if user employs an external editor such as
 	 * MIPSter.
-	 * 
+	 *
 	 * @return true if file is to be automatically assembled upon opening and false
 	 *         otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.ASSEMBLE_ON_OPEN_ENABLED</code>)
 	 */
+	@Deprecated
 	public boolean getAssembleOnOpenEnabled() { return booleanSettingsValues[ASSEMBLE_ON_OPEN_ENABLED]; }
 
 	/**
 	 * Setting for whether Addresses in the Execute pane will be displayed in
 	 * hexadecimal.
-	 * 
+	 *
 	 * @return true if addresses are displayed in hexadecimal and false otherwise
 	 *         (decimal).
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.DISPLAY_ADDRESSES_IN_HEX</code>)
 	 */
+	@Deprecated
 	public boolean getDisplayAddressesInHex() { return booleanSettingsValues[DISPLAY_ADDRESSES_IN_HEX]; }
 
 	/**
 	 * Setting for whether values in the Execute pane will be displayed in
 	 * hexadecimal.
-	 * 
+	 *
 	 * @return true if values are displayed in hexadecimal and false otherwise
 	 *         (decimal).
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.DISPLAY_VALUES_IN_HEX</code>)
 	 */
+	@Deprecated
 	public boolean getDisplayValuesInHex() { return booleanSettingsValues[DISPLAY_VALUES_IN_HEX]; }
 
 	/**
@@ -535,25 +543,27 @@ public class Settings extends Observable {
 	 * directory (primitive project capability). If the "assemble on open" setting
 	 * is set, this "assemble all" setting will be applied as soon as the file is
 	 * opened.
-	 * 
+	 *
 	 * @return true if all files are to be assembled, false if only the file open in
 	 *         editor.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.ASSEMBLE_ALL_ENABLED</code>)
 	 */
+	@Deprecated
 	public boolean getAssembleAllEnabled() { return booleanSettingsValues[ASSEMBLE_ALL_ENABLED]; }
 
 	/**
 	 * Setting for whether the currently selected exception handler (a MIPS source
 	 * file) will be automatically included in each assemble operation.
-	 * 
+	 *
 	 * @return true if exception handler is to be included in assemble, false
 	 *         otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.EXCEPTION_HANDLER_ENABLED</code>)
 	 */
+	@Deprecated
 	public boolean getExceptionHandlerEnabled() { return booleanSettingsValues[EXCEPTION_HANDLER_ENABLED]; }
 
 	/**
@@ -562,97 +572,105 @@ public class Settings extends Observable {
 	 * executed and then the branch is taken! This simulates pipelining and all MIPS
 	 * processors do it. However it is confusing to assembly language students so is
 	 * disabled by default. SPIM does same thing.
-	 * 
+	 *
 	 * @return true if delayed branching is enabled, false otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.DELAYED_BRANCHING_ENABLED</code>)
 	 */
+	@Deprecated
 	public boolean getDelayedBranchingEnabled() { return booleanSettingsValues[DELAYED_BRANCHING_ENABLED]; }
 
 	/**
 	 * Setting concerning whether or not to display the Labels Window -- symbol
 	 * table.
-	 * 
+	 *
 	 * @return true if label window is to be displayed, false otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.LABEL_WINDOW_VISIBILITY</code>)
 	 */
+	@Deprecated
 	public boolean getLabelWindowVisibility() { return booleanSettingsValues[LABEL_WINDOW_VISIBILITY]; }
 
 	/**
 	 * Setting concerning whether or not the editor will display line numbers.
-	 * 
+	 *
 	 * @return true if line numbers are to be displayed, false otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.EDITOR_LINE_NUMBERS_DISPLAYED</code>)
 	 */
+	@Deprecated
 	public boolean getEditorLineNumbersDisplayed() { return booleanSettingsValues[EDITOR_LINE_NUMBERS_DISPLAYED]; }
 
 	/**
 	 * Setting concerning whether or not assembler will consider warnings to be
 	 * errors.
-	 * 
+	 *
 	 * @return true if warnings are considered errors, false otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.WARNINGS_ARE_ERRORS</code>)
 	 */
+	@Deprecated
 	public boolean getWarningsAreErrors() { return booleanSettingsValues[WARNINGS_ARE_ERRORS]; }
 
 	/**
 	 * Setting concerning whether or not program arguments can be entered and used.
-	 * 
+	 *
 	 * @return true if program arguments can be entered/used, false otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g. <code>Settings.PROGRAM_ARGUMENTS</code>)
 	 */
+	@Deprecated
 	public boolean getProgramArguments() { return booleanSettingsValues[PROGRAM_ARGUMENTS]; }
 
 	/**
 	 * Setting concerning whether or not highlighting is applied to Data Segment
 	 * window.
-	 * 
+	 *
 	 * @return true if highlighting is to be applied, false otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.DATA_SEGMENT_HIGHLIGHTING</code>)
 	 */
+	@Deprecated
 	public boolean getDataSegmentHighlighting() { return booleanSettingsValues[DATA_SEGMENT_HIGHLIGHTING]; }
 
 	/**
 	 * Setting concerning whether or not highlighting is applied to Registers,
 	 * Coprocessor0, and Coprocessor1 windows.
-	 * 
+	 *
 	 * @return true if highlighting is to be applied, false otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g.
 	 *             <code>Settings.REGISTERS_HIGHLIGHTING</code>)
 	 */
+	@Deprecated
 	public boolean getRegistersHighlighting() { return booleanSettingsValues[REGISTERS_HIGHLIGHTING]; }
 
 	/**
 	 * Setting concerning whether or not assembler will automatically initialize the
 	 * program counter to address of statement labeled 'main' if defined.
-	 * 
+	 *
 	 * @return true if it initializes to 'main', false otherwise.
 	 * @deprecated Use <code>getBooleanSetting(int id)</code> with the appropriate
 	 *             boolean setting ID (e.g. <code>Settings.START_AT_MAIN</code>)
 	 */
+	@Deprecated
 	public boolean getStartAtMain() { return booleanSettingsValues[START_AT_MAIN]; }
 
 	/**
 	 * Name of currently selected exception handler file.
-	 * 
+	 *
 	 * @return String pathname of current exception handler file, empty if none.
 	 */
 	public String getExceptionHandler() { return stringSettingsValues[EXCEPTION_HANDLER]; }
 
 	/**
 	 * Returns identifier of current built-in memory configuration.
-	 * 
+	 *
 	 * @return String identifier of current built-in memory configuration, empty if
 	 *         none.
 	 */
@@ -661,18 +679,18 @@ public class Settings extends Observable {
 	/**
 	 * Current editor font. Retained for compatibility but replaced by:
 	 * getFontByPosition(Settings.EDITOR_FONT)
-	 * 
+	 *
 	 * @return Font object for current editor font.
 	 */
 	public Font getEditorFont() { return getFontByPosition(EDITOR_FONT); }
 
 	/**
 	 * Retrieve a Font setting
-	 * 
+	 *
 	 * @param fontSettingPosition constant that identifies which item
 	 * @return Font object for given item
 	 */
-	public Font getFontByPosition(int fontSettingPosition) {
+	public Font getFontByPosition(final int fontSettingPosition) {
 		if (fontSettingPosition >= 0 && fontSettingPosition < fontFamilySettingsValues.length) {
 			return EditorFont.createFontFromStringValues(fontFamilySettingsValues[fontSettingPosition],
 					fontStyleSettingsValues[fontSettingPosition], fontSizeSettingsValues[fontSettingPosition]);
@@ -683,11 +701,11 @@ public class Settings extends Observable {
 
 	/**
 	 * Retrieve a default Font setting
-	 * 
+	 *
 	 * @param fontSettingPosition constant that identifies which item
 	 * @return Font object for given item
 	 */
-	public Font getDefaultFontByPosition(int fontSettingPosition) {
+	public Font getDefaultFontByPosition(final int fontSettingPosition) {
 		if (fontSettingPosition >= 0 && fontSettingPosition < defaultFontFamilySettingsValues.length) {
 			return EditorFont.createFontFromStringValues(defaultFontFamilySettingsValues[fontSettingPosition],
 					defaultFontStyleSettingsValues[fontSettingPosition],
@@ -699,7 +717,7 @@ public class Settings extends Observable {
 
 	/**
 	 * Order of text segment display columns (there are 5, numbered 0 to 4).
-	 * 
+	 *
 	 * @return Array of int indicating the order. Original order is 0 1 2 3 4.
 	 */
 	public int[] getTextColumnOrder() { return getTextSegmentColumnOrder(stringSettingsValues[TEXT_COLUMN_ORDER]); }
@@ -707,7 +725,7 @@ public class Settings extends Observable {
 	/**
 	 * Retrieve the caret blink rate in milliseconds. Blink rate of 0 means do not
 	 * blink.
-	 * 
+	 *
 	 * @return int blink rate in milliseconds
 	 */
 
@@ -715,7 +733,7 @@ public class Settings extends Observable {
 		int rate = 500;
 		try {
 			rate = Integer.parseInt(stringSettingsValues[CARET_BLINK_RATE]);
-		} catch (NumberFormatException nfe) {
+		} catch (final NumberFormatException nfe) {
 			rate = Integer.parseInt(defaultStringSettingsValues[CARET_BLINK_RATE]);
 		}
 		return rate;
@@ -723,14 +741,14 @@ public class Settings extends Observable {
 
 	/**
 	 * Get the tab size in characters.
-	 * 
+	 *
 	 * @return tab size in characters.
 	 */
 	public int getEditorTabSize() {
 		int size = 8;
 		try {
 			size = Integer.parseInt(stringSettingsValues[EDITOR_TAB_SIZE]);
-		} catch (NumberFormatException nfe) {
+		} catch (final NumberFormatException nfe) {
 			size = getDefaultEditorTabSize();
 		}
 		return size;
@@ -741,14 +759,14 @@ public class Settings extends Observable {
 	 * popup generated (if popup enabled). Should be 1 or 2. If 1, the popup will be
 	 * generated after first letter typed, based on all matches; if 2, the popup
 	 * will be generated after second letter typed.
-	 * 
+	 *
 	 * @return number of letters (should be 1 or 2).
 	 */
 	public int getEditorPopupPrefixLength() {
 		int length = 2;
 		try {
 			length = Integer.parseInt(stringSettingsValues[EDITOR_POPUP_PREFIX_LENGTH]);
-		} catch (NumberFormatException nfe) {
+		} catch (final NumberFormatException nfe) {
 
 		}
 		return length;
@@ -756,7 +774,7 @@ public class Settings extends Observable {
 
 	/**
 	 * Get the text editor default tab size in characters
-	 * 
+	 *
 	 * @return tab size in characters
 	 */
 	public int getDefaultEditorTabSize() { return Integer.parseInt(defaultStringSettingsValues[EDITOR_TAB_SIZE]); }
@@ -765,7 +783,7 @@ public class Settings extends Observable {
 	 * Get the saved state of the Labels Window sorting (can sort by either label or
 	 * address and either ascending or descending order). Default state is 0, by
 	 * ascending addresses.
-	 * 
+	 *
 	 * @return State value 0-7, as a String.
 	 */
 	public String getLabelSortState() { return stringSettingsValues[LABEL_SORT_STATE]; }
@@ -773,48 +791,48 @@ public class Settings extends Observable {
 	/**
 	 * Get Color object for specified settings key. Returns null if key is not found
 	 * or its value is not a valid color encoding.
-	 * 
+	 *
 	 * @param key the Setting key
 	 * @return corresponding Color, or null if key not found or value not valid
 	 *         color
 	 */
-	public Color getColorSettingByKey(String key) {
+	public Color getColorSettingByKey(final String key) {
 		return getColorValueByKey(key, colorSettingsValues);
 	}
 
 	/**
 	 * Get default Color value for specified settings key. Returns null if key is
 	 * not found or its value is not a valid color encoding.
-	 * 
+	 *
 	 * @param key the Setting key
 	 * @return corresponding default Color, or null if key not found or value not
 	 *         valid color
 	 */
-	public Color getDefaultColorSettingByKey(String key) {
+	public Color getDefaultColorSettingByKey(final String key) {
 		return getColorValueByKey(key, defaultColorSettingsValues);
 	}
 
 	/**
 	 * Get Color object for specified settings name (a static constant). Returns
 	 * null if argument invalid or its value is not a valid color encoding.
-	 * 
+	 *
 	 * @param position the Setting name (see list of static constants)
 	 * @return corresponding Color, or null if argument invalid or value not valid
 	 *         color
 	 */
-	public Color getColorSettingByPosition(int position) {
+	public Color getColorSettingByPosition(final int position) {
 		return getColorValueByPosition(position, colorSettingsValues);
 	}
 
 	/**
 	 * Get default Color object for specified settings name (a static constant).
 	 * Returns null if argument invalid or its value is not a valid color encoding.
-	 * 
+	 *
 	 * @param position the Setting name (see list of static constants)
 	 * @return corresponding default Color, or null if argument invalid or value not
 	 *         valid color
 	 */
-	public Color getDefaultColorSettingByPosition(int position) {
+	public Color getDefaultColorSettingByPosition(final int position) {
 		return getColorValueByPosition(position, defaultColorSettingsValues);
 	}
 
@@ -824,12 +842,12 @@ public class Settings extends Observable {
 
 	/**
 	 * Set value of a boolean setting given its id and the value.
-	 * 
+	 *
 	 * @param id    int containing the setting's identifier (constants listed above)
 	 * @param value boolean value to store
 	 * @throws IllegalArgumentException if identifier is not valid.
 	 */
-	public void setBooleanSetting(int id, boolean value) {
+	public void setBooleanSetting(final int id, final boolean value) {
 		if (id >= 0 && id < booleanSettingsValues.length) {
 			internalSetBooleanSetting(id, value);
 		} else {
@@ -841,13 +859,14 @@ public class Settings extends Observable {
 	 * Establish setting for whether or not pseudo-instructions and formats are
 	 * permitted in user programs. User can change this setting via the IDE. If
 	 * setting changes, new setting will be written to properties file.
-	 * 
+	 *
 	 * @param value True to permit, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.EXTENDED_ASSEMBLER_ENABLED</code>)
 	 */
-	public void setExtendedAssemblerEnabled(boolean value) {
+	@Deprecated
+	public void setExtendedAssemblerEnabled(final boolean value) {
 		internalSetBooleanSetting(EXTENDED_ASSEMBLER_ENABLED, value);
 	}
 
@@ -856,13 +875,14 @@ public class Settings extends Observable {
 	 * as it is opened. This is handy for those using an external text editor such
 	 * as Mipster. If setting changes, new setting will be written to properties
 	 * file.
-	 * 
+	 *
 	 * @param value True to automatically assemble, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.ASSEMBLE_ON_OPEN_ENABLED</code>)
 	 */
-	public void setAssembleOnOpenEnabled(boolean value) {
+	@Deprecated
+	public void setAssembleOnOpenEnabled(final boolean value) {
 		internalSetBooleanSetting(ASSEMBLE_ON_OPEN_ENABLED, value);
 	}
 
@@ -871,39 +891,42 @@ public class Settings extends Observable {
 	 * along with all other files in its directory (true). This permits multi-file
 	 * programs and a primitive "project" capability. If setting changes, new
 	 * setting will be written to properties file.
-	 * 
+	 *
 	 * @param value True to assemble all, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.ASSEMBLE_ALL_ENABLED</code>)
 	 */
-	public void setAssembleAllEnabled(boolean value) {
+	@Deprecated
+	public void setAssembleAllEnabled(final boolean value) {
 		internalSetBooleanSetting(ASSEMBLE_ALL_ENABLED, value);
 	}
 
 	/**
 	 * Establish setting for whether addresses in the Execute pane will be displayed
 	 * in hexadecimal format.
-	 * 
+	 *
 	 * @param value True to display addresses in hexadecimal, false for decimal.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.DISPLAY_ADDRESSES_IN_HEX</code>)
 	 */
-	public void setDisplayAddressesInHex(boolean value) {
+	@Deprecated
+	public void setDisplayAddressesInHex(final boolean value) {
 		internalSetBooleanSetting(DISPLAY_ADDRESSES_IN_HEX, value);
 	}
 
 	/**
 	 * Establish setting for whether values in the Execute pane will be displayed in
 	 * hexadecimal format.
-	 * 
+	 *
 	 * @param value True to display values in hexadecimal, false for decimal.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.DISPLAY_VALUES_IN_HEX</code>)
 	 */
-	public void setDisplayValuesInHex(boolean value) {
+	@Deprecated
+	public void setDisplayValuesInHex(final boolean value) {
 		internalSetBooleanSetting(DISPLAY_VALUES_IN_HEX, value);
 	}
 
@@ -911,13 +934,14 @@ public class Settings extends Observable {
 	 * Establish setting for whether the labels window (i.e. symbol table) will be
 	 * displayed as part of the Text Segment display. If setting changes, new
 	 * setting will be written to properties file.
-	 * 
+	 *
 	 * @param value True to dispay labels window, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.LABEL_WINDOW_VISIBILITY</code>)
 	 */
-	public void setLabelWindowVisibility(boolean value) {
+	@Deprecated
+	public void setLabelWindowVisibility(final boolean value) {
 		internalSetBooleanSetting(LABEL_WINDOW_VISIBILITY, value);
 	}
 
@@ -925,13 +949,14 @@ public class Settings extends Observable {
 	 * Establish setting for whether the currently selected exception handler (a
 	 * MIPS source file) will be automatically included in each assemble operation.
 	 * If setting changes, new setting will be written to properties file.
-	 * 
+	 *
 	 * @param value True to assemble exception handler, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.EXCEPTION_HANDLER_ENABLED</code>)
 	 */
-	public void setExceptionHandlerEnabled(boolean value) {
+	@Deprecated
+	public void setExceptionHandlerEnabled(final boolean value) {
 		internalSetBooleanSetting(EXCEPTION_HANDLER_ENABLED, value);
 	}
 
@@ -941,90 +966,97 @@ public class Settings extends Observable {
 	 * will be executed and then the branch is taken! This simulates pipelining and
 	 * all MIPS processors do it. However it is confusing to assembly language
 	 * students so is disabled by default. SPIM does same thing.
-	 * 
+	 *
 	 * @param value True to enable delayed branching, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.DELAYED_BRANCHING_ENABLED</code>)
 	 */
 
-	public void setDelayedBranchingEnabled(boolean value) {
+	@Deprecated
+	public void setDelayedBranchingEnabled(final boolean value) {
 		internalSetBooleanSetting(DELAYED_BRANCHING_ENABLED, value);
 	}
 
 	/**
 	 * Establish setting for whether line numbers will be displayed by the text
 	 * editor.
-	 * 
+	 *
 	 * @param value True to display line numbers, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.EDITOR_LINE_NUMBERS_DISPLAYED</code>)
 	 */
-	public void setEditorLineNumbersDisplayed(boolean value) {
+	@Deprecated
+	public void setEditorLineNumbersDisplayed(final boolean value) {
 		internalSetBooleanSetting(EDITOR_LINE_NUMBERS_DISPLAYED, value);
 	}
 
 	/**
 	 * Establish setting for whether assembler warnings will be considered errors.
-	 * 
+	 *
 	 * @param value True to consider warnings to be errors, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.WARNINGS_ARE_ERRORS</code>)
 	 */
-	public void setWarningsAreErrors(boolean value) {
+	@Deprecated
+	public void setWarningsAreErrors(final boolean value) {
 		internalSetBooleanSetting(WARNINGS_ARE_ERRORS, value);
 	}
 
 	/**
 	 * Establish setting for whether program arguments can be ented/used.
-	 * 
+	 *
 	 * @param value True if program arguments can be entered/used, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.PROGRAM_ARGUMENTS</code>)
 	 */
-	public void setProgramArguments(boolean value) {
+	@Deprecated
+	public void setProgramArguments(final boolean value) {
 		internalSetBooleanSetting(PROGRAM_ARGUMENTS, value);
 	}
 
 	/**
 	 * Establish setting for whether highlighting is to be applied to Data Segment
 	 * window.
-	 * 
+	 *
 	 * @param value True if highlighting is to be applied, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.DATA_SEGMENT_HIGHLIGHTING</code>)
 	 */
-	public void setDataSegmentHighlighting(boolean value) {
+	@Deprecated
+	public void setDataSegmentHighlighting(final boolean value) {
 		internalSetBooleanSetting(DATA_SEGMENT_HIGHLIGHTING, value);
 	}
 
 	/**
 	 * Establish setting for whether highlighting is to be applied to Registers,
 	 * Coprocessor0 and Coprocessor1 windows.
-	 * 
+	 *
 	 * @param value True if highlighting is to be applied, false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.REGISTERS_HIGHLIGHTING</code>)
 	 */
-	public void setRegistersHighlighting(boolean value) {
+	@Deprecated
+	public void setRegistersHighlighting(final boolean value) {
 		internalSetBooleanSetting(REGISTERS_HIGHLIGHTING, value);
 	}
 
 	/**
 	 * Establish setting for whether assembler will automatically initialize program
 	 * counter to address of statement labeled 'main' if defined.
-	 * 
+	 *
 	 * @param value True if PC set to address of 'main', false otherwise.
 	 * @deprecated Use <code>setBooleanSetting(int id, boolean value)</code> with
 	 *             the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.START_AT_MAIN</code>)
 	 */
-	public void setStartAtMain(boolean value) {
+	@Deprecated
+	public void setStartAtMain(final boolean value) {
 		internalSetBooleanSetting(START_AT_MAIN, value);
 	}
 
@@ -1032,12 +1064,12 @@ public class Settings extends Observable {
 	 * Temporarily establish boolean setting. This setting will NOT be written to
 	 * persisent store! Currently this is used only when running MARS from the
 	 * command line
-	 * 
+	 *
 	 * @param id    setting identifier. These are defined for this class as static
 	 *              final int.
 	 * @param value True to enable the setting, false otherwise.
 	 */
-	public void setBooleanSettingNonPersistent(int id, boolean value) {
+	public void setBooleanSettingNonPersistent(final int id, final boolean value) {
 		if (id >= 0 && id < booleanSettingsValues.length) {
 			booleanSettingsValues[id] = value;
 		} else {
@@ -1050,15 +1082,16 @@ public class Settings extends Observable {
 	 * program execution. This setting will NOT be written to persisent store! This
 	 * method should be called only to temporarily set this setting -- currently
 	 * this is needed only when running MARS from the command line.
-	 * 
+	 *
 	 * @param value True to enabled delayed branching, false otherwise.
 	 * @deprecated Use
 	 *             <code>setBooleanSettingNonPersistent(int id, boolean value)</code>
 	 *             with the appropriate boolean setting ID (e.g.
 	 *             <code>Settings.DELAYED_BRANCHING_ENABLED</code>)
 	 */
-	public void setDelayedBranchingEnabledNonPersistent(boolean value) {
-		// Note: Doing assignment to array results in non-persistent 
+	@Deprecated
+	public void setDelayedBranchingEnabledNonPersistent(final boolean value) {
+		// Note: Doing assignment to array results in non-persistent
 		// setting (lost when MARS terminates).  For persistent, use
 		// the internalSetBooleanSetting() method instead.
 		booleanSettingsValues[DELAYED_BRANCHING_ENABLED] = value;
@@ -1066,39 +1099,39 @@ public class Settings extends Observable {
 
 	/**
 	 * Set name of exception handler file and write it to persistent storage.
-	 * 
+	 *
 	 * @param newFilename name of exception handler file
 	 */
-	public void setExceptionHandler(String newFilename) {
+	public void setExceptionHandler(final String newFilename) {
 		setStringSetting(EXCEPTION_HANDLER, newFilename);
 	}
 
 	/**
 	 * Store the identifier of the memory configuration.
-	 * 
+	 *
 	 * @param config A string that identifies the current built-in memory
 	 *               configuration
 	 */
 
-	public void setMemoryConfiguration(String config) {
+	public void setMemoryConfiguration(final String config) {
 		setStringSetting(MEMORY_CONFIGURATION, config);
 	}
 
 	/**
 	 * Set the caret blinking rate in milliseconds. Rate of 0 means no blinking.
-	 * 
+	 *
 	 * @param rate blink rate in milliseconds
 	 */
-	public void setCaretBlinkRate(int rate) {
+	public void setCaretBlinkRate(final int rate) {
 		setStringSetting(CARET_BLINK_RATE, "" + rate);
 	}
 
 	/**
 	 * Set the tab size in characters.
-	 * 
+	 *
 	 * @param size tab size in characters.
 	 */
-	public void setEditorTabSize(int size) {
+	public void setEditorTabSize(final int size) {
 		setStringSetting(EDITOR_TAB_SIZE, "" + size);
 	}
 
@@ -1107,10 +1140,10 @@ public class Settings extends Observable {
 	 * popup generated (if popup enabled). Should be 1 or 2. If 1, the popup will be
 	 * generated after first letter typed, based on all matches; if 2, the popup
 	 * will be generated after second letter typed.
-	 * 
+	 *
 	 * @param number of letters (should be 1 or 2).
 	 */
-	public void setEditorPopupPrefixLength(int length) {
+	public void setEditorPopupPrefixLength(final int length) {
 		setStringSetting(EDITOR_POPUP_PREFIX_LENGTH, "" + length);
 	}
 
@@ -1118,21 +1151,21 @@ public class Settings extends Observable {
 	 * Set editor font to the specified Font object and write it to persistent
 	 * storage. This method retained for compatibility but replaced by:
 	 * setFontByPosition(Settings.EDITOR_FONT, font)
-	 * 
+	 *
 	 * @param font Font object to be used by text editor.
 	 */
-	public void setEditorFont(Font font) {
+	public void setEditorFont(final Font font) {
 		setFontByPosition(EDITOR_FONT, font);
 	}
 
 	/**
 	 * Store a Font setting
-	 * 
+	 *
 	 * @param fontSettingPosition Constant that identifies the item the font goes
 	 *                            with
 	 * @font The font to set that item to
 	 */
-	public void setFontByPosition(int fontSettingPosition, Font font) {
+	public void setFontByPosition(final int fontSettingPosition, final Font font) {
 		if (fontSettingPosition >= 0 && fontSettingPosition < fontFamilySettingsValues.length) {
 			fontFamilySettingsValues[fontSettingPosition] = font.getFamily();
 			fontStyleSettingsValues[fontSettingPosition] = EditorFont.styleIntToStyleString(font.getStyle());
@@ -1150,11 +1183,11 @@ public class Settings extends Observable {
 	/**
 	 * Store the current order of Text Segment window table columns, so the ordering
 	 * can be preserved and restored.
-	 * 
+	 *
 	 * @param columnOrder An array of int indicating column order.
 	 */
 
-	public void setTextColumnOrder(int[] columnOrder) {
+	public void setTextColumnOrder(final int[] columnOrder) {
 		String stringifiedOrder = new String();
 		for (int i = 0; i < columnOrder.length; i++) {
 			stringifiedOrder += Integer.toString(columnOrder[i]) + " ";
@@ -1165,21 +1198,21 @@ public class Settings extends Observable {
 	/**
 	 * Store the current state of the Labels Window sorter. There are 8 possible
 	 * states as described in LabelsWindow.java
-	 * 
+	 *
 	 * @param state The current labels window sorting state, as a String.
 	 */
 
-	public void setLabelSortState(String state) {
+	public void setLabelSortState(final String state) {
 		setStringSetting(LABEL_SORT_STATE, state);
 	}
 
 	/**
 	 * Set Color object for specified settings key. Has no effect if key is invalid.
-	 * 
+	 *
 	 * @param key   the Setting key
 	 * @param color the Color to save
 	 */
-	public void setColorSettingByKey(String key, Color color) {
+	public void setColorSettingByKey(final String key, final Color color) {
 		for (int i = 0; i < colorSettingsKeys.length; i++) {
 			if (key.equals(colorSettingsKeys[i])) {
 				setColorSettingByPosition(i, color);
@@ -1191,11 +1224,11 @@ public class Settings extends Observable {
 	/**
 	 * Set Color object for specified settings name (a static constant). Has no
 	 * effect if invalid.
-	 * 
+	 *
 	 * @param position the Setting name (see list of static constants)
 	 * @param color    the Color to save
 	 */
-	public void setColorSettingByPosition(int position, Color color) {
+	public void setColorSettingByPosition(final int position, final Color color) {
 		if (position >= 0 && position < colorSettingsKeys.length) { setColorSetting(position, color); }
 	}
 
@@ -1206,7 +1239,7 @@ public class Settings extends Observable {
 	/////////////////////////////////////////////////////////////////////////
 
 	// Initialize settings to default values.
-	// Strategy: First set from properties file.  
+	// Strategy: First set from properties file.
 	//           If that fails, set from array.
 	//           In either case, use these values as defaults in call to Preferences.
 
@@ -1239,7 +1272,7 @@ public class Settings extends Observable {
 	}
 
 	// Used by all the boolean setting "setter" methods.
-	private void internalSetBooleanSetting(int settingIndex, boolean value) {
+	private void internalSetBooleanSetting(final int settingIndex, final boolean value) {
 		if (value != booleanSettingsValues[settingIndex]) {
 			booleanSettingsValues[settingIndex] = value;
 			saveBooleanSetting(settingIndex);
@@ -1249,13 +1282,13 @@ public class Settings extends Observable {
 	}
 
 	// Used by setter method(s) for string-based settings (initially, only exception handler name)
-	private void setStringSetting(int settingIndex, String value) {
+	private void setStringSetting(final int settingIndex, final String value) {
 		stringSettingsValues[settingIndex] = value;
 		saveStringSetting(settingIndex);
 	}
 
 	// Used by setter methods for color-based settings
-	private void setColorSetting(int settingIndex, Color color) {
+	private void setColorSetting(final int settingIndex, final Color color) {
 		colorSettingsValues[settingIndex] = Binary.intToHexString(color.getRed() << 16 | color.getGreen() << 8 | color
 				.getBlue());
 		saveColorSetting(settingIndex);
@@ -1263,8 +1296,7 @@ public class Settings extends Observable {
 
 	// Get Color object for this key value.  Get it from values array provided as argument (could be either
 	// the current or the default settings array).
-	private Color getColorValueByKey(String key, String[] values) {
-		Color color = null;
+	private Color getColorValueByKey(final String key, final String[] values) {
 		for (int i = 0; i < colorSettingsKeys.length; i++) {
 			if (key.equals(colorSettingsKeys[i])) { return getColorValueByPosition(i, values); }
 		}
@@ -1272,13 +1304,13 @@ public class Settings extends Observable {
 	}
 
 	// Get Color object for this key array position.  Get it from values array provided as argument (could be either
-	// the current or the default settings array).	
-	private Color getColorValueByPosition(int position, String[] values) {
+	// the current or the default settings array).
+	private Color getColorValueByPosition(final int position, final String[] values) {
 		Color color = null;
 		if (position >= 0 && position < colorSettingsKeys.length) {
 			try {
 				color = Color.decode(values[position]);
-			} catch (NumberFormatException nfe) {
+			} catch (final NumberFormatException nfe) {
 				color = null;
 			}
 		}
@@ -1288,7 +1320,7 @@ public class Settings extends Observable {
 	// Maybe someday I'll convert the whole shebang to use Maps.  In the meantime, we use
 	// linear search of array.  Not a huge deal as settings are little-used.
 	// Returns index or -1 if not found.
-	private int getIndexOfKey(String key, String[] array) {
+	private int getIndexOfKey(final String key, final String[] array) {
 		int index = -1;
 		for (int i = 0; i < array.length; i++) {
 			if (array[i].equals(key)) {
@@ -1304,43 +1336,47 @@ public class Settings extends Observable {
 	// in case the Preferences fail or have not been recorded yet.
 	//
 	// Any settings successfully read will be stored in both the xSettingsValues and
-	// defaultXSettingsValues arrays (x=boolean,string,color).  The latter will overwrite the 
+	// defaultXSettingsValues arrays (x=boolean,string,color).  The latter will overwrite the
 	// last-resort default values hardcoded into the arrays above.
 	//
 	// NOTE: If there is NO ENTRY for the specified property, Globals.getPropertyEntry() returns
-	// null.  This is no cause for alarm.  It will occur during system development or upon the 
+	// null.  This is no cause for alarm.  It will occur during system development or upon the
 	// first use of a new MARS release in which new settings have been defined.
 	// In that case, this method will NOT make an assignment to the settings array!
 	// So consider it a precondition of this method: the settings arrays must already be
-	// initialized with last-resort default values. 
-	private boolean readSettingsFromPropertiesFile(String filename) {
+	// initialized with last-resort default values.
+	private boolean readSettingsFromPropertiesFile(final String filename) {
 		String settingValue;
 		try {
 			for (int i = 0; i < booleanSettingsKeys.length; i++) {
 				settingValue = Globals.getPropertyEntry(filename, booleanSettingsKeys[i]);
 				if (settingValue != null) {
-					booleanSettingsValues[i] = defaultBooleanSettingsValues[i] = Boolean.valueOf(settingValue)
-							.booleanValue();
+					booleanSettingsValues[i] = defaultBooleanSettingsValues[i] = Boolean.valueOf(settingValue);
 				}
 			}
 			for (int i = 0; i < stringSettingsKeys.length; i++) {
 				settingValue = Globals.getPropertyEntry(filename, stringSettingsKeys[i]);
-				if (settingValue != null) stringSettingsValues[i] = defaultStringSettingsValues[i] = settingValue;
+				if (settingValue != null) { stringSettingsValues[i] = defaultStringSettingsValues[i] = settingValue; }
 			}
 			for (int i = 0; i < fontFamilySettingsValues.length; i++) {
 				settingValue = Globals.getPropertyEntry(filename, fontFamilySettingsKeys[i]);
-				if (settingValue != null)
+				if (settingValue != null) {
 					fontFamilySettingsValues[i] = defaultFontFamilySettingsValues[i] = settingValue;
+				}
 				settingValue = Globals.getPropertyEntry(filename, fontStyleSettingsKeys[i]);
-				if (settingValue != null) fontStyleSettingsValues[i] = defaultFontStyleSettingsValues[i] = settingValue;
+				if (settingValue != null) {
+					fontStyleSettingsValues[i] = defaultFontStyleSettingsValues[i] = settingValue;
+				}
 				settingValue = Globals.getPropertyEntry(filename, fontSizeSettingsKeys[i]);
-				if (settingValue != null) fontSizeSettingsValues[i] = defaultFontSizeSettingsValues[i] = settingValue;
+				if (settingValue != null) {
+					fontSizeSettingsValues[i] = defaultFontSizeSettingsValues[i] = settingValue;
+				}
 			}
 			for (int i = 0; i < colorSettingsKeys.length; i++) {
 				settingValue = Globals.getPropertyEntry(filename, colorSettingsKeys[i]);
-				if (settingValue != null) colorSettingsValues[i] = defaultColorSettingsValues[i] = settingValue;
+				if (settingValue != null) { colorSettingsValues[i] = defaultColorSettingsValues[i] = settingValue; }
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return false;
 		}
 		return true;
@@ -1371,49 +1407,49 @@ public class Settings extends Observable {
 	}
 
 	// Save the key-value pair in the Properties object and assure it is written to persisent storage.
-	private void saveBooleanSetting(int index) {
+	private void saveBooleanSetting(final int index) {
 		try {
 			preferences.putBoolean(booleanSettingsKeys[index], booleanSettingsValues[index]);
 			preferences.flush();
-		} catch (SecurityException se) {
+		} catch (final SecurityException se) {
 			// cannot write to persistent storage for security reasons
-		} catch (BackingStoreException bse) {
+		} catch (final BackingStoreException bse) {
 			// unable to communicate with persistent storage (strange days)
 		}
 	}
 
-	// Save the key-value pair in the Properties object and assure it is written to persisent storage.		
-	private void saveStringSetting(int index) {
+	// Save the key-value pair in the Properties object and assure it is written to persisent storage.
+	private void saveStringSetting(final int index) {
 		try {
 			preferences.put(stringSettingsKeys[index], stringSettingsValues[index]);
 			preferences.flush();
-		} catch (SecurityException se) {
+		} catch (final SecurityException se) {
 			// cannot write to persistent storage for security reasons
-		} catch (BackingStoreException bse) {
+		} catch (final BackingStoreException bse) {
 			// unable to communicate with persistent storage (strange days)
 		}
 	}
 
-	// Save the key-value pair in the Properties object and assure it is written to persisent storage.		
-	private void saveFontSetting(int index, String[] settingsKeys, String[] settingsValues) {
+	// Save the key-value pair in the Properties object and assure it is written to persisent storage.
+	private void saveFontSetting(final int index, final String[] settingsKeys, final String[] settingsValues) {
 		try {
 			preferences.put(settingsKeys[index], settingsValues[index]);
 			preferences.flush();
-		} catch (SecurityException se) {
+		} catch (final SecurityException se) {
 			// cannot write to persistent storage for security reasons
-		} catch (BackingStoreException bse) {
+		} catch (final BackingStoreException bse) {
 			// unable to communicate with persistent storage (strange days)
 		}
 	}
 
-	// Save the key-value pair in the Properties object and assure it is written to persisent storage.		
-	private void saveColorSetting(int index) {
+	// Save the key-value pair in the Properties object and assure it is written to persisent storage.
+	private void saveColorSetting(final int index) {
 		try {
 			preferences.put(colorSettingsKeys[index], colorSettingsValues[index]);
 			preferences.flush();
-		} catch (SecurityException se) {
+		} catch (final SecurityException se) {
 			// cannot write to persistent storage for security reasons
-		} catch (BackingStoreException bse) {
+		} catch (final BackingStoreException bse) {
 			// unable to communicate with persistent storage (strange days)
 		}
 	}
@@ -1424,16 +1460,16 @@ public class Settings extends Observable {
 	 *  If a problem occurs with the parameter string, will fall back to the
 	 *  default defined above.
 	 */
-	private int[] getTextSegmentColumnOrder(String stringOfColumnIndexes) {
-		StringTokenizer st = new StringTokenizer(stringOfColumnIndexes);
-		int[] list = new int[st.countTokens()];
+	private int[] getTextSegmentColumnOrder(final String stringOfColumnIndexes) {
+		final StringTokenizer st = new StringTokenizer(stringOfColumnIndexes);
+		final int[] list = new int[st.countTokens()];
 		int index = 0, value;
 		boolean valuesOK = true;
 		while (st.hasMoreTokens()) {
 			try {
 				value = Integer.parseInt(st.nextToken());
 			} // could be either NumberFormatException or NoSuchElementException
-			catch (Exception e) {
+			catch (final Exception e) {
 				valuesOK = false;
 				break;
 			}

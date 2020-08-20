@@ -1,30 +1,41 @@
 package mars.venus;
 
-import mars.*;
-import mars.util.*;
-import mars.mips.hardware.*;
-import java.util.*;
-import java.io.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.ArrayList;
+
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.KeyStroke;
+
+import mars.ErrorList;
+import mars.ErrorMessage;
+import mars.Globals;
+import mars.MIPSprogram;
+import mars.ProcessingException;
+import mars.mips.hardware.Coprocessor0;
+import mars.mips.hardware.Coprocessor1;
+import mars.mips.hardware.Memory;
+import mars.mips.hardware.RegisterFile;
+import mars.util.FilenameFinder;
+import mars.util.SystemIO;
 
 /*
  * Copyright (c) 2003-2010, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +43,7 @@ import javax.swing.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -41,13 +52,18 @@ import javax.swing.*;
  */
 public class RunAssembleAction extends GuiAction {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1219029937418143070L;
 	private static ArrayList MIPSprogramsToAssemble;
 	private static boolean extendedAssemblerEnabled;
 	private static boolean warningsAreErrors;
 	// Threshold for adding filename to printed message of files being assembled.
 	private static final int LINE_LENGTH_LIMIT = 60;
 
-	public RunAssembleAction(String name, Icon icon, String descrip, Integer mnemonic, KeyStroke accel, VenusUI gui) {
+	public RunAssembleAction(final String name, final Icon icon, final String descrip, final Integer mnemonic,
+			final KeyStroke accel, final VenusUI gui) {
 		super(name, icon, descrip, mnemonic, accel, gui);
 	}
 
@@ -58,11 +74,12 @@ public class RunAssembleAction extends GuiAction {
 
 	static boolean getWarningsAreErrors() { return warningsAreErrors; }
 
-	public void actionPerformed(ActionEvent e) {
-		String name = this.getValue(Action.NAME).toString();
-		Component editPane = mainUI.getMainPane().getEditPane();
-		ExecutePane executePane = mainUI.getMainPane().getExecutePane();
-		RegistersPane registersPane = mainUI.getRegistersPane();
+	@Override
+	public void actionPerformed(final ActionEvent e) {
+		final String name = getValue(Action.NAME).toString();
+		mainUI.getMainPane().getEditPane();
+		final ExecutePane executePane = mainUI.getMainPane().getExecutePane();
+		final RegistersPane registersPane = mainUI.getRegistersPane();
 		extendedAssemblerEnabled = Globals.getSettings().getExtendedAssemblerEnabled();
 		warningsAreErrors = Globals.getSettings().getWarningsAreErrors();
 		if (FileStatus.getFile() != null) {
@@ -70,7 +87,7 @@ public class RunAssembleAction extends GuiAction {
 			try {
 				Globals.program = new MIPSprogram();
 				ArrayList filesToAssemble;
-				if (Globals.getSettings().getAssembleAllEnabled()) {// setting calls for multiple file assembly 
+				if (Globals.getSettings().getAssembleAllEnabled()) {// setting calls for multiple file assembly
 					filesToAssemble = FilenameFinder.getFilenameList(new File(FileStatus.getName()).getParent(),
 							Globals.fileExtensions);
 				} else {
@@ -86,7 +103,7 @@ public class RunAssembleAction extends GuiAction {
 						.getPath(), exceptionHandler);
 				mainUI.messagesPane.postMarsMessage(buildFileNameList(name + ": assembling ", MIPSprogramsToAssemble));
 				// added logic to receive any warnings and output them.... DPS 11/28/06
-				ErrorList warnings = Globals.program.assemble(MIPSprogramsToAssemble, extendedAssemblerEnabled,
+				final ErrorList warnings = Globals.program.assemble(MIPSprogramsToAssemble, extendedAssemblerEnabled,
 						warningsAreErrors);
 				if (warnings.warningsOccurred()) {
 					mainUI.messagesPane.postMarsMessage(warnings.generateWarningReport());
@@ -107,21 +124,21 @@ public class RunAssembleAction extends GuiAction {
 				registersPane.getRegistersWindow().clearWindow();
 				registersPane.getCoprocessor1Window().clearWindow();
 				registersPane.getCoprocessor0Window().clearWindow();
-				mainUI.setReset(true);
-				mainUI.setStarted(false);
+				VenusUI.setReset(true);
+				VenusUI.setStarted(false);
 				mainUI.getMainPane().setSelectedComponent(executePane);
 
 				// Aug. 24, 2005 Ken Vollmar
 				SystemIO.resetFiles();  // Ensure that I/O "file descriptors" are initialized for a new program run
 
-			} catch (ProcessingException pe) {
-				String errorReport = pe.errors().generateErrorAndWarningReport();
+			} catch (final ProcessingException pe) {
+				final String errorReport = pe.errors().generateErrorAndWarningReport();
 				mainUI.messagesPane.postMarsMessage(errorReport);
 				mainUI.messagesPane.postMarsMessage(name + ": operation completed with errors.\n\n");
 				// Select editor line containing first error, and corresponding error message.
-				ArrayList errorMessages = pe.errors().getErrorMessages();
+				final ArrayList errorMessages = pe.errors().getErrorMessages();
 				for (int i = 0; i < errorMessages.size(); i++) {
-					ErrorMessage em = (ErrorMessage) errorMessages.get(i);
+					final ErrorMessage em = (ErrorMessage) errorMessages.get(i);
 					// No line or position may mean File Not Found (e.g. exception file). Don't try to open. DPS 3-Oct-2010
 					if (em.getLine() == 0 && em.getPosition() == 0) { continue; }
 					if (!em.isWarning() || warningsAreErrors) {
@@ -147,18 +164,18 @@ public class RunAssembleAction extends GuiAction {
 
 	// Handy little utility for building comma-separated list of filenames
 	// while not letting line length get out of hand.
-	private String buildFileNameList(String preamble, ArrayList programList) {
+	private String buildFileNameList(final String preamble, final ArrayList programList) {
 		String result = preamble;
 		int lineLength = result.length();
 		for (int i = 0; i < programList.size(); i++) {
-			String filename = ((MIPSprogram) programList.get(i)).getFilename();
-			result += filename + ((i < programList.size() - 1) ? ", " : "");
+			final String filename = ((MIPSprogram) programList.get(i)).getFilename();
+			result += filename + (i < programList.size() - 1 ? ", " : "");
 			lineLength += filename.length();
 			if (lineLength > LINE_LENGTH_LIMIT) {
 				result += "\n";
 				lineLength = 0;
 			}
 		}
-		return result + ((lineLength == 0) ? "" : "\n") + "\n";
+		return result + (lineLength == 0 ? "" : "\n") + "\n";
 	}
 }

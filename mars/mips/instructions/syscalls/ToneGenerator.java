@@ -1,28 +1,36 @@
 
 package mars.mips.instructions.syscalls;
 
-import javax.sound.midi.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiEvent;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Sequence;
+import javax.sound.midi.Sequencer;
+import javax.sound.midi.ShortMessage;
+import javax.sound.midi.Track;
 
 /*
  * Copyright (c) 2003-2007, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,7 +38,7 @@ import java.util.concurrent.Executors;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -96,8 +104,8 @@ class ToneGenerator {
 	 * @param volume     the desired volume of the initial attack of the Tone (MIDI
 	 *                   velocity) represented by a positive byte value (0-127).
 	 */
-	public void generateTone(byte pitch, int duration, byte instrument, byte volume) {
-		Runnable tone = new Tone(pitch, duration, instrument, volume);
+	public void generateTone(final byte pitch, final int duration, final byte instrument, final byte volume) {
+		final Runnable tone = new Tone(pitch, duration, instrument, volume);
 		threadPool.execute(tone);
 	}
 
@@ -116,8 +124,9 @@ class ToneGenerator {
 	 * @param volume     the desired volume of the initial attack of the Tone (MIDI
 	 *                   velocity) represented by a positive byte value (0-127).
 	 */
-	public void generateToneSynchronously(byte pitch, int duration, byte instrument, byte volume) {
-		Runnable tone = new Tone(pitch, duration, instrument, volume);
+	public void generateToneSynchronously(final byte pitch, final int duration, final byte instrument,
+			final byte volume) {
+		final Runnable tone = new Tone(pitch, duration, instrument, volume);
 		tone.run();
 	}
 
@@ -140,10 +149,10 @@ class Tone implements Runnable {
 	 */
 	public final static int DEFAULT_CHANNEL = 0;
 
-	private byte pitch;
-	private int duration;
-	private byte instrument;
-	private byte volume;
+	private final byte pitch;
+	private final int duration;
+	private final byte instrument;
+	private final byte volume;
 
 	/**
 	 * Instantiates a new Tone object, initializing the tone's pitch, duration,
@@ -161,7 +170,7 @@ class Tone implements Runnable {
 	 *                   of the initial attack of the note (MIDI velocity). 127
 	 *                   being loud, and 0 being silent.
 	 */
-	public Tone(byte pitch, int duration, byte instrument, byte volume) {
+	public Tone(final byte pitch, final int duration, final byte instrument, final byte volume) {
 		this.pitch = pitch;
 		this.duration = duration;
 		this.instrument = instrument;
@@ -171,6 +180,7 @@ class Tone implements Runnable {
 	/**
 	 * Plays the tone.
 	 */
+	@Override
 	public void run() {
 		playTone();
 	}
@@ -205,24 +215,24 @@ class Tone implements Runnable {
 				openLock.unlock();
 			}
 
-			Sequence seq = new Sequence(Sequence.PPQ, 1);
+			final Sequence seq = new Sequence(Sequence.PPQ, 1);
 			player.setTempoInMPQ(TEMPO);
-			Track t = seq.createTrack();
+			final Track t = seq.createTrack();
 
 			//select instrument
-			ShortMessage inst = new ShortMessage();
+			final ShortMessage inst = new ShortMessage();
 			inst.setMessage(ShortMessage.PROGRAM_CHANGE, DEFAULT_CHANNEL, instrument, 0);
-			MidiEvent instChange = new MidiEvent(inst, 0);
+			final MidiEvent instChange = new MidiEvent(inst, 0);
 			t.add(instChange);
 
-			ShortMessage on = new ShortMessage();
+			final ShortMessage on = new ShortMessage();
 			on.setMessage(ShortMessage.NOTE_ON, DEFAULT_CHANNEL, pitch, volume);
-			MidiEvent noteOn = new MidiEvent(on, 0);
+			final MidiEvent noteOn = new MidiEvent(on, 0);
 			t.add(noteOn);
 
-			ShortMessage off = new ShortMessage();
+			final ShortMessage off = new ShortMessage();
 			off.setMessage(ShortMessage.NOTE_OFF, DEFAULT_CHANNEL, pitch, volume);
-			MidiEvent noteOff = new MidiEvent(off, duration);
+			final MidiEvent noteOff = new MidiEvent(off, duration);
 			t.add(noteOff);
 
 			player.setSequence(seq);
@@ -233,20 +243,20 @@ class Tone implements Runnable {
 			 * replacement for Thread.sleep.  (Given that the tone
 			 * might not start playing right away, the sleep could end
 			 * before the tone, clipping off the end of the tone.) */
-			EndOfTrackListener eot = new EndOfTrackListener();
+			final EndOfTrackListener eot = new EndOfTrackListener();
 			player.addMetaEventListener(eot);
 
 			player.start();
 
 			try {
 				eot.awaitEndOfTrack();
-			} catch (InterruptedException ex) {} finally {
+			} catch (final InterruptedException ex) {} finally {
 				player.close();
 			}
 
-		} catch (MidiUnavailableException mue) {
+		} catch (final MidiUnavailableException mue) {
 			mue.printStackTrace();
-		} catch (InvalidMidiDataException imde) {
+		} catch (final InvalidMidiDataException imde) {
 			imde.printStackTrace();
 		}
 	}
@@ -256,7 +266,8 @@ class EndOfTrackListener implements javax.sound.midi.MetaEventListener {
 
 	private boolean endedYet = false;
 
-	public synchronized void meta(javax.sound.midi.MetaMessage m) {
+	@Override
+	public synchronized void meta(final javax.sound.midi.MetaMessage m) {
 		if (m.getType() == 47) {
 			endedYet = true;
 			notifyAll();

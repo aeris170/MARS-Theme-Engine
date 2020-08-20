@@ -1,25 +1,26 @@
 package mars.simulator;
 
-import mars.mips.hardware.*;
-import mars.mips.instructions.*;
-import mars.util.*;
+import mars.mips.hardware.Coprocessor0;
+import mars.mips.hardware.RegisterFile;
+import mars.mips.instructions.Instruction;
+import mars.util.Binary;
 
 /*
  * Copyright (c) 2003-2006, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,13 +28,13 @@ import mars.util.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /**
  * Represents an error/interrupt that occurs during execution (simulation).
- * 
+ *
  * @author Pete Sanderson
  * @version August 2005
  **/
@@ -72,12 +73,12 @@ public class Exceptions {
 	 *
 	 * @param cause The cause code (see Exceptions for a list)
 	 */
-	public static void setRegisters(int cause) {
+	public static void setRegisters(final int cause) {
 		// Set CAUSE register bits 2 thru 6 to cause value.  The "& 0xFFFFFC83" will set bits 2-6 and 8-9 to 0 while
 		// keeping all the others.  Left-shift by 2 to put cause value into position then OR it in.  Bits 8-9 used to
 		// identify devices for External Interrupt (8=keyboard,9=display).
-		Coprocessor0.updateRegister(Coprocessor0.CAUSE, (Coprocessor0.getValue(Coprocessor0.CAUSE) & 0xFFFFFC83
-				| (cause << 2)));
+		Coprocessor0.updateRegister(Coprocessor0.CAUSE, Coprocessor0.getValue(Coprocessor0.CAUSE) & 0xFFFFFC83
+				| cause << 2);
 		// When exception occurred, PC had already been incremented so need to subtract 4 here.
 		Coprocessor0.updateRegister(Coprocessor0.EPC, RegisterFile.getProgramCounter()
 				- Instruction.INSTRUCTION_LENGTH);
@@ -95,7 +96,7 @@ public class Exceptions {
 	 *              exception.
 	 * @param addr  The address that caused the exception.
 	 */
-	public static void setRegisters(int cause, int addr) {
+	public static void setRegisters(final int cause, final int addr) {
 		Coprocessor0.updateRegister(Coprocessor0.VADDR, addr);
 		setRegisters(cause);
 	}

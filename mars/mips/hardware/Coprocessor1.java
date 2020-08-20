@@ -1,25 +1,26 @@
 package mars.mips.hardware;
 
-import mars.util.*;
+import java.util.Observer;
+
 import mars.Globals;
-import java.util.*;
+import mars.util.Binary;
 
 /*
  * Copyright (c) 2003-2009, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,13 +28,13 @@ import java.util.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /**
  * Represents Coprocessor 1, the Floating Point Unit (FPU)
- * 
+ *
  * @author Pete Sanderson
  * @version July 2005
  **/
@@ -42,7 +43,7 @@ import java.util.*;
 // The FPU registers will be implemented by Register objects.  Such objects
 // can only hold int values, but we can use Float.floatToIntBits() to translate
 // a 32 bit float value into its equivalent 32-bit int representation, and
-// Float.intBitsToFloat() to bring it back.  More importantly, there are 
+// Float.intBitsToFloat() to bring it back.  More importantly, there are
 // similar methods Double.doubleToLongBits() and Double.LongBitsToDouble()
 // which can be used to extend a double value over 2 registers.  The resulting
 // long is split into 2 int values (high order 32 bits, low order 32 bits) for
@@ -80,47 +81,47 @@ public class Coprocessor1 {
 
 	/**
 	 * Sets the value of the FPU register given to the value given.
-	 * 
+	 *
 	 * @param reg Register to set the value of.
 	 * @param val The desired float value for the register.
 	 **/
 
-	public static void setRegisterToFloat(String reg, float val) {
+	public static void setRegisterToFloat(final String reg, final float val) {
 		setRegisterToFloat(getRegisterNumber(reg), val);
 	}
 
 	/**
 	 * Sets the value of the FPU register given to the value given.
-	 * 
+	 *
 	 * @param reg Register to set the value of.
 	 * @param val The desired float value for the register.
 	 **/
 
-	public static void setRegisterToFloat(int reg, float val) {
+	public static void setRegisterToFloat(final int reg, final float val) {
 		if (reg >= 0 && reg < registers.length) { registers[reg].setValue(Float.floatToRawIntBits(val)); }
 	}
 
 	/**
 	 * Sets the value of the FPU register given to the 32-bit pattern given by the
 	 * int parameter.
-	 * 
+	 *
 	 * @param reg Register to set the value of.
 	 * @param val The desired int bit pattern for the register.
 	 **/
 
-	public static void setRegisterToInt(String reg, int val) {
+	public static void setRegisterToInt(final String reg, final int val) {
 		setRegisterToInt(getRegisterNumber(reg), val);
 	}
 
 	/**
 	 * Sets the value of the FPU register given to the 32-bit pattern given by the
 	 * int parameter.
-	 * 
+	 *
 	 * @param reg Register to set the value of.
 	 * @param val The desired int bit pattern for the register.
 	 **/
 
-	public static void setRegisterToInt(int reg, int val) {
+	public static void setRegisterToInt(final int reg, final int val) {
 		if (reg >= 0 && reg < registers.length) { registers[reg].setValue(val); }
 	}
 
@@ -129,16 +130,16 @@ public class Coprocessor1 {
 	 * register must be even-numbered, and the low order 32 bits are placed in it.
 	 * The high order 32 bits are placed in the (odd numbered) register that follows
 	 * it.
-	 * 
+	 *
 	 * @param reg Register to set the value of.
 	 * @param val The desired double value for the register.
 	 * @throws InvalidRegisterAccessException if register ID is invalid or
 	 *                                        odd-numbered.
 	 **/
 
-	public static void setRegisterPairToDouble(int reg, double val) throws InvalidRegisterAccessException {
+	public static void setRegisterPairToDouble(final int reg, final double val) throws InvalidRegisterAccessException {
 		if (reg % 2 != 0) { throw new InvalidRegisterAccessException(); }
-		long bits = Double.doubleToRawLongBits(val);
+		final long bits = Double.doubleToRawLongBits(val);
 		registers[reg + 1].setValue(Binary.highOrderLongToInt(bits));  // high order 32 bits
 		registers[reg].setValue(Binary.lowOrderLongToInt(bits)); // low order 32 bits
 	}
@@ -148,13 +149,14 @@ public class Coprocessor1 {
 	 * register must be even-numbered, and the low order 32 bits are placed in it.
 	 * The high order 32 bits are placed in the (odd numbered) register that follows
 	 * it.
-	 * 
+	 *
 	 * @param reg Register to set the value of.
 	 * @param val The desired double value for the register.
 	 * @throws InvalidRegisterAccessException if register ID is invalid or
 	 *                                        odd-numbered.
 	 **/
-	public static void setRegisterPairToDouble(String reg, double val) throws InvalidRegisterAccessException {
+	public static void setRegisterPairToDouble(final String reg, final double val)
+			throws InvalidRegisterAccessException {
 		setRegisterPairToDouble(getRegisterNumber(reg), val);
 	}
 
@@ -163,7 +165,7 @@ public class Coprocessor1 {
 	 * bit pattern given. The register must be even-numbered, and the low order 32
 	 * bits from the long are placed in it. The high order 32 bits from the long are
 	 * placed in the (odd numbered) register that follows it.
-	 * 
+	 *
 	 * @param reg Register to set the value of. Must be even register of even/odd
 	 *            pair.
 	 * @param val The desired double value for the register.
@@ -171,7 +173,7 @@ public class Coprocessor1 {
 	 *                                        odd-numbered.
 	 **/
 
-	public static void setRegisterPairToLong(int reg, long val) throws InvalidRegisterAccessException {
+	public static void setRegisterPairToLong(final int reg, final long val) throws InvalidRegisterAccessException {
 		if (reg % 2 != 0) { throw new InvalidRegisterAccessException(); }
 		registers[reg + 1].setValue(Binary.highOrderLongToInt(val));  // high order 32 bits
 		registers[reg].setValue(Binary.lowOrderLongToInt(val)); // low order 32 bits
@@ -182,7 +184,7 @@ public class Coprocessor1 {
 	 * bit pattern given. The register must be even-numbered, and the low order 32
 	 * bits from the long are placed in it. The high order 32 bits from the long are
 	 * placed in the (odd numbered) register that follows it.
-	 * 
+	 *
 	 * @param reg Register to set the value of. Must be even register of even/odd
 	 *            pair.
 	 * @param val The desired long value containing the 64 bits for the register
@@ -190,18 +192,18 @@ public class Coprocessor1 {
 	 * @throws InvalidRegisterAccessException if register ID is invalid or
 	 *                                        odd-numbered.
 	 **/
-	public static void setRegisterPairToLong(String reg, long val) throws InvalidRegisterAccessException {
+	public static void setRegisterPairToLong(final String reg, final long val) throws InvalidRegisterAccessException {
 		setRegisterPairToLong(getRegisterNumber(reg), val);
 	}
 
 	/**
 	 * Gets the float value stored in the given FPU register.
-	 * 
+	 *
 	 * @param reg Register to get the value of.
 	 * @return The float value stored by that register.
 	 **/
 
-	public static float getFloatFromRegister(int reg) {
+	public static float getFloatFromRegister(final int reg) {
 		float result = 0F;
 		if (reg >= 0 && reg < registers.length) { result = Float.intBitsToFloat(registers[reg].getValue()); }
 		return result;
@@ -209,23 +211,23 @@ public class Coprocessor1 {
 
 	/**
 	 * Gets the float value stored in the given FPU register.
-	 * 
+	 *
 	 * @param reg Register to get the value of.
 	 * @return The float value stored by that register.
 	 **/
 
-	public static float getFloatFromRegister(String reg) {
+	public static float getFloatFromRegister(final String reg) {
 		return getFloatFromRegister(getRegisterNumber(reg));
 	}
 
 	/**
 	 * Gets the 32-bit int bit pattern stored in the given FPU register.
-	 * 
+	 *
 	 * @param reg Register to get the value of.
 	 * @return The int bit pattern stored by that register.
 	 **/
 
-	public static int getIntFromRegister(int reg) {
+	public static int getIntFromRegister(final int reg) {
 		int result = 0;
 		if (reg >= 0 && reg < registers.length) { result = registers[reg].getValue(); }
 		return result;
@@ -233,58 +235,56 @@ public class Coprocessor1 {
 
 	/**
 	 * Gets the 32-bit int bit pattern stored in the given FPU register.
-	 * 
+	 *
 	 * @param reg Register to get the value of.
 	 * @return The int bit pattern stored by that register.
 	 **/
 
-	public static int getIntFromRegister(String reg) {
+	public static int getIntFromRegister(final String reg) {
 		return getIntFromRegister(getRegisterNumber(reg));
 	}
 
 	/**
 	 * Gets the double value stored in the given FPU register. The register must be
 	 * even-numbered.
-	 * 
+	 *
 	 * @param reg Register to get the value of. Must be even number of even/odd
 	 *            pair.
 	 * @throws InvalidRegisterAccessException if register ID is invalid or
 	 *                                        odd-numbered.
 	 **/
 
-	public static double getDoubleFromRegisterPair(int reg) throws InvalidRegisterAccessException {
-		double result = 0.0;
+	public static double getDoubleFromRegisterPair(final int reg) throws InvalidRegisterAccessException {
 		if (reg % 2 != 0) { throw new InvalidRegisterAccessException(); }
-		long bits = Binary.twoIntsToLong(registers[reg + 1].getValue(), registers[reg].getValue());
+		final long bits = Binary.twoIntsToLong(registers[reg + 1].getValue(), registers[reg].getValue());
 		return Double.longBitsToDouble(bits);
 	}
 
 	/**
 	 * Gets the double value stored in the given FPU register. The register must be
 	 * even-numbered.
-	 * 
+	 *
 	 * @param reg Register to get the value of. Must be even number of even/odd
 	 *            pair.
 	 * @throws InvalidRegisterAccessException if register ID is invalid or
 	 *                                        odd-numbered.
 	 **/
 
-	public static double getDoubleFromRegisterPair(String reg) throws InvalidRegisterAccessException {
+	public static double getDoubleFromRegisterPair(final String reg) throws InvalidRegisterAccessException {
 		return getDoubleFromRegisterPair(getRegisterNumber(reg));
 	}
 
 	/**
 	 * Gets a long representing the double value stored in the given double
 	 * precision FPU register. The register must be even-numbered.
-	 * 
+	 *
 	 * @param reg Register to get the value of. Must be even number of even/odd
 	 *            pair.
 	 * @throws InvalidRegisterAccessException if register ID is invalid or
 	 *                                        odd-numbered.
 	 **/
 
-	public static long getLongFromRegisterPair(int reg) throws InvalidRegisterAccessException {
-		double result = 0.0;
+	public static long getLongFromRegisterPair(final int reg) throws InvalidRegisterAccessException {
 		if (reg % 2 != 0) { throw new InvalidRegisterAccessException(); }
 		return Binary.twoIntsToLong(registers[reg + 1].getValue(), registers[reg].getValue());
 	}
@@ -292,14 +292,14 @@ public class Coprocessor1 {
 	/**
 	 * Gets the double value stored in the given FPU register. The register must be
 	 * even-numbered.
-	 * 
+	 *
 	 * @param reg Register to get the value of. Must be even number of even/odd
 	 *            pair.
 	 * @throws InvalidRegisterAccessException if register ID is invalid or
 	 *                                        odd-numbered.
 	 **/
 
-	public static long getLongFromRegisterPair(String reg) throws InvalidRegisterAccessException {
+	public static long getLongFromRegisterPair(final String reg) throws InvalidRegisterAccessException {
 		return getLongFromRegisterPair(getRegisterNumber(reg));
 	}
 
@@ -307,16 +307,16 @@ public class Coprocessor1 {
 	 * This method updates the FPU register value who's number is num. Note the
 	 * registers themselves hold an int value. There are helper methods available to
 	 * which you can give a float or double to store.
-	 * 
+	 *
 	 * @param num FPU register to set the value of.
 	 * @param val The desired int value for the register.
 	 **/
 
-	public static int updateRegister(int num, int val) {
+	public static int updateRegister(final int num, final int val) {
 		int old = 0;
 		for (int i = 0; i < registers.length; i++) {
 			if (registers[i].getNumber() == num) {
-				old = (Globals.getSettings().getBackSteppingEnabled()) ? Globals.program.getBackStepper()
+				old = Globals.getSettings().getBackSteppingEnabled() ? Globals.program.getBackStepper()
 						.addCoprocessor1Restore(num, registers[i].setValue(val)) : registers[i].setValue(val);
 				break;
 			}
@@ -328,23 +328,23 @@ public class Coprocessor1 {
 	 * Returns the value of the FPU register who's number is num. Returns the raw
 	 * int value actually stored there. If you need a float, use
 	 * Float.intBitsToFloat() to get the equivent float.
-	 * 
+	 *
 	 * @param num The FPU register number.
 	 * @return The int value of the given register.
 	 **/
 
-	public static int getValue(int num) {
+	public static int getValue(final int num) {
 		return registers[num].getValue();
 	}
 
 	/**
 	 * For getting the number representation of the FPU register.
-	 * 
+	 *
 	 * @param n The string formatted register name to look for.
 	 * @return The number of the register represented by the string.
 	 **/
 
-	public static int getRegisterNumber(String n) {
+	public static int getRegisterNumber(final String n) {
 		int j = -1;
 		for (int i = 0; i < registers.length; i++) {
 			if (registers[i].getName().equals(n)) {
@@ -357,7 +357,7 @@ public class Coprocessor1 {
 
 	/**
 	 * For returning the set of registers.
-	 * 
+	 *
 	 * @return The set of registers.
 	 **/
 
@@ -365,18 +365,18 @@ public class Coprocessor1 {
 
 	/**
 	 * Get register object corresponding to given name. If no match, return null.
-	 * 
+	 *
 	 * @param rName The FPU register name, must be "$f0" through "$f31".
 	 * @return The register object,or null if not found.
 	 **/
 
-	public static Register getRegister(String rName) {
+	public static Register getRegister(final String rName) {
 		Register reg = null;
 		if (rName.charAt(0) == '$' && rName.length() > 1 && rName.charAt(1) == 'f') {
 			try {
 				// check for register number 0-31.
 				reg = registers[Binary.stringToInt(rName.substring(2))];    // KENV 1/6/05
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				// handles both NumberFormat and ArrayIndexOutOfBounds
 				reg = null;
 			}
@@ -389,7 +389,9 @@ public class Coprocessor1 {
 	 **/
 
 	public static void resetRegisters() {
-		for (int i = 0; i < registers.length; i++) registers[i].resetValue();
+		for (int i = 0; i < registers.length; i++) {
+			registers[i].resetValue();
+		}
 		clearConditionFlags();
 	}
 
@@ -397,7 +399,7 @@ public class Coprocessor1 {
 	 * Each individual register is a separate object and Observable. This handy
 	 * method will add the given Observer to each one.
 	 */
-	public static void addRegistersObserver(Observer observer) {
+	public static void addRegistersObserver(final Observer observer) {
 		for (int i = 0; i < registers.length; i++) {
 			registers[i].addObserver(observer);
 		}
@@ -407,7 +409,7 @@ public class Coprocessor1 {
 	 * Each individual register is a separate object and Observable. This handy
 	 * method will delete the given Observer from each one.
 	 */
-	public static void deleteRegistersObserver(Observer observer) {
+	public static void deleteRegistersObserver(final Observer observer) {
 		for (int i = 0; i < registers.length; i++) {
 			registers[i].deleteObserver(observer);
 		}
@@ -419,15 +421,17 @@ public class Coprocessor1 {
 	 * @param flag condition flag number (0-7)
 	 * @return previous flag setting (0 or 1)
 	 */
-	public static int setConditionFlag(int flag) {
+	public static int setConditionFlag(final int flag) {
 		int old = 0;
 		if (flag >= 0 && flag < numConditionFlags) {
 			old = getConditionFlag(flag);
 			condition.setValue(Binary.setBit(condition.getValue(), flag));
-			if (Globals.getSettings().getBackSteppingEnabled()) if (old == 0) {
-				Globals.program.getBackStepper().addConditionFlagClear(flag);
-			} else {
-				Globals.program.getBackStepper().addConditionFlagSet(flag);
+			if (Globals.getSettings().getBackSteppingEnabled()) {
+				if (old == 0) {
+					Globals.program.getBackStepper().addConditionFlagClear(flag);
+				} else {
+					Globals.program.getBackStepper().addConditionFlagSet(flag);
+				}
 			}
 		}
 		return old;
@@ -439,15 +443,17 @@ public class Coprocessor1 {
 	 * @param flag condition flag number (0-7)
 	 * @return previous flag setting (0 or 1)
 	 */
-	public static int clearConditionFlag(int flag) {
+	public static int clearConditionFlag(final int flag) {
 		int old = 0;
 		if (flag >= 0 && flag < numConditionFlags) {
 			old = getConditionFlag(flag);
 			condition.setValue(Binary.clearBit(condition.getValue(), flag));
-			if (Globals.getSettings().getBackSteppingEnabled()) if (old == 0) {
-				Globals.program.getBackStepper().addConditionFlagClear(flag);
-			} else {
-				Globals.program.getBackStepper().addConditionFlagSet(flag);
+			if (Globals.getSettings().getBackSteppingEnabled()) {
+				if (old == 0) {
+					Globals.program.getBackStepper().addConditionFlagClear(flag);
+				} else {
+					Globals.program.getBackStepper().addConditionFlagSet(flag);
+				}
 			}
 		}
 		return old;
@@ -460,7 +466,7 @@ public class Coprocessor1 {
 	 * @return 0 if condition is false, 1 if condition is true
 	 */
 	public static int getConditionFlag(int flag) {
-		if (flag < 0 || flag >= numConditionFlags) flag = 0;
+		if (flag < 0 || flag >= numConditionFlags) { flag = 0; }
 		return Binary.bitValue(condition.getValue(), flag);
 	}
 

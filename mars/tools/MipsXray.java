@@ -2,9 +2,7 @@ package mars.tools;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -15,14 +13,11 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.MouseInfo;
-import java.awt.Point;
-import java.awt.PointerInfo;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.font.FontRenderContext;
@@ -45,11 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.UIManager;
-// import java.util.Timer;
-import javax.swing.event.InternalFrameEvent;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -64,7 +55,6 @@ import mars.mips.hardware.AddressErrorException;
 import mars.mips.hardware.Memory;
 import mars.mips.hardware.MemoryAccessNotice;
 import mars.mips.instructions.BasicInstruction;
-import mars.mips.instructions.BasicInstructionFormat;
 import mars.venus.RunAssembleAction;
 import mars.venus.RunBackstepAction;
 import mars.venus.RunStepAction;
@@ -79,7 +69,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 	protected Graphics g;
 	protected int lastAddress = -1; //address of instruction in memory
 	protected JLabel label;
-	private Container painel = this.getContentPane();
+	private final Container painel = getContentPane();
 	private DatapathAnimation datapathAnimation;   //class panel that runs datapath animation.
 
 	private GraphicsConfiguration gc;
@@ -94,7 +84,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 	private JToolBar toolbar;
 	private Timer time;
 
-	public MipsXray(String title, String heading) {
+	public MipsXray(final String title, final String heading) {
 		super(title, heading);
 	}
 
@@ -107,14 +97,16 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 
 	/**
 	 * Required method to return Tool name.
-	 * 
+	 *
 	 * @return Tool name. MARS will display this in menu item.
 	 */
+	@Override
 	public String getName() { return "MIPS X-Ray"; }
 
 	/**
 	 * Overrides default method, to provide a Help button for this tool/app.
 	 */
+	@Override
 	protected JComponent getHelpComponent() {
 		final String helpContent = "This plugin is used to visualizate the behavior of mips processor using the default datapath. \n"
 				+ "It reads the source code instruction and generates an animation representing the inputs and \n"
@@ -128,13 +120,8 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 				+ "Version 2.0\n"
 				+ "Developed by Márcio Roberto, Guilherme Sales, Fabrício Vivas, Flávio Cardeal and Fábio Lúcio\n"
 				+ "Contact Marcio Roberto at marcio.rdaraujo@gmail.com with questions or comments.\n";
-		JButton help = new JButton("Help");
-		help.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(theWindow, helpContent);
-			}
-		});
+		final JButton help = new JButton("Help");
+		help.addActionListener(e -> JOptionPane.showMessageDialog(theWindow, helpContent));
 		return help;
 	}
 
@@ -144,94 +131,97 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 	 * title is in the NORTH area, and the controls are in the SOUTH area.
 	 */
 	protected JComponent buildAnimationSequence() {
-		JPanel image = new JPanel(new GridBagLayout());
+		final JPanel image = new JPanel(new GridBagLayout());
 		return image;
 	}
 
 	// Insert image in the panel and configure the parameters to run animation.
+	@Override
 	protected JComponent buildMainDisplayArea() {
 		mainUI = Globals.getGui();
-		this.createActionObjects();
-		toolbar = this.setUpToolBar();
+		createActionObjects();
+		toolbar = setUpToolBar();
 
 		//   	   JPanel jp = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
 		try {
-			BufferedImage im = ImageIO.read(getClass().getResource(Globals.imagesPath + "datapath.png"));
+			final BufferedImage im = ImageIO.read(getClass().getResource(Globals.imagesPath + "datapath.png"));
 
-			int transparency = im.getColorModel().getTransparency();
+			final int transparency = im.getColorModel().getTransparency();
 			datapath = gc.createCompatibleImage(im.getWidth(), im.getHeight(), transparency);
 
-			Graphics2D g2d = datapath.createGraphics();  // graphics context
+			final Graphics2D g2d = datapath.createGraphics();  // graphics context
 			g2d.drawImage(im, 0, 0, null);
 			g2d.dispose();
 
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			System.out.println("Load Image error for " + getClass().getResource(Globals.imagesPath + "datapath.png")
 					+ ":\n" + e);
 			e.printStackTrace();
 		}
 		System.setProperty("sun.java2d.translaccel", "true");
 		ImageIcon icon = new ImageIcon(getClass().getResource(Globals.imagesPath + "datapath.png"));
-		Image im = icon.getImage();
+		final Image im = icon.getImage();
 		icon = new ImageIcon(im);
 
-		JLabel label = new JLabel(icon);
+		final JLabel label = new JLabel(icon);
 		painel.add(label, BorderLayout.WEST);
 		painel.add(toolbar, BorderLayout.NORTH);
-		this.setResizable(false);
+		setResizable(false);
 		return (JComponent) painel;
 	}
 
-	protected JComponent buildMainDisplayArea(String figure) {
+	protected JComponent buildMainDisplayArea(final String figure) {
 		mainUI = Globals.getGui();
-		this.createActionObjects();
-		toolbar = this.setUpToolBar();
+		createActionObjects();
+		toolbar = setUpToolBar();
 
 		//      	   JPanel jp = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
 		try {
-			BufferedImage im = ImageIO.read(getClass().getResource(Globals.imagesPath + figure));
+			final BufferedImage im = ImageIO.read(getClass().getResource(Globals.imagesPath + figure));
 
-			int transparency = im.getColorModel().getTransparency();
+			final int transparency = im.getColorModel().getTransparency();
 			datapath = gc.createCompatibleImage(im.getWidth(), im.getHeight(), transparency);
 
-			Graphics2D g2d = datapath.createGraphics();  // graphics context
+			final Graphics2D g2d = datapath.createGraphics();  // graphics context
 			g2d.drawImage(im, 0, 0, null);
 			g2d.dispose();
 
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			System.out.println("Load Image error for " + getClass().getResource(Globals.imagesPath + figure) + ":\n"
 					+ e);
 			e.printStackTrace();
 		}
 		System.setProperty("sun.java2d.translaccel", "true");
 		ImageIcon icon = new ImageIcon(getClass().getResource(Globals.imagesPath + figure));
-		Image im = icon.getImage();
+		final Image im = icon.getImage();
 		icon = new ImageIcon(im);
 
-		JLabel label = new JLabel(icon);
+		final JLabel label = new JLabel(icon);
 		painel.add(label, BorderLayout.WEST);
 		painel.add(toolbar, BorderLayout.NORTH);
-		this.setResizable(false);
+		setResizable(false);
 		return (JComponent) painel;
 	}
 
+	@Override
 	protected void addAsObserver() {
 		addAsObserver(Memory.textBaseAddress, Memory.textLimitAddress);
 	}
 
 	//Function that gets the current instruction in memory and start animation with the selected instruction.
-	protected void processMIPSUpdate(Observable resource, AccessNotice notice) {
+	@Override
+	protected void processMIPSUpdate(final Observable resource, final AccessNotice notice) {
 
-		if (!notice.accessIsFromMIPS()) return;
-		if (notice.getAccessType() != AccessNotice.READ) return;
-		MemoryAccessNotice man = (MemoryAccessNotice) notice;
-		int currentAdress = man.getAddress();
+		if (!notice.accessIsFromMIPS()) { return; }
+		if (notice.getAccessType() != AccessNotice.READ) { return; }
+		final MemoryAccessNotice man = (MemoryAccessNotice) notice;
+		final int currentAdress = man.getAddress();
 
-		if (currentAdress == lastAddress) return;
+		if (currentAdress == lastAddress) { return; }
 		lastAddress = currentAdress;
 		ProgramStatement stmt;
 
@@ -242,29 +232,30 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 
 			instr = (BasicInstruction) stmt.getInstruction();
 			instructionBinary = stmt.getMachineStatement();
-			BasicInstructionFormat format = instr.getInstructionFormat();
+			instr.getInstructionFormat();
 
 			painel.removeAll();
 			datapathAnimation = new DatapathAnimation(instructionBinary);
-			this.createActionObjects();
-			toolbar = this.setUpToolBar();
+			createActionObjects();
+			toolbar = setUpToolBar();
 			painel.add(toolbar, BorderLayout.NORTH);
 			painel.add(datapathAnimation, BorderLayout.WEST);
 			datapathAnimation.startAnimation(instructionBinary);
 
-		} catch (AddressErrorException e) {
+		} catch (final AddressErrorException e) {
 			e.printStackTrace();
 		}
 
 	}
 
+	@Override
 	public void updateDisplay() {
 		this.repaint();
 	}
 
 	//set the tool bar that controls the step in a time instruction running.
 	private JToolBar setUpToolBar() {
-		JToolBar toolBar = new JToolBar();
+		final JToolBar toolBar = new JToolBar();
 		Assemble = new JButton(runAssembleAction);
 		Assemble.setText("");
 		runBackStep = new JButton(runBackstepAction);
@@ -280,8 +271,8 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 
 	//set action in the menu bar.
 	private void createActionObjects() {
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		Class cs = this.getClass();
+		final Toolkit tk = Toolkit.getDefaultToolkit();
+		final Class cs = this.getClass();
 		try {
 			runAssembleAction = new RunAssembleAction("Assemble", new ImageIcon(tk.getImage(cs.getResource(
 					Globals.imagesPath + "Assemble22.png"))), "Assemble the current file and clear breakpoints",
@@ -293,7 +284,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 			runBackstepAction = new RunBackstepAction("Backstep", new ImageIcon(tk.getImage(cs.getResource(
 					Globals.imagesPath + "StepBack22.png"))), "Undo the last step", new Integer(KeyEvent.VK_B),
 					KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), mainUI);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			System.out.println(
 					"Internal Error: images folder not found, or other null pointer exception while creating Action objects");
 			e.printStackTrace();
@@ -318,105 +309,114 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 		private Color color;
 		private boolean first_interaction;
 		private boolean active;
-		private boolean isText;
-		private ArrayList<Integer> targetVertex;
+		private final boolean isText;
+		private final ArrayList<Integer> targetVertex;
 
-		public Vertex(int index, int init, int end, String name, int oppositeAxis, boolean isMovingXaxis,
-				String listOfColors, String listTargetVertex, boolean isText) {
-			this.numIndex = index;
+		public Vertex(final int index, final int init, final int end, final String name, final int oppositeAxis,
+				final boolean isMovingXaxis, final String listOfColors, final String listTargetVertex,
+				final boolean isText) {
+			numIndex = index;
 			this.init = init;
-			this.current = this.init;
+			current = this.init;
 			this.end = end;
 			this.name = name;
 			this.oppositeAxis = oppositeAxis;
 			this.isMovingXaxis = isMovingXaxis;
-			this.first_interaction = true;
-			this.active = false;
+			first_interaction = true;
+			active = false;
 			this.isText = isText;
-			this.color = new Color(0, 153, 0);
+			color = new Color(0, 153, 0);
 			if (isMovingXaxis == true) {
-				if (init < end) direction = movingLeft;
-				else direction = movingRight;
+				if (init < end) {
+					direction = movingLeft;
+				} else {
+					direction = movingRight;
+				}
 
 			} else {
-				if (init < end) direction = movingUpside;
-				else direction = movingDownside;
+				if (init < end) {
+					direction = movingUpside;
+				} else {
+					direction = movingDownside;
+				}
 			}
-			String[] list = listTargetVertex.split("#");
-			targetVertex = new ArrayList<Integer>();
+			final String[] list = listTargetVertex.split("#");
+			targetVertex = new ArrayList<>();
 			for (int i = 0; i < list.length; i++) {
 				targetVertex.add(Integer.parseInt(list[i]));
 				//	System.out.println("Adding " + i + " " +  Integer.parseInt(list[i])+ " in target");
 			}
-			String[] listColor = listOfColors.split("#");
-			this.color = new Color(Integer.parseInt(listColor[0]), Integer.parseInt(listColor[1]), Integer.parseInt(
+			final String[] listColor = listOfColors.split("#");
+			color = new Color(Integer.parseInt(listColor[0]), Integer.parseInt(listColor[1]), Integer.parseInt(
 					listColor[2]));
 		}
 
 		public int getDirection() { return direction; }
 
-		public boolean isText() { return this.isText; }
+		public boolean isText() { return isText; }
 
 		public ArrayList<Integer> getTargetVertex() { return targetVertex; }
 
 		public int getNumIndex() { return numIndex; }
 
-		public void setNumIndex(int numIndex) { this.numIndex = numIndex; }
+		public void setNumIndex(final int numIndex) { this.numIndex = numIndex; }
 
 		public int getInit() { return init; }
 
-		public void setInit(int init) { this.init = init; }
+		public void setInit(final int init) { this.init = init; }
 
 		public int getEnd() { return end; }
 
-		public void setEnd(int end) { this.end = end; }
+		public void setEnd(final int end) { this.end = end; }
 
 		public int getCurrent() { return current; }
 
-		public void setCurrent(int current) { this.current = current; }
+		public void setCurrent(final int current) { this.current = current; }
 
 		public String getName() { return name; }
 
-		public void setName(String name) { this.name = name; }
+		public void setName(final String name) { this.name = name; }
 
 		public int getOppositeAxis() { return oppositeAxis; }
 
-		public void setOppositeAxis(int oppositeAxis) { this.oppositeAxis = oppositeAxis; }
+		public void setOppositeAxis(final int oppositeAxis) { this.oppositeAxis = oppositeAxis; }
 
 		public boolean isMovingXaxis() { return isMovingXaxis; }
 
-		public void setMovingXaxis(boolean isMovingXaxis) { this.isMovingXaxis = isMovingXaxis; }
+		public void setMovingXaxis(final boolean isMovingXaxis) { this.isMovingXaxis = isMovingXaxis; }
 
 		public Color getColor() { return color; }
 
-		public void setColor(Color color) { this.color = color; }
+		public void setColor(final Color color) { this.color = color; }
 
 		public boolean isFirst_interaction() { return first_interaction; }
 
-		public void setFirst_interaction(boolean first_interaction) { this.first_interaction = first_interaction; }
+		public void setFirst_interaction(final boolean first_interaction) {
+			this.first_interaction = first_interaction;
+		}
 
 		public boolean isActive() { return active; }
 
-		public void setActive(boolean active) { this.active = active; }
+		public void setActive(final boolean active) { this.active = active; }
 	}
 
-	//Internal class that set the parameters value, control the basic behavior of the animation , and execute the animation of the 
+	//Internal class that set the parameters value, control the basic behavior of the animation , and execute the animation of the
 	//selected instruction in memory.
 	class DatapathAnimation extends JPanel implements ActionListener, MouseListener {
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = -2681757800180958534L;
 
 		//config variables
-		private int PERIOD = 5;    // velocity of frames in ms
+		private final int PERIOD = 5;    // velocity of frames in ms
 		private static final int PWIDTH = 1000;     // size of this panel
 		private static final int PHEIGHT = 574;
-		private GraphicsConfiguration gc;
-		private GraphicsDevice gd;   	// for reporting accl. memory usage
-		private int accelMemory;
-		private DecimalFormat df;
+		private final GraphicsConfiguration gc;
+		private final GraphicsDevice gd;   	// for reporting accl. memory usage
+		private final int accelMemory;
+		private final DecimalFormat df;
 
 		private int counter;			//verify then remove.
 		private boolean justStarted; 	//flag to start movement
@@ -427,45 +427,45 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 
 		//	 private Vertex[][] inputGraph;
 		private Vector<Vector<Vertex>> outputGraph;
-		private ArrayList<Vertex> vertexList;
+		private final ArrayList<Vertex> vertexList;
 		private ArrayList<Vertex> vertexTraversed;
 		//Screen Label variables
 
-		private HashMap<String, String> opcodeEquivalenceTable;
-		private HashMap<String, String> functionEquivalenceTable;
-		private HashMap<String, String> registerEquivalenceTable;
+		private final HashMap<String, String> opcodeEquivalenceTable;
+		private final HashMap<String, String> functionEquivalenceTable;
+		private final HashMap<String, String> registerEquivalenceTable;
 
 		private String instructionCode;
 
-		private int countRegLabel;
-		private int countALULabel;
-		private int countPCLabel;
+		private final int countRegLabel;
+		private final int countALULabel;
+		private final int countPCLabel;
 
 		//Colors variables
-		private Color green1 = new Color(0, 153, 0);
-		private Color green2 = new Color(0, 77, 0);
-		private Color yellow2 = new Color(185, 182, 42);
-		private Color orange1 = new Color(255, 102, 0);
-		private Color orange = new Color(119, 34, 34);
-		private Color blue2 = new Color(0, 153, 255);
+		private final Color green1 = new Color(0, 153, 0);
+		private final Color green2 = new Color(0, 77, 0);
+		private final Color yellow2 = new Color(185, 182, 42);
+		private final Color orange1 = new Color(255, 102, 0);
+		private final Color orange = new Color(119, 34, 34);
+		private final Color blue2 = new Color(0, 153, 255);
 
-		private int register = 1;
-		private int control = 2;
-		private int aluControl = 3;
-		private int alu = 4;
+		private final int register = 1;
+		private final int control = 2;
+		private final int aluControl = 3;
+		private final int alu = 4;
 		private int currentUnit;
 		private Graphics2D g2d;
 
 		private BufferedImage datapath;
 
-		public void mousePressed(MouseEvent e) {
-			PointerInfo a = MouseInfo.getPointerInfo();
-			//	System.out.println("olha, capturado x=" + a.getLocation().getX() + " y = " + a.getLocation().getY());
+		@Override
+		public void mousePressed(final MouseEvent e) {
+			MouseInfo.getPointerInfo();
 		}
 
-		public DatapathAnimation(String instructionBinary) {
+		public DatapathAnimation(final String instructionBinary) {
 			df = new DecimalFormat("0.0");  // 1 dp
-			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+			final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			gd = ge.getDefaultScreenDevice();
 			gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
 
@@ -476,15 +476,15 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 			// load and initialise the images
 			initImages();
 
-			vertexList = new ArrayList<Vertex>();
+			vertexList = new ArrayList<>();
 			counter = 0;
 			justStarted = true;
 			instructionCode = instructionBinary;
 
 			//declaration of labels definition.
-			opcodeEquivalenceTable = new HashMap<String, String>();
-			functionEquivalenceTable = new HashMap<String, String>();
-			registerEquivalenceTable = new HashMap<String, String>();
+			opcodeEquivalenceTable = new HashMap<>();
+			functionEquivalenceTable = new HashMap<>();
+			registerEquivalenceTable = new HashMap<>();
 
 			countRegLabel = 400;
 			countALULabel = 380;
@@ -505,19 +505,19 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 		}
 
 		//import the list of opcodes of mips set of instructions
-		public void importXmlStringData(String xmlName, HashMap table, String elementTree, String tagId,
-				String tagData) {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		public void importXmlStringData(final String xmlName, final HashMap table, final String elementTree,
+				final String tagId, final String tagData) {
+			final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			dbf.setNamespaceAware(false);
 			DocumentBuilder docBuilder;
 			try {
 				//System.out.println();
 				docBuilder = dbf.newDocumentBuilder();
-				Document doc = docBuilder.parse(getClass().getResource(xmlName).toString());
-				Element root = doc.getDocumentElement();
+				final Document doc = docBuilder.parse(getClass().getResource(xmlName).toString());
+				final Element root = doc.getDocumentElement();
 				Element equivalenceItem;
 				NodeList bitsList, mnemonic;
-				NodeList equivalenceList = root.getElementsByTagName(elementTree);
+				final NodeList equivalenceList = root.getElementsByTagName(elementTree);
 				for (int i = 0; i < equivalenceList.getLength(); i++) {
 					equivalenceItem = (Element) equivalenceList.item(i);
 					bitsList = equivalenceItem.getElementsByTagName(tagId);
@@ -526,31 +526,31 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 						table.put(bitsList.item(j).getTextContent(), mnemonic.item(j).getTextContent());
 					}
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				e.printStackTrace();
 			}
 		}
 
 		//import the parameters of the animation on datapath
-		public void importXmlDatapathMap(String xmlName, String elementTree) {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		public void importXmlDatapathMap(final String xmlName, final String elementTree) {
+			final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			dbf.setNamespaceAware(false);
 			DocumentBuilder docBuilder;
 			try {
 				docBuilder = dbf.newDocumentBuilder();
-				Document doc = docBuilder.parse(getClass().getResource(xmlName).toString());
-				Element root = doc.getDocumentElement();
+				final Document doc = docBuilder.parse(getClass().getResource(xmlName).toString());
+				final Element root = doc.getDocumentElement();
 				Element datapath_mapItem;
-				NodeList index_vertex, name, init, end, color, other_axis, isMovingXaxis, targetVertex, sourceVertex,
-						isText;
-				NodeList datapath_mapList = root.getElementsByTagName(elementTree);
+				NodeList index_vertex, name, init, end, color, other_axis, isMovingXaxis, targetVertex;
+				NodeList isText;
+				final NodeList datapath_mapList = root.getElementsByTagName(elementTree);
 				for (int i = 0; i < datapath_mapList.getLength(); i++) { //extract the vertex of the xml input and encapsulate into the vertex object
 					datapath_mapItem = (Element) datapath_mapList.item(i);
 					index_vertex = datapath_mapItem.getElementsByTagName("num_vertex");
 					name = datapath_mapItem.getElementsByTagName("name");
 					init = datapath_mapItem.getElementsByTagName("init");
 					end = datapath_mapItem.getElementsByTagName("end");
-					//definition of colors line 
+					//definition of colors line
 					if (instructionCode.substring(0, 6).equals("000000")) {//R-type instructions
 						color = datapath_mapItem.getElementsByTagName("color_Rtype");
 						//System.out.println("rtype");
@@ -577,7 +577,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 					isText = datapath_mapItem.getElementsByTagName("is_text");
 
 					for (int j = 0; j < index_vertex.getLength(); j++) {
-						Vertex vert = new Vertex(Integer.parseInt(index_vertex.item(j).getTextContent()), Integer
+						final Vertex vert = new Vertex(Integer.parseInt(index_vertex.item(j).getTextContent()), Integer
 								.parseInt(init.item(j).getTextContent()), Integer.parseInt(end.item(j)
 										.getTextContent()), name.item(j).getTextContent(), Integer.parseInt(other_axis
 												.item(j).getTextContent()), Boolean.parseBoolean(isMovingXaxis.item(j)
@@ -588,38 +588,38 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 					}
 				}
 				//loading matrix of control of vertex.
-				outputGraph = new Vector<Vector<Vertex>>();
-				vertexTraversed = new ArrayList<Vertex>();
-				int size = vertexList.size();
+				outputGraph = new Vector<>();
+				vertexTraversed = new ArrayList<>();
+				vertexList.size();
 				Vertex vertex;
 				ArrayList<Integer> targetList;
 				for (int i = 0; i < vertexList.size(); i++) {
 					vertex = vertexList.get(i);
 					targetList = vertex.getTargetVertex();
-					Vector<Vertex> vertexOfTargets = new Vector<Vertex>();
+					final Vector<Vertex> vertexOfTargets = new Vector<>();
 					for (int k = 0; k < targetList.size(); k++) {
 						vertexOfTargets.add(vertexList.get(targetList.get(k)));
 					}
 					outputGraph.add(vertexOfTargets);
 				}
 				for (int i = 0; i < outputGraph.size(); i++) {
-					Vector<Vertex> vert = outputGraph.get(i);
+					outputGraph.get(i);
 				}
 
 				vertexList.get(0).setActive(true);
 				vertexTraversed.add(vertexList.get(0));
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				e.printStackTrace();
 			}
 
 		}
 
 		//Set up the information showed in the screen of the current instruction.
-		public void setUpInstructionInfo(Graphics2D g2d) {
+		public void setUpInstructionInfo(final Graphics2D g2d) {
 
-			FontRenderContext frc = g2d.getFontRenderContext();
-			Font font = new Font("Digital-7", Font.PLAIN, 15);
-			Font fontTitle = new Font("Verdana", Font.PLAIN, 10);
+			final FontRenderContext frc = g2d.getFontRenderContext();
+			final Font font = new Font("Digital-7", Font.PLAIN, 15);
+			final Font fontTitle = new Font("Verdana", Font.PLAIN, 10);
 
 			TextLayout textVariable;
 			if (instructionCode.substring(0, 6).equals("000000")) {  //R-type instructions description on screen definition.		 
@@ -641,7 +641,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 				g2d.setColor(Color.red);
 				textVariable.draw(g2d, 90, 530);
 
-				//initialize of rs 
+				//initialize of rs
 				textVariable = new TextLayout(instructionCode.substring(6, 11), font, frc);
 				g2d.setColor(Color.green);
 				textVariable.draw(g2d, 90, 550);
@@ -671,7 +671,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 				g2d.setColor(Color.red);
 				textVariable.draw(g2d, 270, 530);
 
-				//initialize of shamt 
+				//initialize of shamt
 				textVariable = new TextLayout(instructionCode.substring(21, 26), font, frc);
 				g2d.setColor(Color.black);
 				textVariable.draw(g2d, 270, 550);
@@ -775,7 +775,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 				g2d.setColor(Color.red);
 				textVariable.draw(g2d, 90, 530);
 
-				//initialize of rs 
+				//initialize of rs
 				textVariable = new TextLayout(instructionCode.substring(6, 11), font, frc);
 				g2d.setColor(Color.green);
 				textVariable.draw(g2d, 90, 550);
@@ -841,7 +841,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 				g2d.setColor(Color.red);
 				textVariable.draw(g2d, 90, 530);
 
-				//initialize of rs 
+				//initialize of rs
 				textVariable = new TextLayout(instructionCode.substring(6, 11), font, frc);
 				g2d.setColor(Color.green);
 				textVariable.draw(g2d, 90, 550);
@@ -915,7 +915,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 				g2d.setColor(Color.red);
 				textVariable.draw(g2d, 90, 530);
 
-				//initialize of rs 
+				//initialize of rs
 				textVariable = new TextLayout(instructionCode.substring(6, 11), font, frc);
 				g2d.setColor(Color.green);
 				textVariable.draw(g2d, 90, 550);
@@ -982,7 +982,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 				g2d.setColor(Color.red);
 				textVariable.draw(g2d, 90, 530);
 
-				//initialize of rs 
+				//initialize of rs
 				textVariable = new TextLayout(instructionCode.substring(6, 11), font, frc);
 				g2d.setColor(Color.green);
 				textVariable.draw(g2d, 90, 550);
@@ -1050,8 +1050,8 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 		}
 		//end of instruction subtitle...
 
-		//set the initial state of the variables that controls the animation, and start the timer that triggers the animation. 
-		public void startAnimation(String codeInstruction) {
+		//set the initial state of the variables that controls the animation, and start the timer that triggers the animation.
+		public void startAnimation(final String codeInstruction) {
 			instructionCode = codeInstruction;
 			time = new Timer(PERIOD, this);    // start timer
 			time.start();
@@ -1061,29 +1061,31 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 		//initialize the image of datapath.
 		private void initImages() {
 			try {
-				BufferedImage im = ImageIO.read(getClass().getResource(Globals.imagesPath + "datapath.png"));
+				final BufferedImage im = ImageIO.read(getClass().getResource(Globals.imagesPath + "datapath.png"));
 
-				int transparency = im.getColorModel().getTransparency();
+				final int transparency = im.getColorModel().getTransparency();
 				datapath = gc.createCompatibleImage(im.getWidth(), im.getHeight(), transparency);
 				g2d = datapath.createGraphics();
 				g2d.drawImage(im, 0, 0, null);
 				g2d.dispose();
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				System.out.println("Load Image error for " + getClass().getResource(Globals.imagesPath + "datapath.png")
 						+ ":\n" + e);
 			}
 		}
 
-		public void actionPerformed(ActionEvent e)
+		@Override
+		public void actionPerformed(final ActionEvent e)
 		// triggered by the timer: update, repaint
 		{
-			if (justStarted) justStarted = false;
-			if (xIsMoving) indexX++;
-			if (yIsMoving) indexY--;
+			if (justStarted) { justStarted = false; }
+			if (xIsMoving) { indexX++; }
+			if (yIsMoving) { indexY--; }
 			repaint();
 		}
 
-		public void paintComponent(Graphics g) {
+		@Override
+		public void paintComponent(final Graphics g) {
 			super.paintComponent(g);
 			g2d = (Graphics2D) g;
 			// use antialiasing
@@ -1098,23 +1100,27 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 
 		}
 
-		private void drawImage(Graphics2D g2d, BufferedImage im, int x, int y, Color c) {
+		private void drawImage(final Graphics2D g2d, final BufferedImage im, final int x, final int y, final Color c) {
 			if (im == null) {
 				g2d.setColor(c);
 				g2d.fillOval(x, y, 20, 20);
 				g2d.setColor(Color.black);
 				g2d.drawString("   ", x, y);
-			} else g2d.drawImage(im, x, y, this);
+			} else {
+				g2d.drawImage(im, x, y, this);
+			}
 		}
 
 		//draw lines.
 		//method to draw the lines that run from left to right.
-		public void printTrackLtoR(Vertex v) {
+		public void printTrackLtoR(final Vertex v) {
 			int size;
 			int[] track;
 			size = v.getEnd() - v.getInit();
 			track = new int[size];
-			for (int i = 0; i < size; i++) track[i] = v.getInit() + i;
+			for (int i = 0; i < size; i++) {
+				track[i] = v.getInit() + i;
+			}
 			if (v.isActive() == true) {
 				v.setFirst_interaction(false);
 				for (int i = 0; i < size; i++) {
@@ -1123,7 +1129,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 						g2d.fillRect(track[i], v.getOppositeAxis(), 3, 3);
 					}
 				}
-				if (v.getCurrent() == track[size - 1]) v.setActive(false);
+				if (v.getCurrent() == track[size - 1]) { v.setActive(false); }
 				v.setCurrent(v.getCurrent() + 1);
 			} else if (v.isFirst_interaction() == false) {
 				for (int i = 0; i < size; i++) {
@@ -1135,15 +1141,17 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 		}
 
 		//method to draw the lines that run from right to left.
-		//public boolean printTrackRtoL(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis, 
+		//public boolean printTrackRtoL(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis,
 		//		 boolean active, boolean firstInteraction){
-		public void printTrackRtoL(Vertex v) {
+		public void printTrackRtoL(final Vertex v) {
 			int size;
 			int[] track;
 			size = v.getInit() - v.getEnd();
 			track = new int[size];
 
-			for (int i = 0; i < size; i++) track[i] = v.getInit() - i;
+			for (int i = 0; i < size; i++) {
+				track[i] = v.getInit() - i;
+			}
 
 			if (v.isActive() == true) {
 				v.setFirst_interaction(false);
@@ -1153,7 +1161,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 						g2d.fillRect(track[i], v.getOppositeAxis(), 3, 3);
 					}
 				}
-				if (v.getCurrent() == track[size - 1]) v.setActive(false);
+				if (v.getCurrent() == track[size - 1]) { v.setActive(false); }
 
 				v.setCurrent(v.getCurrent() - 1);
 			} else if (v.isFirst_interaction() == false) {
@@ -1165,20 +1173,24 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 		}
 
 		//method to draw the lines that run from down to top.
-		// public boolean printTrackDtoU(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis, 
+		// public boolean printTrackDtoU(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis,
 		//		 boolean active, boolean firstInteraction){
-		public void printTrackDtoU(Vertex v) {
+		public void printTrackDtoU(final Vertex v) {
 			int size;
 			int[] track;
 
 			if (v.getInit() > v.getEnd()) {
 				size = v.getInit() - v.getEnd();
 				track = new int[size];
-				for (int i = 0; i < size; i++) track[i] = v.getInit() - i;
+				for (int i = 0; i < size; i++) {
+					track[i] = v.getInit() - i;
+				}
 			} else {
 				size = v.getEnd() - v.getInit();
 				track = new int[size];
-				for (int i = 0; i < size; i++) track[i] = v.getInit() + i;
+				for (int i = 0; i < size; i++) {
+					track[i] = v.getInit() + i;
+				}
 			}
 
 			if (v.isActive() == true) {
@@ -1189,7 +1201,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 						g2d.fillRect(v.getOppositeAxis(), track[i], 3, 3);
 					}
 				}
-				if (v.getCurrent() == track[size - 1]) v.setActive(false);
+				if (v.getCurrent() == track[size - 1]) { v.setActive(false); }
 				v.setCurrent(v.getCurrent() - 1);
 
 			} else if (v.isFirst_interaction() == false) {
@@ -1201,16 +1213,18 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 		}
 
 		//method to draw the lines that run from top to down.
-		// public boolean printTrackUtoD(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis, 
+		// public boolean printTrackUtoD(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis,
 		//		 boolean active,  boolean firstInteraction){
-		public void printTrackUtoD(Vertex v) {
+		public void printTrackUtoD(final Vertex v) {
 
 			int size;
 			int[] track;
 			size = v.getEnd() - v.getInit();
 			track = new int[size];
 
-			for (int i = 0; i < size; i++) track[i] = v.getInit() + i;
+			for (int i = 0; i < size; i++) {
+				track[i] = v.getInit() + i;
+			}
 
 			if (v.isActive() == true) {
 				v.setFirst_interaction(false);
@@ -1221,7 +1235,7 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 					}
 
 				}
-				if (v.getCurrent() == track[size - 1]) v.setActive(false);
+				if (v.getCurrent() == track[size - 1]) { v.setActive(false); }
 				v.setCurrent(v.getCurrent() + 1);
 			} else if (v.isFirst_interaction() == false) {
 				for (int i = 0; i < size; i++) {
@@ -1231,10 +1245,8 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 			}
 		}
 
-		public void printTextDtoU(Vertex v) {
-			int size;
-			int[] track;
-			FontRenderContext frc = g2d.getFontRenderContext();
+		public void printTextDtoU(final Vertex v) {
+			final FontRenderContext frc = g2d.getFontRenderContext();
 
 			TextLayout actionInFunctionalBlock = new TextLayout(v.getName(), new Font("Verdana", Font.BOLD, 13), frc);
 			g2d.setColor(Color.RED);
@@ -1244,32 +1256,35 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 				actionInFunctionalBlock = new TextLayout(" ", new Font("Verdana", Font.BOLD, 13), frc);
 			}
 			if (v.getName().equals("ALUVALUE")) {
-				if (instructionCode.substring(0, 6).equals("000000"))//R-type instruction
+				if (instructionCode.substring(0, 6).equals("000000")) {
 					actionInFunctionalBlock = new TextLayout(functionEquivalenceTable.get(instructionCode.substring(26,
 							32)), new Font("Verdana", Font.BOLD, 13), frc);
-				else //other instructions 
+				} else {
 					actionInFunctionalBlock = new TextLayout(opcodeEquivalenceTable.get(instructionCode.substring(0,
 							6)), new Font("Verdana", Font.BOLD, 13), frc);
+				}
 			}
 
-			if (instructionCode.substring(0, 6).matches("0001[0-1][0-1]") && v.getName().equals("CP+4")) //branch code
+			if (instructionCode.substring(0, 6).matches("0001[0-1][0-1]") && v.getName().equals("CP+4")) {
 				actionInFunctionalBlock = new TextLayout("PC+OFFSET", new Font("Verdana", Font.BOLD, 13), frc);
+			}
 
 			if (v.getName().equals("WRITING")) {
-				if (!instructionCode.substring(0, 6).matches("100[0-1][0-1][0-1]"))
+				if (!instructionCode.substring(0, 6).matches("100[0-1][0-1][0-1]")) {
 					actionInFunctionalBlock = new TextLayout(" ", new Font("Verdana", Font.BOLD, 13), frc);
+				}
 			}
 			if (v.isActive() == true) {
 				v.setFirst_interaction(false);
 				actionInFunctionalBlock.draw(g2d, v.getOppositeAxis(), v.getCurrent());
-				if (v.getCurrent() == v.getEnd()) v.setActive(false);
+				if (v.getCurrent() == v.getEnd()) { v.setActive(false); }
 				v.setCurrent(v.getCurrent() - 1);
 			}
 
 		}
 
 		//convert binnary value to integer.
-		public String parseBinToInt(String code) {
+		public String parseBinToInt(final String code) {
 			int value = 0;
 
 			for (int i = code.length() - 1; i >= 0; i--) {
@@ -1281,24 +1296,25 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 
 		//set and execute the information about the current position of each line of information in the animation,
 		//verifies the previous status of the animation and increment the position of each line that interconnect the unit function.
-		private void executeAnimation(Graphics g) {
+		private void executeAnimation(final Graphics g) {
 			g2d = (Graphics2D) g;
 			setUpInstructionInfo(g2d);
 			Vertex vert;
 			for (int i = 0; i < vertexTraversed.size(); i++) {
 				vert = vertexTraversed.get(i);
 				if (vert.isMovingXaxis == true) {
-					if (vert.getDirection() == vert.movingLeft) {
+					if (vert.getDirection() == Vertex.movingLeft) {
 						printTrackLtoR(vert);
 						if (vert.isActive() == false) {
-							int j = vert.getTargetVertex().size();
+							final int j = vert.getTargetVertex().size();
 							Vertex tempVertex;
 							for (int k = 0; k < j; k++) {
 								tempVertex = outputGraph.get(vert.getNumIndex()).get(k);
 								Boolean hasThisVertex = false;
 								for (int m = 0; m < vertexTraversed.size(); m++) {
-									if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex())
+									if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex()) {
 										hasThisVertex = true;
+									}
 								}
 								if (hasThisVertex == false) {
 									outputGraph.get(vert.getNumIndex()).get(k).setActive(true);
@@ -1309,14 +1325,15 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 					} else {
 						printTrackRtoL(vert);
 						if (vert.isActive() == false) {
-							int j = vert.getTargetVertex().size();
+							final int j = vert.getTargetVertex().size();
 							Vertex tempVertex;
 							for (int k = 0; k < j; k++) {
 								tempVertex = outputGraph.get(vert.getNumIndex()).get(k);
 								Boolean hasThisVertex = false;
 								for (int m = 0; m < vertexTraversed.size(); m++) {
-									if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex())
+									if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex()) {
 										hasThisVertex = true;
+									}
 								}
 								if (hasThisVertex == false) {
 									outputGraph.get(vert.getNumIndex()).get(k).setActive(true);
@@ -1327,19 +1344,23 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 					}
 				} //end of condition of X axis
 				else {
-					if (vert.getDirection() == vert.movingDownside) {
-						if (vert.isText == true) printTextDtoU(vert);
-						else printTrackDtoU(vert);
+					if (vert.getDirection() == Vertex.movingDownside) {
+						if (vert.isText == true) {
+							printTextDtoU(vert);
+						} else {
+							printTrackDtoU(vert);
+						}
 
 						if (vert.isActive() == false) {
-							int j = vert.getTargetVertex().size();
+							final int j = vert.getTargetVertex().size();
 							Vertex tempVertex;
 							for (int k = 0; k < j; k++) {
 								tempVertex = outputGraph.get(vert.getNumIndex()).get(k);
 								Boolean hasThisVertex = false;
 								for (int m = 0; m < vertexTraversed.size(); m++) {
-									if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex())
+									if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex()) {
 										hasThisVertex = true;
+									}
 								}
 								if (hasThisVertex == false) {
 									outputGraph.get(vert.getNumIndex()).get(k).setActive(true);
@@ -1352,14 +1373,15 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 
 						printTrackUtoD(vert);
 						if (vert.isActive() == false) {
-							int j = vert.getTargetVertex().size();
+							final int j = vert.getTargetVertex().size();
 							Vertex tempVertex;
 							for (int k = 0; k < j; k++) {
 								tempVertex = outputGraph.get(vert.getNumIndex()).get(k);
 								Boolean hasThisVertex = false;
 								for (int m = 0; m < vertexTraversed.size(); m++) {
-									if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex())
+									if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex()) {
 										hasThisVertex = true;
+									}
 								}
 								if (hasThisVertex == false) {
 									outputGraph.get(vert.getNumIndex()).get(k).setActive(true);
@@ -1373,41 +1395,40 @@ public class MipsXray extends AbstractMarsToolAndApplication {
 		}
 
 		@Override
-		public void mouseClicked(MouseEvent e) {
+		public void mouseClicked(final MouseEvent e) {
 
-			PointerInfo a = MouseInfo.getPointerInfo();
-			//limpar a imagem do painel e iniciar o detalhe da unidade funcional.
+			MouseInfo.getPointerInfo();
 
 			if (e.getPoint().getX() > 425 && e.getPoint().getX() < 520 && e.getPoint().getY() > 300 && e.getPoint()
 					.getY() < 425) {
 				buildMainDisplayArea("register.png");
-				FunctionUnitVisualization fu = new FunctionUnitVisualization(instructionBinary, register);
+				final FunctionUnitVisualization fu = new FunctionUnitVisualization(instructionBinary, register);
 				fu.run();
 			}
 
 			if (e.getPoint().getX() > 355 && e.getPoint().getX() < 415 && e.getPoint().getY() > 180 && e.getPoint()
 					.getY() < 280) {
 				buildMainDisplayArea("control.png");
-				FunctionUnitVisualization fu = new FunctionUnitVisualization(instructionBinary, control);
+				final FunctionUnitVisualization fu = new FunctionUnitVisualization(instructionBinary, control);
 				fu.run();
 			}
 
 			if (e.getPoint().getX() > 560 && e.getPoint().getX() < 620 && e.getPoint().getY() > 450 && e.getPoint()
 					.getY() < 520) {
 				buildMainDisplayArea("ALUcontrol.png");
-				FunctionUnitVisualization fu = new FunctionUnitVisualization(instructionBinary, aluControl);
+				final FunctionUnitVisualization fu = new FunctionUnitVisualization(instructionBinary, aluControl);
 				fu.run();
 			}
 
 		}
 
 		@Override
-		public void mouseEntered(MouseEvent e) {}
+		public void mouseEntered(final MouseEvent e) {}
 
 		@Override
-		public void mouseExited(MouseEvent e) {}
+		public void mouseExited(final MouseEvent e) {}
 
 		@Override
-		public void mouseReleased(MouseEvent e) {}
+		public void mouseReleased(final MouseEvent e) {}
 	}
 }

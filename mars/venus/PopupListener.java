@@ -1,24 +1,26 @@
 package mars.venus;
 
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JPopupMenu;
 
 /*
  * Copyright (c) 2003-2006, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,7 +28,7 @@ import javax.swing.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -37,21 +39,23 @@ import javax.swing.*;
 
 public class PopupListener extends MouseAdapter {
 
-	private JPopupMenu popup;
+	private final JPopupMenu popup;
 
-	public PopupListener(JPopupMenu p) {
+	public PopupListener(final JPopupMenu p) {
 		popup = p;
 	}
 
-	public void mousePressed(MouseEvent e) {
+	@Override
+	public void mousePressed(final MouseEvent e) {
 		maybeShowPopup(e);
 	}
 
-	public void mouseReleased(MouseEvent e) {
+	@Override
+	public void mouseReleased(final MouseEvent e) {
 		maybeShowPopup(e);
 	}
 
-	private void maybeShowPopup(MouseEvent e) {
+	private void maybeShowPopup(final MouseEvent e) {
 		if (e.isPopupTrigger()) { popup.show(e.getComponent(), e.getX(), e.getY()); }
 	}
 }

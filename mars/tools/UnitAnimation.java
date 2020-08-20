@@ -1,23 +1,15 @@
 package mars.tools;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.MouseInfo;
-import java.awt.PointerInfo;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -26,33 +18,32 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import mars.Globals;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import mars.Globals;
+
 class UnitAnimation extends JPanel implements ActionListener {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2681757800180958534L;
 
 	//config variables
-	private int PERIOD = 8;    // velocity of frames in ms
+	private final int PERIOD = 8;    // velocity of frames in ms
 	private static final int PWIDTH = 1000;     // size of this panel
 	private static final int PHEIGHT = 574;
-	private GraphicsConfiguration gc;
-	private GraphicsDevice gd;   	// for reporting accl. memory usage
-	private int accelMemory;
-	private DecimalFormat df;
+	private final GraphicsConfiguration gc;
+	private final GraphicsDevice gd;   	// for reporting accl. memory usage
+	private final int accelMemory;
+	private final DecimalFormat df;
 
 	private int counter;			//verify then remove.
 	private boolean justStarted; 	//flag to start movement
@@ -63,25 +54,27 @@ class UnitAnimation extends JPanel implements ActionListener {
 
 	// private Vertex[][] inputGraph;
 	private Vector<Vector<Vertex>> outputGraph;
-	private ArrayList<Vertex> vertexList;
+	private final ArrayList<Vertex> vertexList;
 	private ArrayList<Vertex> vertexTraversed;
 	//Screen Label variables
 
-	private HashMap<String, String> registerEquivalenceTable;
+	private final HashMap<String, String> registerEquivalenceTable;
 
 	private String instructionCode;
 
-	private int countRegLabel;
-	private int countALULabel;
-	private int countPCLabel;
+	private final int countRegLabel;
+	private final int countALULabel;
+	private final int countPCLabel;
 
-	private int register = 1;
-	private int control = 2;
-	private int aluControl = 3;
-	private int alu = 4;
-	private int datapatTypeUsed;
+	private final int register = 1;
+	private final int control = 2;
+	private final int aluControl = 3;
+	private final int alu = 4;
+	private final int datapatTypeUsed;
 
-	private Boolean cursorInIM, cursorInALU, cursorInDataMem, cursorInReg;
+	private final Boolean cursorInIM, cursorInALU, cursorInDataMem;
+
+	private Boolean cursorInReg;
 
 	private Graphics2D g2d;
 
@@ -104,95 +97,104 @@ class UnitAnimation extends JPanel implements ActionListener {
 		private Color color;
 		private boolean first_interaction;
 		private boolean active;
-		private boolean isText;
-		private ArrayList<Integer> targetVertex;
+		private final boolean isText;
+		private final ArrayList<Integer> targetVertex;
 
-		public Vertex(int index, int init, int end, String name, int oppositeAxis, boolean isMovingXaxis,
-				String listOfColors, String listTargetVertex, boolean isText) {
-			this.numIndex = index;
+		public Vertex(final int index, final int init, final int end, final String name, final int oppositeAxis,
+				final boolean isMovingXaxis, final String listOfColors, final String listTargetVertex,
+				final boolean isText) {
+			numIndex = index;
 			this.init = init;
-			this.current = this.init;
+			current = this.init;
 			this.end = end;
 			this.name = name;
 			this.oppositeAxis = oppositeAxis;
 			this.isMovingXaxis = isMovingXaxis;
-			this.first_interaction = true;
-			this.active = false;
+			first_interaction = true;
+			active = false;
 			this.isText = isText;
-			this.color = new Color(0, 153, 0);
+			color = new Color(0, 153, 0);
 			if (isMovingXaxis == true) {
-				if (init < end) direction = movingLeft;
-				else direction = movingRight;
+				if (init < end) {
+					direction = movingLeft;
+				} else {
+					direction = movingRight;
+				}
 
 			} else {
-				if (init < end) direction = movingUpside;
-				else direction = movingDownside;
+				if (init < end) {
+					direction = movingUpside;
+				} else {
+					direction = movingDownside;
+				}
 			}
-			String[] list = listTargetVertex.split("#");
-			targetVertex = new ArrayList<Integer>();
+			final String[] list = listTargetVertex.split("#");
+			targetVertex = new ArrayList<>();
 			for (int i = 0; i < list.length; i++) {
 				targetVertex.add(Integer.parseInt(list[i]));
 				//	System.out.println("Adding " + i + " " +  Integer.parseInt(list[i])+ " in target");
 			}
-			String[] listColor = listOfColors.split("#");
-			this.color = new Color(Integer.parseInt(listColor[0]), Integer.parseInt(listColor[1]), Integer.parseInt(
+			final String[] listColor = listOfColors.split("#");
+			color = new Color(Integer.parseInt(listColor[0]), Integer.parseInt(listColor[1]), Integer.parseInt(
 					listColor[2]));
 		}
 
 		public int getDirection() { return direction; }
 
-		public boolean isText() { return this.isText; }
+		public boolean isText() { return isText; }
 
 		public ArrayList<Integer> getTargetVertex() { return targetVertex; }
 
 		public int getNumIndex() { return numIndex; }
 
-		public void setNumIndex(int numIndex) { this.numIndex = numIndex; }
+		public void setNumIndex(final int numIndex) { this.numIndex = numIndex; }
 
 		public int getInit() { return init; }
 
-		public void setInit(int init) { this.init = init; }
+		public void setInit(final int init) { this.init = init; }
 
 		public int getEnd() { return end; }
 
-		public void setEnd(int end) { this.end = end; }
+		public void setEnd(final int end) { this.end = end; }
 
 		public int getCurrent() { return current; }
 
-		public void setCurrent(int current) { this.current = current; }
+		public void setCurrent(final int current) { this.current = current; }
 
 		public String getName() { return name; }
 
-		public void setName(String name) { this.name = name; }
+		public void setName(final String name) { this.name = name; }
 
 		public int getOppositeAxis() { return oppositeAxis; }
 
-		public void setOppositeAxis(int oppositeAxis) { this.oppositeAxis = oppositeAxis; }
+		public void setOppositeAxis(final int oppositeAxis) { this.oppositeAxis = oppositeAxis; }
 
 		public boolean isMovingXaxis() { return isMovingXaxis; }
 
-		public void setMovingXaxis(boolean isMovingXaxis) { this.isMovingXaxis = isMovingXaxis; }
+		public void setMovingXaxis(final boolean isMovingXaxis) { this.isMovingXaxis = isMovingXaxis; }
 
 		public Color getColor() { return color; }
 
-		public void setColor(Color color) { this.color = color; }
+		public void setColor(final Color color) { this.color = color; }
 
 		public boolean isFirst_interaction() { return first_interaction; }
 
-		public void setFirst_interaction(boolean first_interaction) { this.first_interaction = first_interaction; }
+		public void setFirst_interaction(final boolean first_interaction) {
+			this.first_interaction = first_interaction;
+		}
 
 		public boolean isActive() { return active; }
 
-		public void setActive(boolean active) { this.active = active; }
+		public void setActive(final boolean active) { this.active = active; }
 	}
 
-	public UnitAnimation(String instructionBinary, int datapathType) {
+	public UnitAnimation(final String instructionBinary, final int datapathType) {
 		datapatTypeUsed = datapathType;
 		cursorInIM = false;
 		cursorInALU = false;
 		cursorInDataMem = false;
 		df = new DecimalFormat("0.0");  // 1 dp
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		gd = ge.getDefaultScreenDevice();
 		gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
 
@@ -203,13 +205,13 @@ class UnitAnimation extends JPanel implements ActionListener {
 		// load and initialise the images
 		initImages();
 
-		vertexList = new ArrayList<Vertex>();
+		vertexList = new ArrayList<>();
 		counter = 0;
 		justStarted = true;
 		instructionCode = instructionBinary;
 
 		//declaration of labels definition.
-		registerEquivalenceTable = new HashMap<String, String>();
+		registerEquivalenceTable = new HashMap<>();
 
 		countRegLabel = 400;
 		countALULabel = 380;
@@ -238,18 +240,19 @@ class UnitAnimation extends JPanel implements ActionListener {
 	}
 
 	//import the list of opcodes of mips set of instructions
-	public void importXmlStringData(String xmlName, HashMap table, String elementTree, String tagId, String tagData) {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+	public void importXmlStringData(final String xmlName, final HashMap table, final String elementTree,
+			final String tagId, final String tagData) {
+		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(false);
 		DocumentBuilder docBuilder;
 		try {
 			//System.out.println();
 			docBuilder = dbf.newDocumentBuilder();
-			Document doc = docBuilder.parse(getClass().getResource(xmlName).toString());
-			Element root = doc.getDocumentElement();
+			final Document doc = docBuilder.parse(getClass().getResource(xmlName).toString());
+			final Element root = doc.getDocumentElement();
 			Element equivalenceItem;
 			NodeList bitsList, mnemonic;
-			NodeList equivalenceList = root.getElementsByTagName(elementTree);
+			final NodeList equivalenceList = root.getElementsByTagName(elementTree);
 			for (int i = 0; i < equivalenceList.getLength(); i++) {
 				equivalenceItem = (Element) equivalenceList.item(i);
 				bitsList = equivalenceItem.getElementsByTagName(tagId);
@@ -258,31 +261,30 @@ class UnitAnimation extends JPanel implements ActionListener {
 					table.put(bitsList.item(j).getTextContent(), mnemonic.item(j).getTextContent());
 				}
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	//import the parameters of the animation on datapath
-	public void importXmlDatapathMap(String xmlName, String elementTree) {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+	public void importXmlDatapathMap(final String xmlName, final String elementTree) {
+		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(false);
 		DocumentBuilder docBuilder;
 		try {
 			docBuilder = dbf.newDocumentBuilder();
-			Document doc = docBuilder.parse(getClass().getResource(xmlName).toString());
-			Element root = doc.getDocumentElement();
+			final Document doc = docBuilder.parse(getClass().getResource(xmlName).toString());
+			final Element root = doc.getDocumentElement();
 			Element datapath_mapItem;
-			NodeList index_vertex, name, init, end, color, other_axis, isMovingXaxis, targetVertex, sourceVertex,
-					isText;
-			NodeList datapath_mapList = root.getElementsByTagName(elementTree);
+			NodeList index_vertex, name, init, end, color, other_axis, isMovingXaxis, targetVertex, isText;
+			final NodeList datapath_mapList = root.getElementsByTagName(elementTree);
 			for (int i = 0; i < datapath_mapList.getLength(); i++) { //extract the vertex of the xml input and encapsulate into the vertex object
 				datapath_mapItem = (Element) datapath_mapList.item(i);
 				index_vertex = datapath_mapItem.getElementsByTagName("num_vertex");
 				name = datapath_mapItem.getElementsByTagName("name");
 				init = datapath_mapItem.getElementsByTagName("init");
 				end = datapath_mapItem.getElementsByTagName("end");
-				//definition of colors line 
+				//definition of colors line
 
 				if (instructionCode.substring(0, 6).equals("000000")) {//R-type instructions
 					color = datapath_mapItem.getElementsByTagName("color_Rtype");
@@ -310,63 +312,62 @@ class UnitAnimation extends JPanel implements ActionListener {
 				isText = datapath_mapItem.getElementsByTagName("is_text");
 
 				for (int j = 0; j < index_vertex.getLength(); j++) {
-					Vertex vert = new Vertex(Integer.parseInt(index_vertex.item(j).getTextContent()), Integer.parseInt(
-							init.item(j).getTextContent()), Integer.parseInt(end.item(j).getTextContent()), name.item(j)
-									.getTextContent(), Integer.parseInt(other_axis.item(j).getTextContent()), Boolean
-											.parseBoolean(isMovingXaxis.item(j).getTextContent()), color.item(j)
-													.getTextContent(), targetVertex.item(j).getTextContent(), Boolean
-															.parseBoolean(isText.item(j).getTextContent()));
+					final Vertex vert = new Vertex(Integer.parseInt(index_vertex.item(j).getTextContent()), Integer
+							.parseInt(init.item(j).getTextContent()), Integer.parseInt(end.item(j).getTextContent()),
+							name.item(j).getTextContent(), Integer.parseInt(other_axis.item(j).getTextContent()),
+							Boolean.parseBoolean(isMovingXaxis.item(j).getTextContent()), color.item(j)
+									.getTextContent(), targetVertex.item(j).getTextContent(), Boolean.parseBoolean(
+											isText.item(j).getTextContent()));
 					vertexList.add(vert);
 				}
 			}
 			//loading matrix of control of vertex.
-			outputGraph = new Vector<Vector<Vertex>>();
-			vertexTraversed = new ArrayList<Vertex>();
-			int size = vertexList.size();
+			outputGraph = new Vector<>();
+			vertexTraversed = new ArrayList<>();
+			vertexList.size();
 			Vertex vertex;
 			ArrayList<Integer> targetList;
 			for (int i = 0; i < vertexList.size(); i++) {
 				vertex = vertexList.get(i);
 				targetList = vertex.getTargetVertex();
-				Vector<Vertex> vertexOfTargets = new Vector<Vertex>();
+				final Vector<Vertex> vertexOfTargets = new Vector<>();
 				for (int k = 0; k < targetList.size(); k++) {
 					vertexOfTargets.add(vertexList.get(targetList.get(k)));
 				}
 				outputGraph.add(vertexOfTargets);
 			}
 			for (int i = 0; i < outputGraph.size(); i++) {
-				Vector<Vertex> vert = outputGraph.get(i);
+				outputGraph.get(i);
 			}
 
 			vertexList.get(0).setActive(true);
 			vertexTraversed.add(vertexList.get(0));
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	public void importXmlDatapathMapAluControl(String xmlName, String elementTree) {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+	public void importXmlDatapathMapAluControl(final String xmlName, final String elementTree) {
+		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(false);
 		DocumentBuilder docBuilder;
 		try {
 			docBuilder = dbf.newDocumentBuilder();
-			Document doc = docBuilder.parse(getClass().getResource(xmlName).toString());
-			Element root = doc.getDocumentElement();
+			final Document doc = docBuilder.parse(getClass().getResource(xmlName).toString());
+			final Element root = doc.getDocumentElement();
 			Element datapath_mapItem;
-			NodeList index_vertex, name, init, end, color, other_axis, isMovingXaxis, targetVertex, sourceVertex,
-					isText;
-			NodeList datapath_mapList = root.getElementsByTagName(elementTree);
+			NodeList index_vertex, name, init, end, color, other_axis, isMovingXaxis, targetVertex, isText;
+			final NodeList datapath_mapList = root.getElementsByTagName(elementTree);
 			for (int i = 0; i < datapath_mapList.getLength(); i++) { //extract the vertex of the xml input and encapsulate into the vertex object
 				datapath_mapItem = (Element) datapath_mapList.item(i);
 				index_vertex = datapath_mapItem.getElementsByTagName("num_vertex");
 				name = datapath_mapItem.getElementsByTagName("name");
 				init = datapath_mapItem.getElementsByTagName("init");
 				end = datapath_mapItem.getElementsByTagName("end");
-				//definition of colors line 
+				//definition of colors line
 
-				if (instructionCode.substring(0, 6).equals("000000")) {//R-type instructions 
+				if (instructionCode.substring(0, 6).equals("000000")) {//R-type instructions
 					if (instructionCode.substring(28, 32).matches("0000")) { //BRANCH type instructions
 						color = datapath_mapItem.getElementsByTagName("ALU_out010");
 						System.out.println("ALU_out010 type " + instructionCode.substring(28, 32));
@@ -406,44 +407,44 @@ class UnitAnimation extends JPanel implements ActionListener {
 				isText = datapath_mapItem.getElementsByTagName("is_text");
 
 				for (int j = 0; j < index_vertex.getLength(); j++) {
-					Vertex vert = new Vertex(Integer.parseInt(index_vertex.item(j).getTextContent()), Integer.parseInt(
-							init.item(j).getTextContent()), Integer.parseInt(end.item(j).getTextContent()), name.item(j)
-									.getTextContent(), Integer.parseInt(other_axis.item(j).getTextContent()), Boolean
-											.parseBoolean(isMovingXaxis.item(j).getTextContent()), color.item(j)
-													.getTextContent(), targetVertex.item(j).getTextContent(), Boolean
-															.parseBoolean(isText.item(j).getTextContent()));
+					final Vertex vert = new Vertex(Integer.parseInt(index_vertex.item(j).getTextContent()), Integer
+							.parseInt(init.item(j).getTextContent()), Integer.parseInt(end.item(j).getTextContent()),
+							name.item(j).getTextContent(), Integer.parseInt(other_axis.item(j).getTextContent()),
+							Boolean.parseBoolean(isMovingXaxis.item(j).getTextContent()), color.item(j)
+									.getTextContent(), targetVertex.item(j).getTextContent(), Boolean.parseBoolean(
+											isText.item(j).getTextContent()));
 					vertexList.add(vert);
 				}
 			}
 			//loading matrix of control of vertex.
-			outputGraph = new Vector<Vector<Vertex>>();
-			vertexTraversed = new ArrayList<Vertex>();
-			int size = vertexList.size();
+			outputGraph = new Vector<>();
+			vertexTraversed = new ArrayList<>();
+			vertexList.size();
 			Vertex vertex;
 			ArrayList<Integer> targetList;
 			for (int i = 0; i < vertexList.size(); i++) {
 				vertex = vertexList.get(i);
 				targetList = vertex.getTargetVertex();
-				Vector<Vertex> vertexOfTargets = new Vector<Vertex>();
+				final Vector<Vertex> vertexOfTargets = new Vector<>();
 				for (int k = 0; k < targetList.size(); k++) {
 					vertexOfTargets.add(vertexList.get(targetList.get(k)));
 				}
 				outputGraph.add(vertexOfTargets);
 			}
 			for (int i = 0; i < outputGraph.size(); i++) {
-				Vector<Vertex> vert = outputGraph.get(i);
+				outputGraph.get(i);
 			}
 
 			vertexList.get(0).setActive(true);
 			vertexTraversed.add(vertexList.get(0));
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	//set the initial state of the variables that controls the animation, and start the timer that triggers the animation. 
-	public void startAnimation(String codeInstruction) {
+	//set the initial state of the variables that controls the animation, and start the timer that triggers the animation.
+	public void startAnimation(final String codeInstruction) {
 		instructionCode = codeInstruction;
 		new Timer(PERIOD, this).start();    // start timer
 		this.repaint();
@@ -463,12 +464,12 @@ class UnitAnimation extends JPanel implements ActionListener {
 				im = ImageIO.read(getClass().getResource(Globals.imagesPath + "alu.png"));
 			}
 
-			int transparency = im.getColorModel().getTransparency();
+			final int transparency = im.getColorModel().getTransparency();
 			datapath = gc.createCompatibleImage(im.getWidth(), im.getHeight(), transparency);
 			g2d = datapath.createGraphics();
 			g2d.drawImage(im, 0, 0, null);
 			g2d.dispose();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			System.out.println("Load Image error for " + getClass().getResource(Globals.imagesPath + "register.png")
 					+ ":\n" + e);
 		}
@@ -478,16 +479,18 @@ class UnitAnimation extends JPanel implements ActionListener {
 		this.repaint();
 	}
 
-	public void actionPerformed(ActionEvent e)
+	@Override
+	public void actionPerformed(final ActionEvent e)
 	// triggered by the timer: update, repaint
 	{
-		if (justStarted) justStarted = false;
-		if (xIsMoving) indexX++;
-		if (yIsMoving) indexY--;
+		if (justStarted) { justStarted = false; }
+		if (xIsMoving) { indexX++; }
+		if (yIsMoving) { indexY--; }
 		repaint();
 	}
 
-	public void paintComponent(Graphics g) {
+	@Override
+	public void paintComponent(final Graphics g) {
 		super.paintComponent(g);
 		g2d = (Graphics2D) g;
 		// use antialiasing
@@ -502,23 +505,27 @@ class UnitAnimation extends JPanel implements ActionListener {
 
 	}
 
-	private void drawImage(Graphics2D g2d, BufferedImage im, int x, int y, Color c) {
+	private void drawImage(final Graphics2D g2d, final BufferedImage im, final int x, final int y, final Color c) {
 		if (im == null) {
 			g2d.setColor(c);
 			g2d.fillOval(x, y, 20, 20);
 			g2d.setColor(Color.black);
 			g2d.drawString("   ", x, y);
-		} else g2d.drawImage(im, x, y, this);
+		} else {
+			g2d.drawImage(im, x, y, this);
+		}
 	}
 
 	//draw lines.
 	//method to draw the lines that run from left to right.
-	public void printTrackLtoR(Vertex v) {
+	public void printTrackLtoR(final Vertex v) {
 		int size;
 		int[] track;
 		size = v.getEnd() - v.getInit();
 		track = new int[size];
-		for (int i = 0; i < size; i++) track[i] = v.getInit() + i;
+		for (int i = 0; i < size; i++) {
+			track[i] = v.getInit() + i;
+		}
 		if (v.isActive() == true) {
 			v.setFirst_interaction(false);
 			for (int i = 0; i < size; i++) {
@@ -527,7 +534,7 @@ class UnitAnimation extends JPanel implements ActionListener {
 					g2d.fillRect(track[i], v.getOppositeAxis(), 3, 3);
 				}
 			}
-			if (v.getCurrent() == track[size - 1]) v.setActive(false);
+			if (v.getCurrent() == track[size - 1]) { v.setActive(false); }
 			v.setCurrent(v.getCurrent() + 1);
 		} else if (v.isFirst_interaction() == false) {
 			for (int i = 0; i < size; i++) {
@@ -539,15 +546,17 @@ class UnitAnimation extends JPanel implements ActionListener {
 	}
 
 	//method to draw the lines that run from right to left.
-	//public boolean printTrackRtoL(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis, 
+	//public boolean printTrackRtoL(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis,
 	//		 boolean active, boolean firstInteraction){
-	public void printTrackRtoL(Vertex v) {
+	public void printTrackRtoL(final Vertex v) {
 		int size;
 		int[] track;
 		size = v.getInit() - v.getEnd();
 		track = new int[size];
 
-		for (int i = 0; i < size; i++) track[i] = v.getInit() - i;
+		for (int i = 0; i < size; i++) {
+			track[i] = v.getInit() - i;
+		}
 
 		if (v.isActive() == true) {
 			v.setFirst_interaction(false);
@@ -557,7 +566,7 @@ class UnitAnimation extends JPanel implements ActionListener {
 					g2d.fillRect(track[i], v.getOppositeAxis(), 3, 3);
 				}
 			}
-			if (v.getCurrent() == track[size - 1]) v.setActive(false);
+			if (v.getCurrent() == track[size - 1]) { v.setActive(false); }
 
 			v.setCurrent(v.getCurrent() - 1);
 		} else if (v.isFirst_interaction() == false) {
@@ -569,20 +578,24 @@ class UnitAnimation extends JPanel implements ActionListener {
 	}
 
 	//method to draw the lines that run from down to top.
-	// public boolean printTrackDtoU(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis, 
+	// public boolean printTrackDtoU(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis,
 	//		 boolean active, boolean firstInteraction){
-	public void printTrackDtoU(Vertex v) {
+	public void printTrackDtoU(final Vertex v) {
 		int size;
 		int[] track;
 
 		if (v.getInit() > v.getEnd()) {
 			size = v.getInit() - v.getEnd();
 			track = new int[size];
-			for (int i = 0; i < size; i++) track[i] = v.getInit() - i;
+			for (int i = 0; i < size; i++) {
+				track[i] = v.getInit() - i;
+			}
 		} else {
 			size = v.getEnd() - v.getInit();
 			track = new int[size];
-			for (int i = 0; i < size; i++) track[i] = v.getInit() + i;
+			for (int i = 0; i < size; i++) {
+				track[i] = v.getInit() + i;
+			}
 		}
 
 		if (v.isActive() == true) {
@@ -593,7 +606,7 @@ class UnitAnimation extends JPanel implements ActionListener {
 					g2d.fillRect(v.getOppositeAxis(), track[i], 3, 3);
 				}
 			}
-			if (v.getCurrent() == track[size - 1]) v.setActive(false);
+			if (v.getCurrent() == track[size - 1]) { v.setActive(false); }
 			v.setCurrent(v.getCurrent() - 1);
 
 		} else if (v.isFirst_interaction() == false) {
@@ -605,16 +618,18 @@ class UnitAnimation extends JPanel implements ActionListener {
 	}
 
 	//method to draw the lines that run from top to down.
-	// public boolean printTrackUtoD(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis, 
+	// public boolean printTrackUtoD(int init, int end ,int currentIndex, Graphics2D g2d, Color color, int otherAxis,
 	//		 boolean active,  boolean firstInteraction){
-	public void printTrackUtoD(Vertex v) {
+	public void printTrackUtoD(final Vertex v) {
 
 		int size;
 		int[] track;
 		size = v.getEnd() - v.getInit();
 		track = new int[size];
 
-		for (int i = 0; i < size; i++) track[i] = v.getInit() + i;
+		for (int i = 0; i < size; i++) {
+			track[i] = v.getInit() + i;
+		}
 
 		if (v.isActive() == true) {
 			v.setFirst_interaction(false);
@@ -625,7 +640,7 @@ class UnitAnimation extends JPanel implements ActionListener {
 				}
 
 			}
-			if (v.getCurrent() == track[size - 1]) v.setActive(false);
+			if (v.getCurrent() == track[size - 1]) { v.setActive(false); }
 			v.setCurrent(v.getCurrent() + 1);
 		} else if (v.isFirst_interaction() == false) {
 			for (int i = 0; i < size; i++) {
@@ -636,7 +651,7 @@ class UnitAnimation extends JPanel implements ActionListener {
 	}
 
 	//convert binnary value to integer.
-	public String parseBinToInt(String code) {
+	public String parseBinToInt(final String code) {
 		int value = 0;
 
 		for (int i = code.length() - 1; i >= 0; i--) {
@@ -648,23 +663,24 @@ class UnitAnimation extends JPanel implements ActionListener {
 
 	//set and execute the information about the current position of each line of information in the animation,
 	//verifies the previous status of the animation and increment the position of each line that interconnect the unit function.
-	private void executeAnimation(Graphics g) {
+	private void executeAnimation(final Graphics g) {
 		g2d = (Graphics2D) g;
 		Vertex vert;
 		for (int i = 0; i < vertexTraversed.size(); i++) {
 			vert = vertexTraversed.get(i);
 			if (vert.isMovingXaxis == true) {
-				if (vert.getDirection() == vert.movingLeft) {
+				if (vert.getDirection() == Vertex.movingLeft) {
 					printTrackLtoR(vert);
 					if (vert.isActive() == false) {
-						int j = vert.getTargetVertex().size();
+						final int j = vert.getTargetVertex().size();
 						Vertex tempVertex;
 						for (int k = 0; k < j; k++) {
 							tempVertex = outputGraph.get(vert.getNumIndex()).get(k);
 							Boolean hasThisVertex = false;
 							for (int m = 0; m < vertexTraversed.size(); m++) {
-								if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex())
+								if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex()) {
 									hasThisVertex = true;
+								}
 							}
 							if (hasThisVertex == false) {
 								outputGraph.get(vert.getNumIndex()).get(k).setActive(true);
@@ -675,14 +691,15 @@ class UnitAnimation extends JPanel implements ActionListener {
 				} else {
 					printTrackRtoL(vert);
 					if (vert.isActive() == false) {
-						int j = vert.getTargetVertex().size();
+						final int j = vert.getTargetVertex().size();
 						Vertex tempVertex;
 						for (int k = 0; k < j; k++) {
 							tempVertex = outputGraph.get(vert.getNumIndex()).get(k);
 							Boolean hasThisVertex = false;
 							for (int m = 0; m < vertexTraversed.size(); m++) {
-								if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex())
+								if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex()) {
 									hasThisVertex = true;
+								}
 							}
 							if (hasThisVertex == false) {
 								outputGraph.get(vert.getNumIndex()).get(k).setActive(true);
@@ -693,19 +710,23 @@ class UnitAnimation extends JPanel implements ActionListener {
 				}
 			} //end of condition of X axis
 			else {
-				if (vert.getDirection() == vert.movingDownside) {
-					if (vert.isText == true);
-					else printTrackDtoU(vert);
+				if (vert.getDirection() == Vertex.movingDownside) {
+					if (vert.isText == true) {
+						;
+					} else {
+						printTrackDtoU(vert);
+					}
 
 					if (vert.isActive() == false) {
-						int j = vert.getTargetVertex().size();
+						final int j = vert.getTargetVertex().size();
 						Vertex tempVertex;
 						for (int k = 0; k < j; k++) {
 							tempVertex = outputGraph.get(vert.getNumIndex()).get(k);
 							Boolean hasThisVertex = false;
 							for (int m = 0; m < vertexTraversed.size(); m++) {
-								if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex())
+								if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex()) {
 									hasThisVertex = true;
+								}
 							}
 							if (hasThisVertex == false) {
 								outputGraph.get(vert.getNumIndex()).get(k).setActive(true);
@@ -717,14 +738,15 @@ class UnitAnimation extends JPanel implements ActionListener {
 				} else {
 					printTrackUtoD(vert);
 					if (vert.isActive() == false) {
-						int j = vert.getTargetVertex().size();
+						final int j = vert.getTargetVertex().size();
 						Vertex tempVertex;
 						for (int k = 0; k < j; k++) {
 							tempVertex = outputGraph.get(vert.getNumIndex()).get(k);
 							Boolean hasThisVertex = false;
 							for (int m = 0; m < vertexTraversed.size(); m++) {
-								if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex())
+								if (tempVertex.getNumIndex() == vertexTraversed.get(m).getNumIndex()) {
 									hasThisVertex = true;
+								}
 							}
 							if (hasThisVertex == false) {
 								outputGraph.get(vert.getNumIndex()).get(k).setActive(true);

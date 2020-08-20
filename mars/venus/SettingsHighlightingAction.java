@@ -1,33 +1,57 @@
 package mars.venus;
 
-import mars.simulator.*;
-import mars.*;
-import mars.util.*;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.Box;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+import mars.Globals;
+import mars.Settings;
 
 /*
  * Copyright (c) 2003-2009, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,7 +59,7 @@ import java.io.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -43,6 +67,11 @@ import java.io.*;
  * Action class for the Settings menu item for text editor settings.
  */
 public class SettingsHighlightingAction extends GuiAction {
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 4700374073695345684L;
 
 	JDialog highlightDialog;
 
@@ -93,8 +122,8 @@ public class SettingsHighlightingAction extends GuiAction {
 	/**
 	 * Create a new SettingsEditorAction. Has all the GuiAction parameters.
 	 */
-	public SettingsHighlightingAction(String name, Icon icon, String descrip, Integer mnemonic, KeyStroke accel,
-			VenusUI gui) {
+	public SettingsHighlightingAction(final String name, final Icon icon, final String descrip, final Integer mnemonic,
+			final KeyStroke accel, final VenusUI gui) {
 		super(name, icon, descrip, mnemonic, accel, gui);
 	}
 
@@ -102,13 +131,15 @@ public class SettingsHighlightingAction extends GuiAction {
 	 * When this action is triggered, launch a dialog to view and modify editor
 	 * settings.
 	 */
-	public void actionPerformed(ActionEvent e) {
+	@Override
+	public void actionPerformed(final ActionEvent e) {
 		highlightDialog = new JDialog(Globals.getGui(), "Runtime Table Highlighting Colors and Fonts", true);
 		highlightDialog.setContentPane(buildDialogPanel());
-		highlightDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		highlightDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		highlightDialog.addWindowListener(new WindowAdapter() {
 
-			public void windowClosing(WindowEvent we) {
+			@Override
+			public void windowClosing(final WindowEvent we) {
 				closeDialog();
 			}
 		});
@@ -119,9 +150,9 @@ public class SettingsHighlightingAction extends GuiAction {
 
 	// The dialog box that appears when menu item is selected.
 	private JPanel buildDialogPanel() {
-		JPanel contents = new JPanel(new BorderLayout(20, 20));
+		final JPanel contents = new JPanel(new BorderLayout(20, 20));
 		contents.setBorder(new EmptyBorder(10, 10, 10, 10));
-		JPanel patches = new JPanel(new GridLayout(backgroundSettingPositions.length, 4, gridVGap, gridHGap));
+		final JPanel patches = new JPanel(new GridLayout(backgroundSettingPositions.length, 4, gridVGap, gridHGap));
 		currentNondefaultBackground = new Color[backgroundSettingPositions.length];
 		currentNondefaultForeground = new Color[backgroundSettingPositions.length];
 		initialSettingsBackground = new Color[backgroundSettingPositions.length];
@@ -161,7 +192,8 @@ public class SettingsHighlightingAction extends GuiAction {
 			patches.add(defaultCheckBoxes[i]);
 		}
 
-		JPanel descriptions = new JPanel(new GridLayout(backgroundSettingPositions.length, 1, gridVGap, gridHGap));
+		final JPanel descriptions = new JPanel(new GridLayout(backgroundSettingPositions.length, 1, gridVGap,
+				gridHGap));
 		// Note the labels have to match buttons by position...
 		descriptions.add(new JLabel("Text Segment highlighting", SwingConstants.RIGHT));
 		descriptions.add(new JLabel("Text Segment Delay Slot highlighting", SwingConstants.RIGHT));
@@ -170,24 +202,26 @@ public class SettingsHighlightingAction extends GuiAction {
 		descriptions.add(new JLabel("Even row normal", SwingConstants.RIGHT));
 		descriptions.add(new JLabel("Odd row normal", SwingConstants.RIGHT));
 
-		JPanel sample = new JPanel(new GridLayout(backgroundSettingPositions.length, 1, gridVGap, gridHGap));
+		final JPanel sample = new JPanel(new GridLayout(backgroundSettingPositions.length, 1, gridVGap, gridHGap));
 		for (int i = 0; i < backgroundSettingPositions.length; i++) {
 			sample.add(samples[i]);
 		}
 
-		JPanel instructions = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		final JPanel instructions = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		// create deaf, dumb and blind checkbox, for illustration
-		JCheckBox illustrate = new JCheckBox() {
+		final JCheckBox illustrate = new JCheckBox() {
 
-			protected void processMouseEvent(MouseEvent e) {}
+			@Override
+			protected void processMouseEvent(final MouseEvent e) {}
 
-			protected void processKeyEvent(KeyEvent e) {}
+			@Override
+			protected void processKeyEvent(final KeyEvent e) {}
 		};
 		illustrate.setSelected(true);
 		instructions.add(illustrate);
 		instructions.add(new JLabel("= use default colors (disables color selection buttons)"));
-		int spacer = 10;
-		Box mainArea = Box.createHorizontalBox();
+		final int spacer = 10;
+		final Box mainArea = Box.createHorizontalBox();
 		mainArea.add(Box.createHorizontalGlue());
 		mainArea.add(descriptions);
 		mainArea.add(Box.createHorizontalStrut(spacer));
@@ -203,29 +237,23 @@ public class SettingsHighlightingAction extends GuiAction {
 		contents.add(instructions, BorderLayout.NORTH);
 
 		// Control highlighting enable/disable for Data Segment window and Register windows
-		JPanel dataRegisterHighlightControl = new JPanel(new GridLayout(2, 1));
+		final JPanel dataRegisterHighlightControl = new JPanel(new GridLayout(2, 1));
 		dataHighlightButton = new JButton();
 		dataHighlightButton.setText(getHighlightControlText(currentDataHighlightSetting));
 		dataHighlightButton.setToolTipText(DATA_HIGHLIGHT_ENABLE_TOOL_TIP_TEXT);
-		dataHighlightButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				currentDataHighlightSetting = !currentDataHighlightSetting;
-				dataHighlightButton.setText(getHighlightControlText(currentDataHighlightSetting));
-			}
+		dataHighlightButton.addActionListener(e -> {
+			currentDataHighlightSetting = !currentDataHighlightSetting;
+			dataHighlightButton.setText(getHighlightControlText(currentDataHighlightSetting));
 		});
 		registerHighlightButton = new JButton();
 		registerHighlightButton.setText(getHighlightControlText(currentRegisterHighlightSetting));
 		registerHighlightButton.setToolTipText(REGISTER_HIGHLIGHT_ENABLE_TOOL_TIP_TEXT);
-		registerHighlightButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				currentRegisterHighlightSetting = !currentRegisterHighlightSetting;
-				registerHighlightButton.setText(getHighlightControlText(currentRegisterHighlightSetting));
-			}
+		registerHighlightButton.addActionListener(e -> {
+			currentRegisterHighlightSetting = !currentRegisterHighlightSetting;
+			registerHighlightButton.setText(getHighlightControlText(currentRegisterHighlightSetting));
 		});
-		JPanel dataHighlightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		JPanel registerHighlightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		final JPanel dataHighlightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		final JPanel registerHighlightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		dataHighlightPanel.add(new JLabel("* Data Segment highlighting is"));
 		dataHighlightPanel.add(dataHighlightButton);
 		registerHighlightPanel.add(new JLabel("* Register highlighting is"));
@@ -235,40 +263,22 @@ public class SettingsHighlightingAction extends GuiAction {
 		dataRegisterHighlightControl.add(registerHighlightPanel);
 
 		// Bottom row - the control buttons for Apply&Close, Apply, Cancel
-		Box controlPanel = Box.createHorizontalBox();
-		JButton okButton = new JButton("Apply and Close");
+		final Box controlPanel = Box.createHorizontalBox();
+		final JButton okButton = new JButton("Apply and Close");
 		okButton.setToolTipText(CLOSE_TOOL_TIP_TEXT);
-		okButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				setHighlightingSettings();
-				closeDialog();
-			}
+		okButton.addActionListener(e -> {
+			setHighlightingSettings();
+			closeDialog();
 		});
-		JButton applyButton = new JButton("Apply");
+		final JButton applyButton = new JButton("Apply");
 		applyButton.setToolTipText(APPLY_TOOL_TIP_TEXT);
-		applyButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				setHighlightingSettings();
-			}
-		});
-		JButton resetButton = new JButton("Reset");
+		applyButton.addActionListener(e -> setHighlightingSettings());
+		final JButton resetButton = new JButton("Reset");
 		resetButton.setToolTipText(RESET_TOOL_TIP_TEXT);
-		resetButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				resetButtonColors();
-			}
-		});
-		JButton cancelButton = new JButton("Cancel");
+		resetButton.addActionListener(e -> resetButtonColors());
+		final JButton cancelButton = new JButton("Cancel");
 		cancelButton.setToolTipText(CANCEL_TOOL_TIP_TEXT);
-		cancelButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				closeDialog();
-			}
-		});
+		cancelButton.addActionListener(e -> closeDialog());
 		controlPanel.add(Box.createHorizontalGlue());
 		controlPanel.add(okButton);
 		controlPanel.add(Box.createHorizontalGlue());
@@ -279,21 +289,21 @@ public class SettingsHighlightingAction extends GuiAction {
 		controlPanel.add(resetButton);
 		controlPanel.add(Box.createHorizontalGlue());
 
-		JPanel allControls = new JPanel(new GridLayout(2, 1));
+		final JPanel allControls = new JPanel(new GridLayout(2, 1));
 		allControls.add(dataRegisterHighlightControl);
 		allControls.add(controlPanel);
 		contents.add(allControls, BorderLayout.SOUTH);
 		return contents;
 	}
 
-	private String getHighlightControlText(boolean enabled) {
+	private String getHighlightControlText(final boolean enabled) {
 		return enabled ? "enabled" : "disabled";
 	}
 
 	// Called once, upon dialog setup.
 	private void initializeButtonColors() {
-		Settings settings = Globals.getSettings();
-		LineBorder lineBorder = new LineBorder(Color.BLACK);
+		final Settings settings = Globals.getSettings();
+		final LineBorder lineBorder = new LineBorder(Color.BLACK);
 		Color backgroundSetting, foregroundSetting;
 		Font fontSetting;
 		for (int i = 0; i < backgroundSettingPositions.length; i++) {
@@ -315,7 +325,7 @@ public class SettingsHighlightingAction extends GuiAction {
 			samples[i].setBackground(backgroundSetting);
 			samples[i].setForeground(foregroundSetting);
 			samples[i].setFont(fontSetting);
-			boolean usingDefaults = backgroundSetting.equals(settings.getDefaultColorSettingByPosition(
+			final boolean usingDefaults = backgroundSetting.equals(settings.getDefaultColorSettingByPosition(
 					backgroundSettingPositions[i])) && foregroundSetting.equals(settings
 							.getDefaultColorSettingByPosition(foregroundSettingPositions[i])) && fontSetting.equals(
 									settings.getDefaultFontByPosition(fontSettingPositions[i]));
@@ -330,22 +340,22 @@ public class SettingsHighlightingAction extends GuiAction {
 
 	// Set the color settings according to current button colors.  Occurs when "Apply" selected.
 	private void setHighlightingSettings() {
-		Settings settings = Globals.getSettings();
+		final Settings settings = Globals.getSettings();
 		for (int i = 0; i < backgroundSettingPositions.length; i++) {
 			settings.setColorSettingByPosition(backgroundSettingPositions[i], backgroundButtons[i].getBackground());
 			settings.setColorSettingByPosition(foregroundSettingPositions[i], foregroundButtons[i].getBackground());
-			settings.setFontByPosition(fontSettingPositions[i], samples[i].getFont());//fontButtons[i].getFont());			
+			settings.setFontByPosition(fontSettingPositions[i], samples[i].getFont());//fontButtons[i].getFont());
 		}
 		settings.setDataSegmentHighlighting(currentDataHighlightSetting);
 		settings.setRegistersHighlighting(currentRegisterHighlightSetting);
-		ExecutePane executePane = Globals.getGui().getMainPane().getExecutePane();
+		final ExecutePane executePane = Globals.getGui().getMainPane().getExecutePane();
 		executePane.getRegistersWindow().refresh();
 		executePane.getCoprocessor0Window().refresh();
 		executePane.getCoprocessor1Window().refresh();
 		// If a successful assembly has occured, the various panes will be populated with tables
 		// and we want to apply the new settings.  If it has NOT occurred, there are no tables
-		// in the Data and Text segment windows so we don't want to disturb them.  
-		// In the latter case, the component count for the Text segment window is 0 (but is 1 
+		// in the Data and Text segment windows so we don't want to disturb them.
+		// In the latter case, the component count for the Text segment window is 0 (but is 1
 		// for Data segment window).
 		if (executePane.getTextSegmentWindow().getContentPane().getComponentCount() > 0) {
 			executePane.getDataSegmentWindow().updateValues();
@@ -353,9 +363,9 @@ public class SettingsHighlightingAction extends GuiAction {
 		}
 	}
 
-	// Called when Reset selected.  
+	// Called when Reset selected.
 	private void resetButtonColors() {
-		Settings settings = Globals.getSettings();
+		final Settings settings = Globals.getSettings();
 		dataHighlightButton.setText(getHighlightControlText(initialDataHighlightSetting));
 		registerHighlightButton.setText(getHighlightControlText(initialRegisterHighlightSetting));
 		Color backgroundSetting, foregroundSetting;
@@ -366,11 +376,11 @@ public class SettingsHighlightingAction extends GuiAction {
 			fontSetting = initialFont[i];
 			backgroundButtons[i].setBackground(backgroundSetting);
 			foregroundButtons[i].setBackground(foregroundSetting);
-			//fontButtons[i].setFont(fontSetting);	
+			//fontButtons[i].setFont(fontSetting);
 			samples[i].setBackground(backgroundSetting);
 			samples[i].setForeground(foregroundSetting);
 			samples[i].setFont(fontSetting);
-			boolean usingDefaults = backgroundSetting.equals(settings.getDefaultColorSettingByPosition(
+			final boolean usingDefaults = backgroundSetting.equals(settings.getDefaultColorSettingByPosition(
 					backgroundSettingPositions[i])) && foregroundSetting.equals(settings
 							.getDefaultColorSettingByPosition(foregroundSettingPositions[i])) && fontSetting.equals(
 									settings.getDefaultFontByPosition(fontSettingPositions[i]));
@@ -390,18 +400,19 @@ public class SettingsHighlightingAction extends GuiAction {
 	/////////////////////////////////////////////////////////////////
 	//
 	//  Class that handles click on the background selection button
-	//    		
+	//
 	private class BackgroundChanger implements ActionListener {
 
-		private int position;
+		private final int position;
 
-		public BackgroundChanger(int pos) {
+		public BackgroundChanger(final int pos) {
 			position = pos;
 		}
 
-		public void actionPerformed(ActionEvent e) {
-			JButton button = (JButton) e.getSource();
-			Color newColor = JColorChooser.showDialog(null, "Set Background Color", button.getBackground());
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JButton button = (JButton) e.getSource();
+			final Color newColor = JColorChooser.showDialog(null, "Set Background Color", button.getBackground());
 			if (newColor != null) {
 				button.setBackground(newColor);
 				currentNondefaultBackground[position] = newColor;
@@ -413,18 +424,19 @@ public class SettingsHighlightingAction extends GuiAction {
 	/////////////////////////////////////////////////////////////////
 	//
 	//  Class that handles click on the foreground selection button
-	//   		
+	//
 	private class ForegroundChanger implements ActionListener {
 
-		private int position;
+		private final int position;
 
-		public ForegroundChanger(int pos) {
+		public ForegroundChanger(final int pos) {
 			position = pos;
 		}
 
-		public void actionPerformed(ActionEvent e) {
-			JButton button = (JButton) e.getSource();
-			Color newColor = JColorChooser.showDialog(null, "Set Text Color", button.getBackground());
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JButton button = (JButton) e.getSource();
+			final Color newColor = JColorChooser.showDialog(null, "Set Text Color", button.getBackground());
 			if (newColor != null) {
 				button.setBackground(newColor);
 				currentNondefaultForeground[position] = newColor;
@@ -436,19 +448,21 @@ public class SettingsHighlightingAction extends GuiAction {
 	/////////////////////////////////////////////////////////////////
 	//
 	//  Class that handles click on the font select button
-	//   		
+	//
 	private class FontChanger implements ActionListener {
 
-		private int position;
+		private final int position;
 
-		public FontChanger(int pos) {
+		public FontChanger(final int pos) {
 			position = pos;
 		}
 
-		public void actionPerformed(ActionEvent e) {
-			JButton button = (JButton) e.getSource();
-			FontSettingDialog fontDialog = new FontSettingDialog(null, "Select Text Font", samples[position].getFont());
-			Font newFont = fontDialog.showDialog();
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			e.getSource();
+			final FontSettingDialog fontDialog = new FontSettingDialog(null, "Select Text Font", samples[position]
+					.getFont());
+			final Font newFont = fontDialog.showDialog();
 			if (newFont != null) {
 				//button.setFont(newFont);
 				samples[position].setFont(newFont);
@@ -459,16 +473,17 @@ public class SettingsHighlightingAction extends GuiAction {
 	/////////////////////////////////////////////////////////////////
 	//
 	// Class that handles action (check, uncheck) on the Default checkbox.
-	//   	
+	//
 	private class DefaultChanger implements ItemListener {
 
-		private int position;
+		private final int position;
 
-		public DefaultChanger(int pos) {
+		public DefaultChanger(final int pos) {
 			position = pos;
 		}
 
-		public void itemStateChanged(ItemEvent e) {
+		@Override
+		public void itemStateChanged(final ItemEvent e) {
 			// If selected: disable buttons, set their bg values from default setting, set sample bg & fg
 			// If deselected: enable buttons, set their bg values from current setting, set sample bg & bg
 			Color newBackground = null;
@@ -509,21 +524,26 @@ public class SettingsHighlightingAction extends GuiAction {
 	//
 	private class FontSettingDialog extends AbstractFontSettingDialog {
 
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 7656109933170656349L;
 		private boolean resultOK;
 
-		public FontSettingDialog(Frame owner, String title, Font currentFont) {
+		public FontSettingDialog(final Frame owner, final String title, final Font currentFont) {
 			super(owner, title, true, currentFont);
 		}
 
 		private Font showDialog() {
 			resultOK = true;
 			// Because dialog is modal, this blocks until user terminates the dialog.
-			this.setVisible(true);
+			setVisible(true);
 			return resultOK ? getFont() : null;
 		}
 
+		@Override
 		protected void closeDialog() {
-			this.setVisible(false);
+			setVisible(false);
 		}
 
 		private void performOK() {
@@ -534,32 +554,22 @@ public class SettingsHighlightingAction extends GuiAction {
 			resultOK = false;
 		}
 
-		// Control buttons for the dialog.  
+		// Control buttons for the dialog.
+		@Override
 		protected Component buildControlPanel() {
-			Box controlPanel = Box.createHorizontalBox();
-			JButton okButton = new JButton("OK");
-			okButton.addActionListener(new ActionListener() {
-
-				public void actionPerformed(ActionEvent e) {
-					performOK();
-					closeDialog();
-				}
+			final Box controlPanel = Box.createHorizontalBox();
+			final JButton okButton = new JButton("OK");
+			okButton.addActionListener(e -> {
+				performOK();
+				closeDialog();
 			});
-			JButton cancelButton = new JButton("Cancel");
-			cancelButton.addActionListener(new ActionListener() {
-
-				public void actionPerformed(ActionEvent e) {
-					performCancel();
-					closeDialog();
-				}
+			final JButton cancelButton = new JButton("Cancel");
+			cancelButton.addActionListener(e -> {
+				performCancel();
+				closeDialog();
 			});
-			JButton resetButton = new JButton("Reset");
-			resetButton.addActionListener(new ActionListener() {
-
-				public void actionPerformed(ActionEvent e) {
-					reset();
-				}
-			});
+			final JButton resetButton = new JButton("Reset");
+			resetButton.addActionListener(e -> reset());
 			controlPanel.add(Box.createHorizontalGlue());
 			controlPanel.add(okButton);
 			controlPanel.add(Box.createHorizontalGlue());
@@ -571,7 +581,8 @@ public class SettingsHighlightingAction extends GuiAction {
 		}
 
 		// required by Abstract super class but not used here.
-		protected void apply(Font font) {
+		@Override
+		protected void apply(final Font font) {
 
 		}
 
@@ -583,15 +594,20 @@ public class SettingsHighlightingAction extends GuiAction {
 //
 //  Dinky little custom button class to modify border based on
 //  whether enabled or not.  The default behavior does not work
-//  well on buttons with black background.   	
+//  well on buttons with black background.
 class ColorSelectButton extends JButton {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -8014385661811387622L;
 	public static final Border ColorSelectButtonEnabledBorder = new BevelBorder(BevelBorder.RAISED, Color.WHITE,
 			Color.GRAY);
 	public static final Border ColorSelectButtonDisabledBorder = new LineBorder(Color.GRAY, 2);
 
-	public void setEnabled(boolean status) {
+	@Override
+	public void setEnabled(final boolean status) {
 		super.setEnabled(status);
-		this.setBorder(status ? ColorSelectButtonEnabledBorder : ColorSelectButtonDisabledBorder);
+		setBorder(status ? ColorSelectButtonEnabledBorder : ColorSelectButtonDisabledBorder);
 	}
 }

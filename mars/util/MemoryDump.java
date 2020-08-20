@@ -1,30 +1,28 @@
 package mars.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import mars.Globals;
-import mars.mips.hardware.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.*;
+import mars.mips.hardware.AddressErrorException;
+import mars.mips.hardware.Memory;
 
 /*
  * Copyright (c) 2003-2009, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +30,7 @@ import java.util.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -53,16 +51,16 @@ public class MemoryDump {
 
 	/**
 	 * Return array with segment address bounds for specified segment.
-	 * 
+	 *
 	 * @param segment String with segment name (initially ".text" and ".data")
 	 * @return array of two Integer, the base and limit address for that segment.
 	 *         Null if parameter name does not match a known segment name.
 	 */
 
-	public static Integer[] getSegmentBounds(String segment) {
+	public static Integer[] getSegmentBounds(final String segment) {
 		for (int i = 0; i < segmentNames.length; i++) {
 			if (segmentNames[i].equals(segment)) {
-				Integer[] bounds = new Integer[2];
+				final Integer[] bounds = new Integer[2];
 				bounds[0] = new Integer(getBaseAddresses(segmentNames)[i]);
 				bounds[1] = new Integer(getLimitAddresses(segmentNames)[i]);
 				return bounds;
@@ -73,7 +71,7 @@ public class MemoryDump {
 
 	/**
 	 * Get the names of segments available for memory dump.
-	 * 
+	 *
 	 * @return array of Strings, each string is segment name (e.g. ".text", ".data")
 	 */
 
@@ -87,7 +85,7 @@ public class MemoryDump {
 	 * @param segments Array of Strings containing segment names (".text", ".data")
 	 * @return Array of int containing corresponding base addresses.
 	 */
-	public static int[] getBaseAddresses(String[] segments) {
+	public static int[] getBaseAddresses(final String[] segments) {
 		baseAddresses[0] = Memory.textBaseAddress;
 		baseAddresses[1] = Memory.dataBaseAddress;
 		return baseAddresses;
@@ -101,7 +99,7 @@ public class MemoryDump {
 	 * @param segments Array of Strings containing segment names (".text", ".data")
 	 * @return Array of int containing corresponding limit addresses.
 	 */
-	public static int[] getLimitAddresses(String[] segments) {
+	public static int[] getLimitAddresses(final String[] segments) {
 		limitAddresses[0] = Memory.textLimitAddress;
 		limitAddresses[1] = Memory.dataSegmentLimitAddress;
 		return limitAddresses;
@@ -120,7 +118,8 @@ public class MemoryDump {
 	 *         described above.
 	 * @throws AddressErrorException if the base address is not on a word boundary
 	 */
-	public static int getAddressOfFirstNull(int baseAddress, int limitAddress) throws AddressErrorException {
+	public static int getAddressOfFirstNull(final int baseAddress, final int limitAddress)
+			throws AddressErrorException {
 		int address = baseAddress;
 		for (; address < limitAddress; address += Memory.WORD_LENGTH_BYTES) {
 			if (Globals.memory.getRawWordOrNull(address) == null) { break; }

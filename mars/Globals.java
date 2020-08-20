@@ -1,30 +1,33 @@
 package mars;
 
-import mars.mips.instructions.syscalls.*;
-import mars.mips.instructions.*;
-import mars.mips.hardware.*;
-import mars.assembler.*;
-import mars.venus.*;
-import mars.util.*;
-import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
+import mars.assembler.SymbolTable;
+import mars.mips.hardware.Memory;
+import mars.mips.instructions.InstructionSet;
+import mars.mips.instructions.syscalls.SyscallNumberOverride;
+import mars.util.PropertiesFile;
+import mars.venus.VenusUI;
 
 /*
  * Copyright (c) 2003-2008, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,13 +35,13 @@ import java.util.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /**
  * Collection of globally-available data structures.
- * 
+ *
  * @author Pete Sanderson
  * @version August 2003
  */
@@ -121,7 +124,7 @@ public class Globals {
 
 	private static String getCopyrightHolders() { return "Pete Sanderson and Kenneth Vollmar"; }
 
-	public static void setGui(VenusUI g) { gui = g; }
+	public static void setGui(final VenusUI g) { gui = g; }
 
 	public static VenusUI getGui() { return gui; }
 
@@ -132,7 +135,7 @@ public class Globals {
 	 * structures.
 	 **/
 
-	public static void initialize(boolean gui) {
+	public static void initialize(final boolean gui) {
 		if (!initialized) {
 			memory = Memory.getInstance();  //clients can use Memory.getInstance instead of Globals.memory
 			instructionSet = new InstructionSet();
@@ -156,24 +159,24 @@ public class Globals {
 
 	// Read ASCII default display character for non-printing characters, from properties file.
 	public static String getAsciiNonPrint() {
-		String anp = getPropertyEntry(configPropertiesFile, "AsciiNonPrint");
-		return (anp == null) ? "." : ((anp.equals("space")) ? " " : anp);
+		final String anp = getPropertyEntry(configPropertiesFile, "AsciiNonPrint");
+		return anp == null ? "." : anp.equals("space") ? " " : anp;
 	}
 
 	// Read ASCII strings for codes 0-255, from properties file. If string
 	// value is "null", substitute value of ASCII_NON_PRINT.  If string is
 	// "space", substitute string containing one space character.
 	public static String[] getAsciiStrings() {
-		String let = getPropertyEntry(configPropertiesFile, "AsciiTable");
-		String placeHolder = getAsciiNonPrint();
-		String[] lets = let.split(" +");
+		final String let = getPropertyEntry(configPropertiesFile, "AsciiTable");
+		final String placeHolder = getAsciiNonPrint();
+		final String[] lets = let.split(" +");
 		int maxLength = 0;
 		for (int i = 0; i < lets.length; i++) {
-			if (lets[i].equals("null")) lets[i] = placeHolder;
-			if (lets[i].equals("space")) lets[i] = " ";
-			if (lets[i].length() > maxLength) maxLength = lets[i].length();
+			if (lets[i].equals("null")) { lets[i] = placeHolder; }
+			if (lets[i].equals("space")) { lets[i] = " "; }
+			if (lets[i].length() > maxLength) { maxLength = lets[i].length(); }
 		}
-		String padding = "        ";
+		final String padding = "        ";
 		maxLength++;
 		for (int i = 0; i < lets.length; i++) {
 			lets[i] = padding.substring(0, maxLength - lets[i].length()) + lets[i];
@@ -183,22 +186,23 @@ public class Globals {
 
 	// Read and return integer property value for given file and property name.
 	// Default value is returned if property file or name not found.
-	private static int getIntegerProperty(String propertiesFile, String propertyName, int defaultValue) {
+	private static int getIntegerProperty(final String propertiesFile, final String propertyName,
+			final int defaultValue) {
 		int limit = defaultValue;  // just in case no entry is found
-		Properties properties = PropertiesFile.loadPropertiesFromFile(propertiesFile);
+		final Properties properties = PropertiesFile.loadPropertiesFromFile(propertiesFile);
 		try {
 			limit = Integer.parseInt(properties.getProperty(propertyName, Integer.toString(defaultValue)));
-		} catch (NumberFormatException nfe) {} // do nothing, I already have a default
+		} catch (final NumberFormatException nfe) {} // do nothing, I already have a default
 		return limit;
 	}
 
 	// Read assembly language file extensions from properties file.  Resulting
 	// string is tokenized into array list (assume StringTokenizer default delimiters).
 	private static ArrayList getFileExtensions() {
-		ArrayList extensionsList = new ArrayList();
-		String extensions = getPropertyEntry(configPropertiesFile, "Extensions");
+		final ArrayList extensionsList = new ArrayList();
+		final String extensions = getPropertyEntry(configPropertiesFile, "Extensions");
 		if (extensions != null) {
-			StringTokenizer st = new StringTokenizer(extensions);
+			final StringTokenizer st = new StringTokenizer(extensions);
 			while (st.hasMoreTokens()) {
 				extensionsList.add(st.nextToken());
 			}
@@ -210,16 +214,16 @@ public class Globals {
 	 * Get list of MarsTools that reside outside the MARS distribution. Currently
 	 * this is done by adding the tool's path name to the list of values for the
 	 * external_tools property. Use ";" as delimiter!
-	 * 
+	 *
 	 * @return ArrayList. Each item is file path to .class file of a class that
 	 *         implements MarsTool. If none, returns empty list.
 	 */
 	public static ArrayList getExternalTools() {
-		ArrayList toolsList = new ArrayList();
-		String delimiter = ";";
-		String tools = getPropertyEntry(configPropertiesFile, "ExternalTools");
+		final ArrayList toolsList = new ArrayList();
+		final String delimiter = ";";
+		final String tools = getPropertyEntry(configPropertiesFile, "ExternalTools");
 		if (tools != null) {
-			StringTokenizer st = new StringTokenizer(tools, delimiter);
+			final StringTokenizer st = new StringTokenizer(tools, delimiter);
 			while (st.hasMoreTokens()) {
 				toolsList.add(st.nextToken());
 			}
@@ -229,27 +233,27 @@ public class Globals {
 
 	/**
 	 * Read and return property file value (if any) for requested property.
-	 * 
+	 *
 	 * @param propertiesFile name of properties file (do NOT include filename
 	 *                       extension, which is assumed to be ".properties")
 	 * @param propertyName   String containing desired property name
 	 * @return String containing associated value; null if property not found
 	 */
-	public static String getPropertyEntry(String propertiesFile, String propertyName) {
+	public static String getPropertyEntry(final String propertiesFile, final String propertyName) {
 		return PropertiesFile.loadPropertiesFromFile(propertiesFile).getProperty(propertyName);
 	}
 
 	/**
 	 * Read any syscall number assignment overrides from config file.
-	 * 
+	 *
 	 * @return ArrayList of SyscallNumberOverride objects
 	 */
 	public ArrayList getSyscallOverrides() {
-		ArrayList overrides = new ArrayList();
-		Properties properties = PropertiesFile.loadPropertiesFromFile(syscallPropertiesFile);
-		Enumeration keys = properties.keys();
+		final ArrayList overrides = new ArrayList();
+		final Properties properties = PropertiesFile.loadPropertiesFromFile(syscallPropertiesFile);
+		final Enumeration keys = properties.keys();
 		while (keys.hasMoreElements()) {
-			String key = (String) keys.nextElement();
+			final String key = (String) keys.nextElement();
 			overrides.add(new SyscallNumberOverride(key, properties.getProperty(key)));
 		}
 		return overrides;

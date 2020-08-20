@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
@@ -15,20 +14,20 @@ import javax.swing.filechooser.FileFilter;
 
 /*
  * Copyright (c) 2003-2008, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,7 +35,7 @@ import javax.swing.filechooser.FileFilter;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -66,7 +65,7 @@ public class FilenameFinder {
 	 * classpath, not absolute. To work with an arbitrary file system, use the other
 	 * version of this overloaded method. Will NOT match directories that happen to
 	 * have the desired extension.
-	 * 
+	 *
 	 * @param classLoader   class loader to use
 	 * @param directoryPath Search will be confined to this directory. Use "/" as
 	 *                      separator but do NOT include starting or ending "/"
@@ -75,31 +74,32 @@ public class FilenameFinder {
 	 *                      list. Do NOT include the "." in extension.
 	 * @return array list of matching file names as Strings. If none, list is empty.
 	 */
-	public static ArrayList getFilenameList(ClassLoader classLoader, String directoryPath, String fileExtension) {
+	public static ArrayList getFilenameList(final ClassLoader classLoader, final String directoryPath,
+			String fileExtension) {
 		fileExtension = checkFileExtension(fileExtension);
-		ArrayList filenameList = new ArrayList();
+		final ArrayList filenameList = new ArrayList();
 		// Modified by DPS 10-July-2008 to better handle path containing space
 		// character (%20) and to hopefully handle path containing non-ASCII
 		// characters.  The "toURI()" approach was suggested by MARS user
 		// Felipe Lessa and worked for him when running 'java Mars' but it did
 		// not work when executing from a jar file 'java -jar Mars.jar'.  I
 		// took it from there and discovered that in the latter situation,
-		// "toURI()" created a URI prefixed with "jar:" and the "getPath()" in 
-		// that case returns null! If you strip the "jar:" prefix and create a 
+		// "toURI()" created a URI prefixed with "jar:" and the "getPath()" in
+		// that case returns null! If you strip the "jar:" prefix and create a
 		// new URI from the resulting string, it works!  Thanks Felipe!
 		//
 		// NOTE 5-Sep-2008: "toURI()" was introduced in Java 1.5.  To maintain
 		// 1.4 compatibility, I need to change it to call URI constructor with
 		// string argument, as documented in Sun API.
-		// 
+		//
 		// Modified by Ingo Kofler 24-Sept-2009 to handle multiple JAR files.
-		// This requires use of ClassLoader getResources() instead of 
+		// This requires use of ClassLoader getResources() instead of
 		// getResource().  The former will look in all JAR files listed in
 		// in the java command.
 		//
 		URI uri;
 		try {
-			Enumeration urls = classLoader.getResources(directoryPath);
+			final Enumeration urls = classLoader.getResources(directoryPath);
 
 			while (urls.hasMoreElements()) {
 				uri = new URI(urls.nextElement().toString());
@@ -107,17 +107,17 @@ public class FilenameFinder {
 					uri = new URI(uri.toString().substring(JAR_URI_PREFIX.length()));
 				}
 
-				File f = new File(uri.getPath());
-				File[] files = f.listFiles();
+				final File f = new File(uri.getPath());
+				final File[] files = f.listFiles();
 				if (files == null) {
 					if (f.toString().toLowerCase().indexOf(JAR_EXTENSION) > 0) {
 						// Must be running from a JAR file. Use ZipFile to find files and create list.
-						// Modified 12/28/09 by DPS to add results to existing filenameList instead of overwriting it.         
+						// Modified 12/28/09 by DPS to add results to existing filenameList instead of overwriting it.
 						filenameList.addAll(getListFromJar(extractJarFilename(f.toString()), directoryPath,
 								fileExtension));
 					}
 				} else {  // have array of File objects; convert to names and add to list
-					FileFilter filter = getFileFilter(fileExtension, "", NO_DIRECTORIES);
+					final FileFilter filter = getFileFilter(fileExtension, "", NO_DIRECTORIES);
 					for (int i = 0; i < files.length; i++) {
 						if (filter.accept(files[i])) { filenameList.add(files[i].getName()); }
 					}
@@ -125,10 +125,10 @@ public class FilenameFinder {
 			}
 			return filenameList;
 
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
 			e.printStackTrace();
 			return filenameList;
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 			return filenameList;
 		}
@@ -147,16 +147,16 @@ public class FilenameFinder {
 		   }
 		File f = new File(uri.getPath());
 		File[] files = f.listFiles();
-		if (files == null) {         
+		if (files == null) {
 		   if (f.toString().toLowerCase().indexOf(JAR_EXTENSION)>0) {
-		      // Must be running from a JAR file. Use ZipFile to find files and create list.         
+		      // Must be running from a JAR file. Use ZipFile to find files and create list.
 		      filenameList = getListFromJar(extractJarFilename(f.toString()), directoryPath, fileExtension);
-		   } 
+		   }
 		}
 		else {  // have array of File objects; convert to names and add to list
 		   FileFilter filter = getFileFilter(fileExtension, "", NO_DIRECTORIES);
 		   for (int i=0; i<files.length; i++) {
-		      if (filter.accept(files[i])) { 
+		      if (filter.accept(files[i])) {
 		         filenameList.add(files[i].getName());
 		      }
 		   }
@@ -173,7 +173,7 @@ public class FilenameFinder {
 	 * class loader to get the resource, the directory path needs to be relative to
 	 * classpath, not absolute. To work with an arbitrary file system, use the other
 	 * version of this overloaded method.
-	 * 
+	 *
 	 * @param classLoader    class loader to use
 	 * @param directoryPath  Search will be confined to this directory. Use "/" as
 	 *                       separator but do NOT include starting or ending "/"
@@ -185,7 +185,8 @@ public class FilenameFinder {
 	 *                       files are added.
 	 * @return array list of matching file names as Strings. If none, list is empty.
 	 */
-	public static ArrayList getFilenameList(ClassLoader classLoader, String directoryPath, ArrayList fileExtensions) {
+	public static ArrayList getFilenameList(final ClassLoader classLoader, final String directoryPath,
+			final ArrayList fileExtensions) {
 		ArrayList filenameList = new ArrayList();
 		String fileExtension;
 		if (fileExtensions == null || fileExtensions.size() == 0) {
@@ -204,7 +205,7 @@ public class FilenameFinder {
 	 * will locate it and build list of all names of files in that directory having
 	 * the given file extension. If file extenion is null or empty, all filenames
 	 * are returned. Returned list contains absolute filename paths.
-	 * 
+	 *
 	 * @param directoryPath Search will be confined to this directory.
 	 * @param fileExtension Only files with this extension will be added to the
 	 *                      list. Do NOT include "." in extension. If null or empty
@@ -212,13 +213,13 @@ public class FilenameFinder {
 	 * @return array list of matching file names (absolute path). If none, list is
 	 *         empty.
 	 */
-	public static ArrayList getFilenameList(String directoryPath, String fileExtension) {
+	public static ArrayList getFilenameList(final String directoryPath, String fileExtension) {
 		fileExtension = checkFileExtension(fileExtension);
-		ArrayList filenameList = new ArrayList();
-		File directory = new File(directoryPath);
+		final ArrayList filenameList = new ArrayList();
+		final File directory = new File(directoryPath);
 		if (directory.isDirectory()) {
-			File[] allFiles = directory.listFiles();
-			FileFilter filter = getFileFilter(fileExtension, "", NO_DIRECTORIES);
+			final File[] allFiles = directory.listFiles();
+			final FileFilter filter = getFileFilter(fileExtension, "", NO_DIRECTORIES);
 			for (int i = 0; i < allFiles.length; i++) {
 				if (filter.accept(allFiles[i])) { filenameList.add(allFiles[i].getAbsolutePath()); }
 			}
@@ -231,7 +232,7 @@ public class FilenameFinder {
 	 * will locate it and build list of all names of files in that directory having
 	 * the given file extension. If file extenion is null or empty, all filenames
 	 * are returned. Returned list contains absolute filename paths.
-	 * 
+	 *
 	 * @param directoryPath  Search will be confined to this directory.
 	 * @param fileExtensions ArrayList of Strings containing file extensions. Only
 	 *                       files with an extension in this list will be added to
@@ -241,7 +242,7 @@ public class FilenameFinder {
 	 * @return array list of matching file names (absolute path). If none, list is
 	 *         empty.
 	 */
-	public static ArrayList getFilenameList(String directoryPath, ArrayList fileExtensions) {
+	public static ArrayList getFilenameList(final String directoryPath, final ArrayList fileExtensions) {
 		ArrayList filenameList = new ArrayList();
 		String fileExtension;
 		if (fileExtensions == null || fileExtensions.size() == 0) {
@@ -260,7 +261,7 @@ public class FilenameFinder {
 	 * list of all having the given file extension. If file extenion is null or
 	 * empty, all filenames are returned. Returned list contains absolute filename
 	 * paths.
-	 * 
+	 *
 	 * @param nameList      ArrayList of String containing file names.
 	 * @param fileExtension Only files with this extension will be added to the
 	 *                      list. If null or empty string, all files are added. Do
@@ -268,12 +269,12 @@ public class FilenameFinder {
 	 * @return array list of matching file names (absolute path). If none, list is
 	 *         empty.
 	 */
-	public static ArrayList getFilenameList(ArrayList nameList, String fileExtension) {
+	public static ArrayList getFilenameList(final ArrayList nameList, String fileExtension) {
 		fileExtension = checkFileExtension(fileExtension);
-		ArrayList filenameList = new ArrayList();
-		FileFilter filter = getFileFilter(fileExtension, "", NO_DIRECTORIES);
+		final ArrayList filenameList = new ArrayList();
+		final FileFilter filter = getFileFilter(fileExtension, "", NO_DIRECTORIES);
 		for (int i = 0; i < nameList.size(); i++) {
-			File file = new File((String) nameList.get(i));
+			final File file = new File((String) nameList.get(i));
 			if (filter.accept(file)) { filenameList.add(file.getAbsolutePath()); }
 		}
 		return filenameList;
@@ -284,7 +285,7 @@ public class FilenameFinder {
 	 * list of all having the given file extension. If file extenion is null or
 	 * empty, all filenames are returned. Returned list contains absolute filename
 	 * paths.
-	 * 
+	 *
 	 * @param nameList       ArrayList of String containing file names.
 	 * @param fileExtensions ArrayList of Strings containing file extensions. Only
 	 *                       files with an extension in this list will be added to
@@ -294,7 +295,7 @@ public class FilenameFinder {
 	 * @return array list of matching file names (absolute path). If none, list is
 	 *         empty.
 	 */
-	public static ArrayList getFilenameList(ArrayList nameList, ArrayList fileExtensions) {
+	public static ArrayList getFilenameList(final ArrayList nameList, final ArrayList fileExtensions) {
 		ArrayList filenameList = new ArrayList();
 		String fileExtension;
 		if (fileExtensions == null || fileExtensions.size() == 0) {
@@ -310,16 +311,16 @@ public class FilenameFinder {
 
 	/**
 	 * Get the filename extension of the specified File.
-	 * 
+	 *
 	 * @param file the File object representing the file of interest
 	 * @return The filename extension (everything that follows last '.' in filename)
 	 *         or null if none.
 	 */
 	// Source code from Sun Microsystems "The Java Tutorials : How To Use File Choosers"
-	public static String getExtension(File file) {
+	public static String getExtension(final File file) {
 		String ext = null;
-		String s = file.getName();
-		int i = s.lastIndexOf('.');
+		final String s = file.getName();
+		final int i = s.lastIndexOf('.');
 		if (i > 0 && i < s.length() - 1) { ext = s.substring(i + 1).toLowerCase(); }
 		return ext;
 	}
@@ -327,7 +328,7 @@ public class FilenameFinder {
 	/**
 	 * Get a FileFilter that will filter files based on the given list of filename
 	 * extensions.
-	 * 
+	 *
 	 * @param extensions        ArrayList of Strings, each string is acceptable
 	 *                          filename extension.
 	 * @param description       String containing description to be added in
@@ -338,14 +339,15 @@ public class FilenameFinder {
 	 *         directories if so indicated.
 	 */
 
-	public static FileFilter getFileFilter(ArrayList extensions, String description, boolean acceptDirectories) {
+	public static FileFilter getFileFilter(final ArrayList extensions, final String description,
+			final boolean acceptDirectories) {
 		return new MarsFileFilter(extensions, description, acceptDirectories);
 	}
 
 	/**
 	 * Get a FileFilter that will filter files based on the given list of filename
 	 * extensions. All directories are accepted by the filter.
-	 * 
+	 *
 	 * @param extensions  ArrayList of Strings, each string is acceptable filename
 	 *                    extension
 	 * @param description String containing description to be added in parentheses
@@ -354,14 +356,14 @@ public class FilenameFinder {
 	 *         directories if so indicated.
 	 */
 
-	public static FileFilter getFileFilter(ArrayList extensions, String description) {
+	public static FileFilter getFileFilter(final ArrayList extensions, final String description) {
 		return getFileFilter(extensions, description, true);
 	}
 
 	/**
 	 * Get a FileFilter that will filter files based on the given filename
 	 * extension.
-	 * 
+	 *
 	 * @param extension         String containing acceptable filename extension.
 	 * @param description       String containing description to be added in
 	 *                          parentheses after list of extensions.
@@ -371,8 +373,9 @@ public class FilenameFinder {
 	 *         directories if so indicated.
 	 */
 
-	public static FileFilter getFileFilter(String extension, String description, boolean acceptDirectories) {
-		ArrayList extensions = new ArrayList();
+	public static FileFilter getFileFilter(final String extension, final String description,
+			final boolean acceptDirectories) {
+		final ArrayList extensions = new ArrayList();
 		extensions.add(extension);
 		return new MarsFileFilter(extensions, description, acceptDirectories);
 	}
@@ -380,7 +383,7 @@ public class FilenameFinder {
 	/**
 	 * Get a FileFilter that will filter files based on the given filename
 	 * extension. All directories are accepted by the filter.
-	 * 
+	 *
 	 * @param extension   String containing acceptable filename extension
 	 * @param description String containing description to be added in parentheses
 	 *                    after list of extensions.
@@ -388,41 +391,41 @@ public class FilenameFinder {
 	 *         directories if so indicated.
 	 */
 
-	public static FileFilter getFileFilter(String extension, String description) {
-		ArrayList extensions = new ArrayList();
+	public static FileFilter getFileFilter(final String extension, final String description) {
+		final ArrayList extensions = new ArrayList();
 		extensions.add(extension);
 		return getFileFilter(extensions, description, true);
 	}
 
 	/**
 	 * Determine if given filename ends with given extension.
-	 * 
+	 *
 	 * @param name      A String containing the file name
 	 * @param extension A String containing the file extension. Leading period is
 	 *                  optional.
 	 * @return Returns true if filename ends with given extension, false otherwise.
 	 */
-	// For assured results, make sure extension starts with "."	(will add it if not there) 
-	public static boolean fileExtensionMatch(String name, String extension) {
-		return (extension == null || extension.length() == 0 || name.endsWith(((extension.startsWith(".")) ? "" : ".")
-				+ extension));
+	// For assured results, make sure extension starts with "."	(will add it if not there)
+	public static boolean fileExtensionMatch(final String name, final String extension) {
+		return extension == null || extension.length() == 0 || name.endsWith((extension.startsWith(".") ? "" : ".")
+				+ extension);
 	}
 
 	// return list of file names in specified folder inside JAR
-	private static ArrayList getListFromJar(String jarName, String directoryPath, String fileExtension) {
+	private static ArrayList getListFromJar(final String jarName, final String directoryPath, String fileExtension) {
 		fileExtension = checkFileExtension(fileExtension);
-		ArrayList nameList = new ArrayList();
+		final ArrayList nameList = new ArrayList();
 		if (jarName == null) { return nameList; }
 		try {
-			ZipFile zf = new ZipFile(new File(jarName));
-			Enumeration list = zf.entries();
+			final ZipFile zf = new ZipFile(new File(jarName));
+			final Enumeration list = zf.entries();
 			while (list.hasMoreElements()) {
-				ZipEntry ze = (ZipEntry) list.nextElement();
+				final ZipEntry ze = (ZipEntry) list.nextElement();
 				if (ze.getName().startsWith(directoryPath + "/") && fileExtensionMatch(ze.getName(), fileExtension)) {
 					nameList.add(ze.getName().substring(ze.getName().lastIndexOf('/') + 1));
 				}
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			System.out.println("Exception occurred reading MarsTool list from JAR: " + e);
 		}
 		return nameList;
@@ -436,15 +439,15 @@ public class FilenameFinder {
 	//                 work only if the JAR file was in the current working directory (as would
 	//                 be the case if executed from a GUI by double-clicking the jar icon).
 	private static String extractJarFilename(String path) {
-		StringTokenizer findTheJar = new StringTokenizer(path, "\\/");
+		new StringTokenizer(path, "\\/");
 		if (path.toLowerCase().startsWith(FILE_URL)) { path = path.substring(FILE_URL.length()); }
-		int jarPosition = path.toLowerCase().indexOf(JAR_EXTENSION);
-		return (jarPosition >= 0) ? path.substring(0, jarPosition + JAR_EXTENSION.length()) : path;
+		final int jarPosition = path.toLowerCase().indexOf(JAR_EXTENSION);
+		return jarPosition >= 0 ? path.substring(0, jarPosition + JAR_EXTENSION.length()) : path;
 	}
 
 	// make sure file extension, if it is real, does not start with '.' -- remove it.
-	private static String checkFileExtension(String fileExtension) {
-		return (fileExtension == null || fileExtension.length() == 0 || !fileExtension.startsWith(".")) ? fileExtension
+	private static String checkFileExtension(final String fileExtension) {
+		return fileExtension == null || fileExtension.length() == 0 || !fileExtension.startsWith(".") ? fileExtension
 				: fileExtension.substring(1);
 	}
 
@@ -454,13 +457,13 @@ public class FilenameFinder {
 
 	private static class MarsFileFilter extends FileFilter {
 
-		private ArrayList extensions;
-		private String fullDescription;
-		private boolean acceptDirectories;
+		private final ArrayList extensions;
+		private final String fullDescription;
+		private final boolean acceptDirectories;
 
-		private MarsFileFilter(ArrayList extensions, String description, boolean acceptDirectories) {
+		private MarsFileFilter(final ArrayList extensions, final String description, final boolean acceptDirectories) {
 			this.extensions = extensions;
-			this.fullDescription = buildFullDescription(description, extensions);
+			fullDescription = buildFullDescription(description, extensions);
 			this.acceptDirectories = acceptDirectories;
 		}
 
@@ -468,13 +471,13 @@ public class FilenameFinder {
 		// We will attach it to description of the extensions.  For example, if the extensions
 		// given are s and asm and the description is "Assembler Programs" the full description
 		// generated here will be "Assembler Programs (*.s; *.asm)"
-		private String buildFullDescription(String description, ArrayList extensions) {
-			String result = (description == null) ? "" : description;
+		private String buildFullDescription(final String description, final ArrayList extensions) {
+			String result = description == null ? "" : description;
 			if (extensions.size() > 0) { result += "  ("; }
 			for (int i = 0; i < extensions.size(); i++) {
-				String extension = (String) extensions.get(i);
+				final String extension = (String) extensions.get(i);
 				if (extension != null && extension.length() > 0) {
-					result += ((i == 0) ? "" : "; ") + "*" + ((extension.charAt(0) == '.') ? "" : ".") + extension;
+					result += (i == 0 ? "" : "; ") + "*" + (extension.charAt(0) == '.' ? "" : ".") + extension;
 				}
 			}
 			if (extensions.size() > 0) { result += ")"; }
@@ -482,15 +485,17 @@ public class FilenameFinder {
 		}
 
 		// required by the abstract superclass
-		public String getDescription() { return this.fullDescription; }
+		@Override
+		public String getDescription() { return fullDescription; }
 
 		// required by the abstract superclass.
-		public boolean accept(File file) {
+		@Override
+		public boolean accept(final File file) {
 			if (file.isDirectory()) { return acceptDirectories; }
-			String fileExtension = getExtension(file);
+			final String fileExtension = getExtension(file);
 			if (fileExtension != null) {
 				for (int i = 0; i < extensions.size(); i++) {
-					String extension = checkFileExtension((String) extensions.get(i));
+					final String extension = checkFileExtension((String) extensions.get(i));
 					if (extension.equals(MATCH_ALL_EXTENSIONS) || fileExtension.equals(extension)) { return true; }
 				}
 			}

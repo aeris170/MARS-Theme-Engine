@@ -1,26 +1,26 @@
 package mars.mips.dump;
 
-import mars.*;
-import mars.util.*;
-import java.util.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+
+import mars.util.FilenameFinder;
 
 /*
  * Copyright (c) 2003-2008, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,7 +28,7 @@ import java.lang.reflect.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -59,19 +59,19 @@ public class DumpFormatLoader {
 		if (formatList == null) {
 			formatList = new ArrayList();
 			// grab all class files in the dump directory
-			ArrayList candidates = FilenameFinder.getFilenameList(this.getClass().getClassLoader(), DUMP_DIRECTORY_PATH,
-					CLASS_EXTENSION);
+			final ArrayList candidates = FilenameFinder.getFilenameList(this.getClass().getClassLoader(),
+					DUMP_DIRECTORY_PATH, CLASS_EXTENSION);
 			for (int i = 0; i < candidates.size(); i++) {
-				String file = (String) candidates.get(i);
+				final String file = (String) candidates.get(i);
 				try {
 					// grab the class, make sure it implements DumpFormat, instantiate, add to list
-					String formatClassName = CLASS_PREFIX + file.substring(0, file.indexOf(CLASS_EXTENSION) - 1);
-					Class clas = Class.forName(formatClassName);
+					final String formatClassName = CLASS_PREFIX + file.substring(0, file.indexOf(CLASS_EXTENSION) - 1);
+					final Class clas = Class.forName(formatClassName);
 					if (DumpFormat.class.isAssignableFrom(clas) && !Modifier.isAbstract(clas.getModifiers())
 							&& !Modifier.isInterface(clas.getModifiers())) {
 						formatList.add(clas.newInstance());
 					}
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					System.out.println("Error instantiating DumpFormat from file " + file + ": " + e);
 				}
 			}
@@ -79,8 +79,8 @@ public class DumpFormatLoader {
 		return formatList;
 	}
 
-	public static DumpFormat findDumpFormatGivenCommandDescriptor(ArrayList formatList,
-			String formatCommandDescriptor) {
+	public static DumpFormat findDumpFormatGivenCommandDescriptor(final ArrayList formatList,
+			final String formatCommandDescriptor) {
 		DumpFormat match = null;
 		for (int i = 0; i < formatList.size(); i++) {
 			if (((DumpFormat) formatList.get(i)).getCommandDescriptor().equals(formatCommandDescriptor)) {

@@ -1,25 +1,23 @@
 package mars.venus;
 
-import mars.*;
-import javax.swing.*;
-import java.io.*;
+import java.io.File;
 
 /*
  * Copyright (c) 2003-2007, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,7 +25,7 @@ import java.io.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -43,24 +41,26 @@ public class Editor {
 	public static final int MIN_BLINK_RATE = 0;     // no flashing
 	public static final int MAX_BLINK_RATE = 1000;  // once per second
 
-	private VenusUI mainUI;
+	private final VenusUI mainUI;
 	private EditTabbedPane editTabbedPane;
-	private String mainUIbaseTitle;
+	private final String mainUIbaseTitle;
 	/* number of times File->New has been selected.  Used to generate
 	 * default filename until first Save or Save As.
 	 */
 	private int newUsageCount;
 	// Current Directory for Open operation, same for Save operation
 	// Values will mainly be set by the EditTabbedPane as Open/Save operations occur.
-	private String defaultOpenDirectory, currentOpenDirectory;
-	private String defaultSaveDirectory, currentSaveDirectory;
+	private final String defaultOpenDirectory;
+	private String currentOpenDirectory;
+	private final String defaultSaveDirectory;
+	private String currentSaveDirectory;
 
 	/**
 	 * Create editor.
 	 *
 	 * @param ui the GUI that owns this editor
 	 */
-	public Editor(VenusUI ui) {
+	public Editor(final VenusUI ui) {
 		mainUI = ui;
 		FileStatus.reset();
 		mainUIbaseTitle = mainUI.getTitle();
@@ -77,7 +77,7 @@ public class Editor {
 	 *
 	 * @param editTabbedPane an existing editTabbedPane object
 	 */
-	public void setEditTabbedPane(EditTabbedPane editTabbedPane) { this.editTabbedPane = editTabbedPane; }
+	public void setEditTabbedPane(final EditTabbedPane editTabbedPane) { this.editTabbedPane = editTabbedPane; }
 
 	/**
 	 * Get name of current directory for Open operation.
@@ -99,8 +99,8 @@ public class Editor {
 	 *                             will be used.
 	 */
 
-	void setCurrentOpenDirectory(String currentOpenDirectory) {
-		File file = new File(currentOpenDirectory);
+	void setCurrentOpenDirectory(final String currentOpenDirectory) {
+		final File file = new File(currentOpenDirectory);
 		if (!file.exists() || !file.isDirectory()) {
 			this.currentOpenDirectory = defaultOpenDirectory;
 		} else {
@@ -128,8 +128,8 @@ public class Editor {
 	 *                             will be used.
 	 */
 
-	void setCurrentSaveDirectory(String currentSaveDirectory) {
-		File file = new File(currentSaveDirectory);
+	void setCurrentSaveDirectory(final String currentSaveDirectory) {
+		final File file = new File(currentSaveDirectory);
 		if (!file.exists() || !file.isDirectory()) {
 			this.currentSaveDirectory = defaultSaveDirectory;
 		} else {
@@ -159,12 +159,13 @@ public class Editor {
 	 * @param name   Name of file (last component of path)
 	 * @param status Edit status of file. See FileStatus static constants.
 	 */
-	public void setTitle(String path, String name, int status) {
+	public void setTitle(final String path, final String name, final int status) {
 		if (status == FileStatus.NO_FILE || name == null || name.length() == 0) {
 			mainUI.setTitle(mainUIbaseTitle);
 		} else {
-			String edited = (status == FileStatus.NEW_EDITED || status == FileStatus.EDITED) ? "*" : " ";
-			String titleName = (status == FileStatus.NEW_EDITED || status == FileStatus.NEW_NOT_EDITED) ? name : path;
+			final String edited = status == FileStatus.NEW_EDITED || status == FileStatus.EDITED ? "*" : " ";
+			final String titleName = status == FileStatus.NEW_EDITED || status == FileStatus.NEW_NOT_EDITED ? name
+					: path;
 			mainUI.setTitle(titleName + edited + " - " + mainUIbaseTitle);
 			editTabbedPane.setTitleAt(editTabbedPane.getSelectedIndex(), name + edited);
 		}
@@ -179,7 +180,7 @@ public class Editor {
 
 	/**
 	 * Perform "close" operation on current tab's file.
-	 * 
+	 *
 	 * @return true if succeeded, else false.
 	 */
 	public boolean close() {
@@ -188,7 +189,7 @@ public class Editor {
 
 	/**
 	 * Close all currently open files.
-	 * 
+	 *
 	 * @return true if succeeded, else false.
 	 */
 	public boolean closeAll() {
@@ -197,7 +198,7 @@ public class Editor {
 
 	/**
 	 * Perform "save" operation on current tab's file.
-	 * 
+	 *
 	 * @return true if succeeded, else false.
 	 */
 	public boolean save() {
@@ -206,7 +207,7 @@ public class Editor {
 
 	/**
 	 * Perform "save as" operation on current tab's file.
-	 * 
+	 *
 	 * @return true if succeeded, else false.
 	 */
 	public boolean saveAs() {
@@ -215,7 +216,7 @@ public class Editor {
 
 	/**
 	 * Perform save operation on all open files (tabs).
-	 * 
+	 *
 	 * @return true if succeeded, else false.
 	 */
 	public boolean saveAll() {
@@ -224,7 +225,7 @@ public class Editor {
 
 	/**
 	 * Open file in a new tab.
-	 * 
+	 *
 	 * @return true if succeeded, else false.
 	 */
 	public boolean open() {

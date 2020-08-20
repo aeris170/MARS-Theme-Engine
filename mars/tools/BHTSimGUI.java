@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2009, Ingo Kofler, ITEC, Klagenfurt University, Austria
- * 
+ *
  * Developed by Ingo Kofler (ingo.kofler@itec.uni-klu.ac.at)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,7 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -58,11 +58,16 @@ import javax.swing.table.DefaultTableCellRenderer;
  * and statistics
  * <li>A log panel that summarizes the predictions in a textual form
  * </ul>
- * 
+ *
  * @author ingo.kofler@itec.uni-klu.ac.at
  */
 //@SuppressWarnings("serial")
 public class BHTSimGUI extends JPanel {
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 782227172313337797L;
 
 	/** text field presenting the most recent branch instruction */
 	private JTextField m_tfInstruction;
@@ -83,7 +88,7 @@ public class BHTSimGUI extends JPanel {
 	private JComboBox m_cbBHTinitVal;
 
 	/** the table representing the BHT */
-	private JTable m_tabBHT;
+	private final JTable m_tabBHT;
 
 	/** text field for log output */
 	private JTextArea m_taLog;
@@ -108,7 +113,7 @@ public class BHTSimGUI extends JPanel {
 	 * JPanel which is integrated in the GUI of the MARS tool
 	 */
 	public BHTSimGUI() {
-		BorderLayout layout = new BorderLayout();
+		final BorderLayout layout = new BorderLayout();
 		layout.setVgap(10);
 		layout.setHgap(10);
 		setLayout(layout);
@@ -123,26 +128,27 @@ public class BHTSimGUI extends JPanel {
 
 	/**
 	 * Creates and initializes the JTable representing the BHT.
-	 * 
+	 *
 	 * @return the JTable representing the BHT
 	 */
 	private JTable createAndInitTable() {
 		// create the table
-		JTable theTable = new JTable();
+		final JTable theTable = new JTable();
 
-		// create a default renderer for double values (percentage) 
-		DefaultTableCellRenderer doubleRenderer = new DefaultTableCellRenderer() {
+		// create a default renderer for double values (percentage)
+		final DefaultTableCellRenderer doubleRenderer = new DefaultTableCellRenderer() {
 
-			private DecimalFormat formatter = new DecimalFormat("##0.00");
+			private final DecimalFormat formatter = new DecimalFormat("##0.00");
 
-			public void setValue(Object value) {
-				setText((value == null) ? "" : formatter.format(value));
+			@Override
+			public void setValue(final Object value) {
+				setText(value == null ? "" : formatter.format(value));
 			}
 		};
 		doubleRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 
 		// create a default renderer for all other values with center alignment
-		DefaultTableCellRenderer defRenderer = new DefaultTableCellRenderer();
+		final DefaultTableCellRenderer defRenderer = new DefaultTableCellRenderer();
 		defRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 
 		theTable.setDefaultRenderer(Double.class, doubleRenderer);
@@ -159,7 +165,7 @@ public class BHTSimGUI extends JPanel {
 	/**
 	 * Creates and initializes the panel holding the instruction, address and index
 	 * text fields.
-	 * 
+	 *
 	 * @return the info panel
 	 */
 	private JPanel buildInfoPanel() {
@@ -169,22 +175,22 @@ public class BHTSimGUI extends JPanel {
 
 		m_tfInstruction.setColumns(10);
 		m_tfInstruction.setEditable(false);
-		m_tfInstruction.setHorizontalAlignment(JTextField.CENTER);
+		m_tfInstruction.setHorizontalAlignment(SwingConstants.CENTER);
 		m_tfAddress.setColumns(10);
 		m_tfAddress.setEditable(false);
-		m_tfAddress.setHorizontalAlignment(JTextField.CENTER);
+		m_tfAddress.setHorizontalAlignment(SwingConstants.CENTER);
 		m_tfIndex.setColumns(10);
 		m_tfIndex.setEditable(false);
-		m_tfIndex.setHorizontalAlignment(JTextField.CENTER);
+		m_tfIndex.setHorizontalAlignment(SwingConstants.CENTER);
 
-		JPanel panel = new JPanel();
-		JPanel outerPanel = new JPanel();
+		final JPanel panel = new JPanel();
+		final JPanel outerPanel = new JPanel();
 		outerPanel.setLayout(new BorderLayout());
 
-		GridBagLayout gbl = new GridBagLayout();
+		final GridBagLayout gbl = new GridBagLayout();
 		panel.setLayout(gbl);
 
-		GridBagConstraints c = new GridBagConstraints();
+		final GridBagConstraints c = new GridBagConstraints();
 
 		c.insets = new Insets(5, 5, 2, 5);
 		c.gridx = 1;
@@ -210,22 +216,22 @@ public class BHTSimGUI extends JPanel {
 	 * Creates and initializes the panel for the configuration of the tool The panel
 	 * contains two combo boxes for selecting the number of BHT entries and the
 	 * history size.
-	 * 
+	 *
 	 * @return a panel for the configuration
 	 */
 	private JPanel buildConfigPanel() {
-		JPanel panel = new JPanel();
+		final JPanel panel = new JPanel();
 
-		Vector sizes = new Vector();
+		final Vector sizes = new Vector();
 		sizes.add(new Integer(8));
 		sizes.add(new Integer(16));
 		sizes.add(new Integer(32));
 
-		Vector bits = new Vector();
+		final Vector bits = new Vector();
 		bits.add(new Integer(1));
 		bits.add(new Integer(2));
 
-		Vector initVals = new Vector();
+		final Vector initVals = new Vector();
 		initVals.add(BHTSimGUI.BHT_DO_NOT_TAKE_BRANCH);
 		initVals.add(BHTSimGUI.BHT_TAKE_BRANCH);
 
@@ -245,11 +251,11 @@ public class BHTSimGUI extends JPanel {
 
 	/**
 	 * Creates and initializes the panel containing the log text area.
-	 * 
+	 *
 	 * @return the panel for the logging output
 	 */
 	private JPanel buildLogPanel() {
-		JPanel panel = new JPanel();
+		final JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
 		m_taLog = new JTextArea();
 		m_taLog.setRows(6);
@@ -263,42 +269,42 @@ public class BHTSimGUI extends JPanel {
 
 	/***
 	 * Returns the combo box for selecting the number of BHT entries.
-	 * 
+	 *
 	 * @return the reference to the combo box
 	 */
 	public JComboBox getCbBHTentries() { return m_cbBHTentries; }
 
 	/***
 	 * Returns the combo box for selecting the size of the BHT history.
-	 * 
+	 *
 	 * @return the reference to the combo box
 	 */
 	public JComboBox getCbBHThistory() { return m_cbBHThistory; }
 
 	/***
 	 * Returns the combo box for selecting the initial value of the BHT
-	 * 
+	 *
 	 * @return the reference to the combo box
 	 */
 	public JComboBox getCbBHTinitVal() { return m_cbBHTinitVal; }
 
 	/***
 	 * Returns the table representing the BHT.
-	 * 
+	 *
 	 * @return the reference to the table
 	 */
 	public JTable getTabBHT() { return m_tabBHT; }
 
 	/***
 	 * Returns the text area for log purposes.
-	 * 
+	 *
 	 * @return the reference to the text area
 	 */
 	public JTextArea getTaLog() { return m_taLog; }
 
 	/***
 	 * Returns the text field for displaying the most recent branch instruction
-	 * 
+	 *
 	 * @return the reference to the text field
 	 */
 	public JTextField getTfInstruction() { return m_tfInstruction; }
@@ -306,14 +312,14 @@ public class BHTSimGUI extends JPanel {
 	/***
 	 * Returns the text field for displaying the address of the most recent branch
 	 * instruction
-	 * 
+	 *
 	 * @return the reference to the text field
 	 */
 	public JTextField getTfAddress() { return m_tfAddress; }
 
 	/***
 	 * Returns the text field for displaying the corresponding index into the BHT
-	 * 
+	 *
 	 * @return the reference to the text field
 	 */
 	public JTextField getTfIndex() { return m_tfIndex; }

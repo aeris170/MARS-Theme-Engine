@@ -1,26 +1,27 @@
 package mars.venus;
 
-import mars.*;
-import javax.swing.*;
-import java.awt.*;
-import java.util.*;
+import java.awt.Dimension;
+
+import javax.swing.JDesktopPane;
+
+import mars.Globals;
 
 /*
  * Copyright (c) 2003-2006, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,28 +29,32 @@ import java.util.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /**
  * Container for the execution-related windows. Currently displayed as a tabbed
  * pane.
- * 
+ *
  * @author Sanderson and Team JSpim
  **/
 
 public class ExecutePane extends JDesktopPane {
 
-	private RegistersWindow registerValues;
-	private Coprocessor1Window coprocessor1Values;
-	private Coprocessor0Window coprocessor0Values;
-	private DataSegmentWindow dataSegment;
-	private TextSegmentWindow textSegment;
-	private LabelsWindow labelValues;
-	private VenusUI mainUI;
-	private NumberDisplayBaseChooser valueDisplayBase;
-	private NumberDisplayBaseChooser addressDisplayBase;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -7507351480071340198L;
+	private final RegistersWindow registerValues;
+	private final Coprocessor1Window coprocessor1Values;
+	private final Coprocessor0Window coprocessor0Values;
+	private final DataSegmentWindow dataSegment;
+	private final TextSegmentWindow textSegment;
+	private final LabelsWindow labelValues;
+	private final VenusUI mainUI;
+	private final NumberDisplayBaseChooser valueDisplayBase;
+	private final NumberDisplayBaseChooser addressDisplayBase;
 	private boolean labelWindowVisible;
 
 	/**
@@ -61,7 +66,8 @@ public class ExecutePane extends JDesktopPane {
 	 * @param cop0Regs window containing Coprocessor 0 register set
 	 */
 
-	public ExecutePane(VenusUI mainUI, RegistersWindow regs, Coprocessor1Window cop1Regs, Coprocessor0Window cop0Regs) {
+	public ExecutePane(final VenusUI mainUI, final RegistersWindow regs, final Coprocessor1Window cop1Regs,
+			final Coprocessor0Window cop0Regs) {
 		this.mainUI = mainUI;
 		// Although these are displayed in Data Segment, they apply to all three internal
 		// windows within the Execute pane.  So they will be housed here.
@@ -73,7 +79,7 @@ public class ExecutePane extends JDesktopPane {
 				"If checked, displays all memory addresses in hexadecimal.  Otherwise, decimal.");
 		valueDisplayBase.setToolTipText(
 				"If checked, displays all memory and register contents in hexadecimal.  Otherwise, decimal.");
-		NumberDisplayBaseChooser[] choosers = { addressDisplayBase, valueDisplayBase };
+		final NumberDisplayBaseChooser[] choosers = { addressDisplayBase, valueDisplayBase };
 		registerValues = regs;
 		coprocessor1Values = cop1Regs;
 		coprocessor0Values = cop0Regs;
@@ -108,13 +114,13 @@ public class ExecutePane extends JDesktopPane {
 	 */
 	public void setWindowBounds() {
 
-		int fullWidth = this.getSize().width - this.getInsets().left - this.getInsets().right;
-		int fullHeight = this.getSize().height - this.getInsets().top - this.getInsets().bottom;
-		int halfHeight = fullHeight / 2;
-		Dimension textDim = new Dimension((int) (fullWidth * .75), halfHeight);
-		Dimension dataDim = new Dimension((int) (fullWidth), halfHeight);
-		Dimension lablDim = new Dimension((int) (fullWidth * .25), halfHeight);
-		Dimension textFullDim = new Dimension((int) (fullWidth), halfHeight);
+		final int fullWidth = this.getSize().width - this.getInsets().left - this.getInsets().right;
+		final int fullHeight = this.getSize().height - this.getInsets().top - this.getInsets().bottom;
+		final int halfHeight = fullHeight / 2;
+		final Dimension textDim = new Dimension((int) (fullWidth * .75), halfHeight);
+		final Dimension dataDim = new Dimension(fullWidth, halfHeight);
+		final Dimension lablDim = new Dimension((int) (fullWidth * .25), halfHeight);
+		final Dimension textFullDim = new Dimension(fullWidth, halfHeight);
 		dataSegment.setBounds(0, textDim.height + 1, dataDim.width, dataDim.height);
 		if (labelWindowVisible) {
 			textSegment.setBounds(0, 0, textDim.width, textDim.height);
@@ -128,11 +134,11 @@ public class ExecutePane extends JDesktopPane {
 	/**
 	 * Show or hide the label window (symbol table). If visible, it is displayed to
 	 * the right of the text segment and the latter is shrunk accordingly.
-	 * 
+	 *
 	 * @param visibility set to true or false
 	 */
 
-	public void setLabelWindowVisibility(boolean visibility) {
+	public void setLabelWindowVisibility(final boolean visibility) {
 		if (!visibility && labelWindowVisible) {
 			labelWindowVisible = false;
 			textSegment.setVisible(false);
@@ -155,12 +161,12 @@ public class ExecutePane extends JDesktopPane {
 	 */
 
 	public void clearPane() {
-		this.getTextSegmentWindow().clearWindow();
-		this.getDataSegmentWindow().clearWindow();
-		this.getRegistersWindow().clearWindow();
-		this.getCoprocessor1Window().clearWindow();
-		this.getCoprocessor0Window().clearWindow();
-		this.getLabelsWindow().clearWindow();
+		getTextSegmentWindow().clearWindow();
+		getDataSegmentWindow().clearWindow();
+		getRegistersWindow().clearWindow();
+		getCoprocessor1Window().clearWindow();
+		getCoprocessor0Window().clearWindow();
+		getLabelsWindow().clearWindow();
 		// seems to be required, to display cleared Execute tab contents...
 		if (mainUI.getMainPane().getSelectedComponent() == this) {
 			mainUI.getMainPane().setSelectedComponent(mainUI.getMainPane().getEditTabbedPane());
@@ -211,14 +217,14 @@ public class ExecutePane extends JDesktopPane {
 	/**
 	 * Retrieve component used to set numerical base (10 or 16) of data value
 	 * display.
-	 * 
+	 *
 	 * @return the chooser
 	 */
 	public NumberDisplayBaseChooser getValueDisplayBaseChooser() { return valueDisplayBase; }
 
 	/**
 	 * Retrieve component used to set numerical base (10 or 16) of address display.
-	 * 
+	 *
 	 * @return the chooser
 	 */
 	public NumberDisplayBaseChooser getAddressDisplayBaseChooser() { return addressDisplayBase; }
@@ -226,10 +232,10 @@ public class ExecutePane extends JDesktopPane {
 	/**
 	 * Update display of columns based on state of given chooser. Normally called
 	 * only by the chooser's ItemListener.
-	 * 
+	 *
 	 * @param chooser the GUI object manipulated by the user to change number base
 	 */
-	public void numberDisplayBaseChanged(NumberDisplayBaseChooser chooser) {
+	public void numberDisplayBaseChanged(final NumberDisplayBaseChooser chooser) {
 		if (chooser == valueDisplayBase) {
 			// Have all internal windows update their value columns
 			registerValues.updateRegisters();

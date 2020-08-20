@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2009, Ingo Kofler, ITEC, Klagenfurt University, Austria
- * 
+ *
  * Developed by Ingo Kofler (ingo.kofler@itec.uni-klu.ac.at)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,7 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -57,11 +57,16 @@ import mars.mips.hardware.RegisterFile;
  * The tool can be used to show how branch prediction works in case of loops and
  * how effective such simple methods are. In case of nested loops the difference
  * of BHT with 1 or 2 Bit history can be explored and visualized.
- * 
+ *
  * @author ingo.kofler@itec.uni-klu.ac.at
  */
 //@SuppressWarnings("serial")
 public class BHTSimulator extends AbstractMarsToolAndApplication implements ActionListener {
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -1561726684962629682L;
 
 	/** constant for the default size of the BHT */
 	public static final int BHT_DEFAULT_SIZE = 16;
@@ -106,6 +111,7 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 	/**
 	 * Adds BHTSimulator as observer of the text segment.
 	 */
+	@Override
 	protected void addAsObserver() {
 		addAsObserver(Memory.textBaseAddress, Memory.textLimitAddress);
 		addAsObserver(RegisterFile.getProgramCounterRegister());
@@ -114,6 +120,7 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 	/**
 	 * Creates a GUI and initialize the GUI with the default values.
 	 */
+	@Override
 	protected JComponent buildMainDisplayArea() {
 
 		m_gui = new BHTSimGUI();
@@ -133,15 +140,17 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 
 	/**
 	 * Returns the name of the tool.
-	 * 
+	 *
 	 * @return the tool's name as String
 	 */
+	@Override
 	public String getName() { return BHTSimulator.BHT_NAME; }
 
 	/**
 	 * Performs a reset of the simulator. This causes the BHT to be reseted and the
 	 * log messages to be cleared.
 	 */
+	@Override
 	protected void reset() {
 		resetSimulator();
 	}
@@ -151,7 +160,8 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 	 * boxes. Selecting a different BHT size or history causes a reset of the
 	 * simulator.
 	 */
-	public void actionPerformed(ActionEvent event) {
+	@Override
+	public void actionPerformed(final ActionEvent event) {
 		// change of the BHT size or BHT bit configuration
 		// resets the simulator
 		if (event.getSource() == m_gui.getCbBHTentries() || event.getSource() == m_gui.getCbBHThistory() || event
@@ -168,8 +178,8 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 		m_gui.getTfAddress().setText("");
 		m_gui.getTfIndex().setText("");
 		m_gui.getTaLog().setText("");
-		m_bhtModel.initBHT(((Integer) m_gui.getCbBHTentries().getSelectedItem()).intValue(), ((Integer) m_gui
-				.getCbBHThistory().getSelectedItem()).intValue(), ((String) m_gui.getCbBHTinitVal().getSelectedItem())
+		m_bhtModel.initBHT(((Integer) m_gui.getCbBHTentries().getSelectedItem()), ((Integer) m_gui
+				.getCbBHThistory().getSelectedItem()), ((String) m_gui.getCbBHTinitVal().getSelectedItem())
 						.equals(BHTSimGUI.BHT_TAKE_BRANCH));
 
 		m_pendingBranchInstAddress = 0;
@@ -181,14 +191,14 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 	 * branch instruction is executed. Based on the address of the instruction the
 	 * corresponding index into the BHT is calculated. The prediction is obtained
 	 * from the BHT at the calculated index and is visualized appropriately.
-	 * 
+	 *
 	 * @param stmt the branch statement that is executed
 	 */
-	protected void handlePreBranchInst(ProgramStatement stmt) {
+	protected void handlePreBranchInst(final ProgramStatement stmt) {
 
-		String strStmt = stmt.getBasicAssemblyStatement();
-		int address = stmt.getAddress();
-		int idx = m_bhtModel.getIdxForAddress(address);
+		final String strStmt = stmt.getBasicAssemblyStatement();
+		final int address = stmt.getAddress();
+		final int idx = m_bhtModel.getIdxForAddress(address);
 
 		// update the GUI
 		m_gui.getTfInstruction().setText(strStmt);
@@ -214,18 +224,18 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 	 * prediction is visualized in both the table and the log message area. The BHT
 	 * is updated based on the information if the branch instruction was taken or
 	 * not.
-	 * 
+	 *
 	 * @param branchInstAddr the address of the branch instruction
 	 * @param branchTaken    the information if the branch is taken or not
 	 *                       (determined in a step before)
 	 */
-	protected void handleExecBranchInst(int branchInstAddr, boolean branchTaken) {
+	protected void handleExecBranchInst(final int branchInstAddr, final boolean branchTaken) {
 
 		// determine the index in the BHT for the branch instruction
-		int idx = m_bhtModel.getIdxForAddress(branchInstAddr);
+		final int idx = m_bhtModel.getIdxForAddress(branchInstAddr);
 
-		// check if the prediction is correct 
-		boolean correctPrediction = m_bhtModel.getPredictionAtIdx(idx) == branchTaken;
+		// check if the prediction is correct
+		final boolean correctPrediction = m_bhtModel.getPredictionAtIdx(idx) == branchTaken;
 
 		m_gui.getTabBHT().setSelectionBackground(correctPrediction ? BHTSimGUI.COLOR_PREDICTION_CORRECT
 				: BHTSimGUI.COLOR_PREDICTION_INCORRECT);
@@ -241,40 +251,48 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 
 	/**
 	 * Determines if the instruction is a branch instruction or not.
-	 * 
+	 *
 	 * @param stmt the statement to investigate
 	 * @return true, if stmt is a branch instruction, otherwise false
 	 */
-	protected static boolean isBranchInstruction(ProgramStatement stmt) {
+	protected static boolean isBranchInstruction(final ProgramStatement stmt) {
 
-		int opCode = stmt.getBinaryStatement() >>> (32 - 6);
-		int funct = stmt.getBinaryStatement() & 0x1F;
+		final int opCode = stmt.getBinaryStatement() >>> 32 - 6;
+		final int funct = stmt.getBinaryStatement() & 0x1F;
 
 		if (opCode == 0x01) {
-			if (0x00 <= funct && funct <= 0x07) return true; //  bltz, bgez, bltzl, bgezl
-			if (0x10 <= funct && funct <= 0x13) return true; // bltzal, bgezal, bltzall, bgczall			
+			if (0x00 <= funct && funct <= 0x07) {
+				return true; //  bltz, bgez, bltzl, bgezl
+			}
+			if (0x10 <= funct && funct <= 0x13) {
+				return true; // bltzal, bgezal, bltzall, bgczall			
+			}
 		}
 
-		if (0x04 <= opCode && opCode <= 0x07) return true; // beq, bne, blez, bgtz
-		if (0x14 <= opCode && opCode <= 0x17) return true; // beql, bnel, blezl, bgtzl
+		if (0x04 <= opCode && opCode <= 0x07) {
+			return true; // beq, bne, blez, bgtz
+		}
+		if (0x14 <= opCode && opCode <= 0x17) {
+			return true; // beql, bnel, blezl, bgtzl
+		}
 
 		return false;
 	}
 
 	/**
 	 * Checks if the branch instruction delivered as parameter will branch or not.
-	 * 
+	 *
 	 * @param stmt the branch instruction to be investigated
 	 * @return true if the branch will be taken, otherwise false
 	 */
-	protected static boolean willBranch(ProgramStatement stmt) {
-		int opCode = stmt.getBinaryStatement() >>> (32 - 6);
-		int funct = stmt.getBinaryStatement() & 0x1F;
-		int rs = stmt.getBinaryStatement() >>> (32 - 6 - 5) & 0x1F;
-		int rt = stmt.getBinaryStatement() >>> (32 - 6 - 5 - 5) & 0x1F;
+	protected static boolean willBranch(final ProgramStatement stmt) {
+		final int opCode = stmt.getBinaryStatement() >>> 32 - 6;
+		final int funct = stmt.getBinaryStatement() & 0x1F;
+		final int rs = stmt.getBinaryStatement() >>> 32 - 6 - 5 & 0x1F;
+		final int rt = stmt.getBinaryStatement() >>> 32 - 6 - 5 - 5 & 0x1F;
 
-		int valRS = RegisterFile.getRegisters()[rs].getValue();
-		int valRT = RegisterFile.getRegisters()[rt].getValue();
+		final int valRS = RegisterFile.getRegisters()[rs].getValue();
+		final int valRT = RegisterFile.getRegisters()[rt].getValue();
 
 		if (opCode == 0x01) {
 			switch (funct) {
@@ -315,13 +333,13 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 	 * Extracts the target address of the branch. In MIPS the target address is
 	 * encoded as 16-bit value. The target address is encoded relative to the
 	 * address of the instruction after the branch instruction
-	 * 
+	 *
 	 * @param stmt the branch instruction
 	 * @return the address of the instruction that is executed if the branch is
 	 *         taken
 	 */
-	protected static int extractBranchAddress(ProgramStatement stmt) {
-		short offset = (short) (stmt.getBinaryStatement() & 0xFFFF);
+	protected static int extractBranchAddress(final ProgramStatement stmt) {
+		final short offset = (short) (stmt.getBinaryStatement() & 0xFFFF);
 		return stmt.getAddress() + (offset << 2) + 4;
 	}
 
@@ -335,21 +353,22 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 	 * @param resource the observed resource
 	 * @param notice   signals the type of access (memory, register etc.)
 	 */
-	protected void processMIPSUpdate(Observable resource, AccessNotice notice) {
+	@Override
+	protected void processMIPSUpdate(final Observable resource, final AccessNotice notice) {
 
-		if (!notice.accessIsFromMIPS()) return;
+		if (!notice.accessIsFromMIPS()) { return; }
 
 		if (notice.getAccessType() == AccessNotice.READ && notice instanceof MemoryAccessNotice) {
 
 			// now it is safe to make a cast of the notice
-			MemoryAccessNotice memAccNotice = (MemoryAccessNotice) notice;
+			final MemoryAccessNotice memAccNotice = (MemoryAccessNotice) notice;
 
 			try {
 				// access the statement in the text segment without notifying other tools etc.
-				ProgramStatement stmt = Memory.getInstance().getStatementNoNotify(memAccNotice.getAddress());
+				final ProgramStatement stmt = Memory.getInstance().getStatementNoNotify(memAccNotice.getAddress());
 
-				// necessary to handle possible null pointers at the end of the program 
-				// (e.g., if the simulator tries to execute the next instruction after the last instruction in the text segment) 
+				// necessary to handle possible null pointers at the end of the program
+				// (e.g., if the simulator tries to execute the next instruction after the last instruction in the text segment)
 				if (stmt != null) {
 
 					boolean clearTextFields = true;
@@ -383,7 +402,7 @@ public class BHTSimulator extends AbstractMarsToolAndApplication implements Acti
 						m_pendingBranchInstAddress = 0;
 					}
 				}
-			} catch (AddressErrorException e) {
+			} catch (final AddressErrorException e) {
 				// silently ignore these exceptions
 			}
 

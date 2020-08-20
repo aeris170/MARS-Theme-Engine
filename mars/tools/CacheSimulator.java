@@ -1,30 +1,53 @@
 package mars.tools;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import mars.util.*;
-import mars.tools.*;
-import mars.mips.hardware.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ItemEvent;
+import java.util.Observable;
+import java.util.Random;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
+
+import mars.mips.hardware.AccessNotice;
+import mars.mips.hardware.Memory;
+import mars.mips.hardware.MemoryAccessNotice;
+import mars.util.Binary;
 
 /*
  * Copyright (c) 2003-2011, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,7 +55,7 @@ import mars.mips.hardware.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -51,6 +74,10 @@ import mars.mips.hardware.*;
  */
 public class CacheSimulator extends AbstractMarsToolAndApplication {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -967183514374424213L;
 	private static boolean debug = false; // controls display of debugging info
 	private static String version = "Version 1.2";
 	private static String heading = "Simulate and illustrate data cache performance";
@@ -68,26 +95,26 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	private JCheckBox logShow;
 
 	// Some GUI settings
-	private EmptyBorder emptyBorder = new EmptyBorder(4, 4, 4, 4);
-	private Font countFonts = new Font("Times", Font.BOLD, 12);
-	private Color backgroundColor = Color.WHITE;
+	private final EmptyBorder emptyBorder = new EmptyBorder(4, 4, 4, 4);
+	private final Font countFonts = new Font("Times", Font.BOLD, 12);
+	private final Color backgroundColor = Color.WHITE;
 
 	// Values for Combo Boxes
 	private int[] cacheBlockSizeChoicesInt, cacheBlockCountChoicesInt;
-	private String[] cacheBlockSizeChoices = { "1", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024",
+	private final String[] cacheBlockSizeChoices = { "1", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024",
 			"2048" };
-	private String[] cacheBlockCountChoices = { "1", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024",
+	private final String[] cacheBlockCountChoices = { "1", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024",
 			"2048" };
-	private String[] placementPolicyChoices = { "Direct Mapping", "Fully Associative", "N-way Set Associative" };
+	private final String[] placementPolicyChoices = { "Direct Mapping", "Fully Associative", "N-way Set Associative" };
 	private final int DIRECT = 0, FULL = 1, SET = 2; // NOTE: these have to match placementPolicyChoices order!
-	private String[] replacementPolicyChoices = { "LRU", "Random" };
+	private final String[] replacementPolicyChoices = { "LRU", "Random" };
 	private final int LRU = 0, RANDOM = 1; // NOTE: these have to match replacementPolicyChoices order!
 	private String[] cacheSetSizeChoices; // will change dynamically based on the other selections
-	private int defaultCacheBlockSizeIndex = 2;
-	private int defaultCacheBlockCountIndex = 3;
-	private int defaultPlacementPolicyIndex = DIRECT;
-	private int defaultReplacementPolicyIndex = LRU;
-	private int defaultCacheSetSizeIndex = 0;
+	private final int defaultCacheBlockSizeIndex = 2;
+	private final int defaultCacheBlockCountIndex = 3;
+	private final int defaultPlacementPolicyIndex = DIRECT;
+	private final int defaultReplacementPolicyIndex = LRU;
+	private final int defaultCacheSetSizeIndex = 0;
 
 	// Cache-related data structures
 	private AbstractCache theCache;
@@ -95,16 +122,16 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	private double cacheHitRate;
 
 	// RNG used for random replacement policy.  For testing, set seed for reproducible stream
-	private Random randu = new Random(0);
+	private final Random randu = new Random(0);
 
 	/**
 	 * Simple constructor, likely used to run a stand-alone cache simulator.
-	 * 
+	 *
 	 * @param title   String containing title for title bar
 	 * @param heading String containing text for heading shown in upper part of
 	 *                window.
 	 */
-	public CacheSimulator(String title, String heading) {
+	public CacheSimulator(final String title, final String heading) {
 		super(title, heading);
 	}
 
@@ -121,15 +148,16 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	 * its go() method. "stand-alone" means it is not invoked from the MARS Tools
 	 * menu. "Pure" means there is no driver program to invoke the Cache Simulator.
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		new CacheSimulator("Data Cache Simulator stand-alone, " + version, heading).go();
 	}
 
 	/**
 	 * Required MarsTool method to return Tool name.
-	 * 
+	 *
 	 * @return Tool name. MARS will display this in menu item.
 	 */
+	@Override
 	public String getName() { return "Data Cache Simulator"; }
 
 	/**
@@ -138,12 +166,13 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	 * modified using combo boxes, the cache performance which is updated as the
 	 * attached MIPS program executes, and the runtime log which is optionally used
 	 * to display log of each cache access.
-	 * 
+	 *
 	 * @return the GUI component containing these three areas
 	 */
+	@Override
 	protected JComponent buildMainDisplayArea() {
 		// OVERALL STRUCTURE OF MAIN UI (CENTER)
-		Box results = Box.createVerticalBox();
+		final Box results = Box.createVerticalBox();
 		results.add(buildOrganizationArea());
 		results.add(buildPerformanceArea());
 		results.add(buildLogArea());
@@ -153,18 +182,15 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	////////////////////////////////////////////////////////////////////////////
 	private JComponent buildLogArea() {
 		logPanel = new JPanel();
-		TitledBorder ltb = new TitledBorder("Runtime Log");
+		final TitledBorder ltb = new TitledBorder("Runtime Log");
 		ltb.setTitleJustification(TitledBorder.CENTER);
 		logPanel.setBorder(ltb);
 		logShow = new JCheckBox("Enabled", debug);
-		logShow.addItemListener(new ItemListener() {
-
-			public void itemStateChanged(ItemEvent e) {
-				debug = e.getStateChange() == ItemEvent.SELECTED;
-				resetLogDisplay();
-				logText.setEnabled(debug);
-				logText.setBackground(debug ? Color.WHITE : logPanel.getBackground());
-			}
+		logShow.addItemListener(e -> {
+			debug = e.getStateChange() == ItemEvent.SELECTED;
+			resetLogDisplay();
+			logText.setEnabled(debug);
+			logText.setBackground(debug ? Color.WHITE : logPanel.getBackground());
 		});
 		logPanel.add(logShow);
 		logText = new JTextArea(5, 70);
@@ -172,28 +198,25 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 		logText.setBackground(debug ? Color.WHITE : logPanel.getBackground());
 		logText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		logText.setToolTipText("Displays cache activity log if enabled");
-		logScroll = new JScrollPane(logText, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		logScroll = new JScrollPane(logText, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		logPanel.add(logScroll);
 		return logPanel;
 	}
 
 	////////////////////////////////////////////////////////////////////////////
 	private JComponent buildOrganizationArea() {
-		JPanel organization = new JPanel(new GridLayout(3, 2));
-		TitledBorder otb = new TitledBorder("Cache Organization");
+		final JPanel organization = new JPanel(new GridLayout(3, 2));
+		final TitledBorder otb = new TitledBorder("Cache Organization");
 		otb.setTitleJustification(TitledBorder.CENTER);
 		organization.setBorder(otb);
 		cachePlacementSelector = new JComboBox(placementPolicyChoices);
 		cachePlacementSelector.setEditable(false);
 		cachePlacementSelector.setBackground(backgroundColor);
 		cachePlacementSelector.setSelectedIndex(defaultPlacementPolicyIndex);
-		cachePlacementSelector.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				updateCacheSetSizeSelector();
-				reset();
-			}
+		cachePlacementSelector.addActionListener(e -> {
+			updateCacheSetSizeSelector();
+			reset();
 		});
 
 		cacheReplacementSelector = new JComboBox(replacementPolicyChoices);
@@ -205,47 +228,36 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 		cacheBlockSizeSelector.setEditable(false);
 		cacheBlockSizeSelector.setBackground(backgroundColor);
 		cacheBlockSizeSelector.setSelectedIndex(defaultCacheBlockSizeIndex);
-		cacheBlockSizeSelector.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				updateCacheSizeDisplay();
-				reset();
-			}
+		cacheBlockSizeSelector.addActionListener(e -> {
+			updateCacheSizeDisplay();
+			reset();
 		});
 		cacheBlockCountSelector = new JComboBox(cacheBlockCountChoices);
 		cacheBlockCountSelector.setEditable(false);
 		cacheBlockCountSelector.setBackground(backgroundColor);
 		cacheBlockCountSelector.setSelectedIndex(defaultCacheBlockCountIndex);
-		cacheBlockCountSelector.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				updateCacheSetSizeSelector();
-				theCache = createNewCache();
-				resetCounts();
-				updateDisplay();
-				updateCacheSizeDisplay();
-				animations.fillAnimationBoxWithCacheBlocks();
-			}
+		cacheBlockCountSelector.addActionListener(e -> {
+			updateCacheSetSizeSelector();
+			theCache = createNewCache();
+			resetCounts();
+			updateDisplay();
+			updateCacheSizeDisplay();
+			animations.fillAnimationBoxWithCacheBlocks();
 		});
 
 		cacheSetSizeSelector = new JComboBox(cacheSetSizeChoices);
 		cacheSetSizeSelector.setEditable(false);
 		cacheSetSizeSelector.setBackground(backgroundColor);
 		cacheSetSizeSelector.setSelectedIndex(defaultCacheSetSizeIndex);
-		cacheSetSizeSelector.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				reset();
-			}
-		});
+		cacheSetSizeSelector.addActionListener(e -> reset());
 
 		// ALL COMPONENTS FOR "CACHE ORGANIZATION" SECTION
-		JPanel placementPolicyRow = getPanelWithBorderLayout();
+		final JPanel placementPolicyRow = getPanelWithBorderLayout();
 		placementPolicyRow.setBorder(emptyBorder);
 		placementPolicyRow.add(new JLabel("Placement Policy "), BorderLayout.WEST);
 		placementPolicyRow.add(cachePlacementSelector, BorderLayout.EAST);
 
-		JPanel replacementPolicyRow = getPanelWithBorderLayout();
+		final JPanel replacementPolicyRow = getPanelWithBorderLayout();
 		replacementPolicyRow.setBorder(emptyBorder);
 		replacementPolicyRow.add(new JLabel("Block Replacement Policy "), BorderLayout.WEST);
 		/*       replacementPolicyDisplay = new JTextField("N/A",6);
@@ -254,7 +266,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 		 replacementPolicyDisplay.setHorizontalAlignment(JTextField.RIGHT); */
 		replacementPolicyRow.add(cacheReplacementSelector, BorderLayout.EAST);
 
-		JPanel cacheSetSizeRow = getPanelWithBorderLayout();
+		final JPanel cacheSetSizeRow = getPanelWithBorderLayout();
 		cacheSetSizeRow.setBorder(emptyBorder);
 		cacheSetSizeRow.add(new JLabel("Set size (blocks) "), BorderLayout.WEST);
 		cacheSetSizeRow.add(cacheSetSizeSelector, BorderLayout.EAST);
@@ -270,21 +282,21 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 		 cachableAddressesDisplay.setHorizontalAlignment(JTextField.RIGHT);
 		 cachableAddressesRow.add(cachableAddressesDisplay, BorderLayout.EAST);
 		*/
-		JPanel cacheNumberBlocksRow = getPanelWithBorderLayout();
+		final JPanel cacheNumberBlocksRow = getPanelWithBorderLayout();
 		cacheNumberBlocksRow.setBorder(emptyBorder);
 		cacheNumberBlocksRow.add(new JLabel("Number of blocks "), BorderLayout.WEST);
 		cacheNumberBlocksRow.add(cacheBlockCountSelector, BorderLayout.EAST);
 
-		JPanel cacheBlockSizeRow = getPanelWithBorderLayout();
+		final JPanel cacheBlockSizeRow = getPanelWithBorderLayout();
 		cacheBlockSizeRow.setBorder(emptyBorder);
 		cacheBlockSizeRow.add(new JLabel("Cache block size (words) "), BorderLayout.WEST);
 		cacheBlockSizeRow.add(cacheBlockSizeSelector, BorderLayout.EAST);
 
-		JPanel cacheTotalSizeRow = getPanelWithBorderLayout();
+		final JPanel cacheTotalSizeRow = getPanelWithBorderLayout();
 		cacheTotalSizeRow.setBorder(emptyBorder);
 		cacheTotalSizeRow.add(new JLabel("Cache size (bytes) "), BorderLayout.WEST);
 		cacheSizeDisplay = new JTextField(8);
-		cacheSizeDisplay.setHorizontalAlignment(JTextField.RIGHT);
+		cacheSizeDisplay.setHorizontalAlignment(SwingConstants.RIGHT);
 		cacheSizeDisplay.setEditable(false);
 		cacheSizeDisplay.setBackground(backgroundColor);
 		cacheSizeDisplay.setFont(countFonts);
@@ -304,44 +316,44 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 
 	////////////////////////////////////////////////////////////////////////////
 	private JComponent buildPerformanceArea() {
-		JPanel performance = new JPanel(new GridLayout(1, 2));
-		TitledBorder ptb = new TitledBorder("Cache Performance");
+		final JPanel performance = new JPanel(new GridLayout(1, 2));
+		final TitledBorder ptb = new TitledBorder("Cache Performance");
 		ptb.setTitleJustification(TitledBorder.CENTER);
 		performance.setBorder(ptb);
-		JPanel memoryAccessCountRow = getPanelWithBorderLayout();
+		final JPanel memoryAccessCountRow = getPanelWithBorderLayout();
 		memoryAccessCountRow.setBorder(emptyBorder);
 		memoryAccessCountRow.add(new JLabel("Memory Access Count "), BorderLayout.WEST);
 		memoryAccessCountDisplay = new JTextField(10);
-		memoryAccessCountDisplay.setHorizontalAlignment(JTextField.RIGHT);
+		memoryAccessCountDisplay.setHorizontalAlignment(SwingConstants.RIGHT);
 		memoryAccessCountDisplay.setEditable(false);
 		memoryAccessCountDisplay.setBackground(backgroundColor);
 		memoryAccessCountDisplay.setFont(countFonts);
 		memoryAccessCountRow.add(memoryAccessCountDisplay, BorderLayout.EAST);
 
-		JPanel cacheHitCountRow = getPanelWithBorderLayout();
+		final JPanel cacheHitCountRow = getPanelWithBorderLayout();
 		cacheHitCountRow.setBorder(emptyBorder);
 		cacheHitCountRow.add(new JLabel("Cache Hit Count "), BorderLayout.WEST);
 		cacheHitCountDisplay = new JTextField(10);
-		cacheHitCountDisplay.setHorizontalAlignment(JTextField.RIGHT);
+		cacheHitCountDisplay.setHorizontalAlignment(SwingConstants.RIGHT);
 		cacheHitCountDisplay.setEditable(false);
 		cacheHitCountDisplay.setBackground(backgroundColor);
 		cacheHitCountDisplay.setFont(countFonts);
 		cacheHitCountRow.add(cacheHitCountDisplay, BorderLayout.EAST);
 
-		JPanel cacheMissCountRow = getPanelWithBorderLayout();
+		final JPanel cacheMissCountRow = getPanelWithBorderLayout();
 		cacheMissCountRow.setBorder(emptyBorder);
 		cacheMissCountRow.add(new JLabel("Cache Miss Count "), BorderLayout.WEST);
 		cacheMissCountDisplay = new JTextField(10);
-		cacheMissCountDisplay.setHorizontalAlignment(JTextField.RIGHT);
+		cacheMissCountDisplay.setHorizontalAlignment(SwingConstants.RIGHT);
 		cacheMissCountDisplay.setEditable(false);
 		cacheMissCountDisplay.setBackground(backgroundColor);
 		cacheMissCountDisplay.setFont(countFonts);
 		cacheMissCountRow.add(cacheMissCountDisplay, BorderLayout.EAST);
 
-		JPanel cacheHitRateRow = getPanelWithBorderLayout();
+		final JPanel cacheHitRateRow = getPanelWithBorderLayout();
 		cacheHitRateRow.setBorder(emptyBorder);
 		cacheHitRateRow.add(new JLabel("Cache Hit Rate "), BorderLayout.WEST);
-		cacheHitRateDisplay = new JProgressBar(JProgressBar.HORIZONTAL, 0, 100);
+		cacheHitRateDisplay = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
 		cacheHitRateDisplay.setStringPainted(true);
 		cacheHitRateDisplay.setForeground(Color.BLUE);
 		cacheHitRateDisplay.setBackground(backgroundColor);
@@ -352,7 +364,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 		updateDisplay();
 
 		// Vertically align these 4 measures in a grid, then add to left column of main grid.
-		JPanel performanceMeasures = new JPanel(new GridLayout(4, 1));
+		final JPanel performanceMeasures = new JPanel(new GridLayout(4, 1));
 		performanceMeasures.add(memoryAccessCountRow);
 		performanceMeasures.add(cacheHitCountRow);
 		performanceMeasures.add(cacheMissCountRow);
@@ -362,34 +374,34 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 		// LET'S TRY SOME ANIMATION ON THE RIGHT SIDE...
 		animations = new Animation();
 		animations.fillAnimationBoxWithCacheBlocks();
-		JPanel animationsPanel = new JPanel(new GridLayout(1, 2));
-		Box animationsLabel = Box.createVerticalBox();
-		JPanel tableTitle1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		JPanel tableTitle2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		final JPanel animationsPanel = new JPanel(new GridLayout(1, 2));
+		final Box animationsLabel = Box.createVerticalBox();
+		final JPanel tableTitle1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		final JPanel tableTitle2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		tableTitle1.add(new JLabel("Cache Block Table"));
 		tableTitle2.add(new JLabel("(block 0 at top)"));
 		animationsLabel.add(tableTitle1);
 		animationsLabel.add(tableTitle2);
-		Dimension colorKeyBoxSize = new Dimension(8, 8);
+		final Dimension colorKeyBoxSize = new Dimension(8, 8);
 
-		JPanel emptyKey = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		JPanel emptyBox = new JPanel();
+		final JPanel emptyKey = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		final JPanel emptyBox = new JPanel();
 		emptyBox.setSize(colorKeyBoxSize);
 		emptyBox.setBackground(animations.defaultColor);
 		emptyBox.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		emptyKey.add(emptyBox);
 		emptyKey.add(new JLabel(" = empty"));
 
-		JPanel missBox = new JPanel();
-		JPanel missKey = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		final JPanel missBox = new JPanel();
+		final JPanel missKey = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		missBox.setSize(colorKeyBoxSize);
 		missBox.setBackground(animations.missColor);
 		missBox.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		missKey.add(missBox);
 		missKey.add(new JLabel(" = miss"));
 
-		JPanel hitKey = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		JPanel hitBox = new JPanel();
+		final JPanel hitKey = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		final JPanel hitBox = new JPanel();
 		hitBox.setSize(colorKeyBoxSize);
 		hitBox.setBackground(animations.hitColor);
 		hitBox.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -415,15 +427,16 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	/**
 	 * Apply caching policies and update display when connected MIPS program
 	 * accesses (data) memory.
-	 * 
+	 *
 	 * @param memory       the attached memory
 	 * @param accessNotice information provided by memory in MemoryAccessNotice
 	 *                     object
 	 */
-	protected void processMIPSUpdate(Observable memory, AccessNotice accessNotice) {
-		MemoryAccessNotice notice = (MemoryAccessNotice) accessNotice;
+	@Override
+	protected void processMIPSUpdate(final Observable memory, final AccessNotice accessNotice) {
+		final MemoryAccessNotice notice = (MemoryAccessNotice) accessNotice;
 		memoryAccessCount++;
-		CacheAccessResult cacheAccessResult = theCache.isItAHitThenReadOnMiss(notice.getAddress());
+		final CacheAccessResult cacheAccessResult = theCache.isItAHitThenReadOnMiss(notice.getAddress());
 		if (cacheAccessResult.isHit()) {
 			cacheHitCount++;
 			animations.showHit(cacheAccessResult.getBlock());
@@ -439,12 +452,13 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	 * declaration. Also creates initial default cache object. Overrides inherited
 	 * method that does nothing.
 	 */
+	@Override
 	protected void initializePreGUI() {
 		cacheBlockSizeChoicesInt = new int[cacheBlockSizeChoices.length];
 		for (int i = 0; i < cacheBlockSizeChoices.length; i++) {
 			try {
 				cacheBlockSizeChoicesInt[i] = Integer.parseInt(cacheBlockSizeChoices[i]);
-			} catch (NumberFormatException nfe) {
+			} catch (final NumberFormatException nfe) {
 				cacheBlockSizeChoicesInt[i] = 1;
 			}
 		}
@@ -452,7 +466,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 		for (int i = 0; i < cacheBlockCountChoices.length; i++) {
 			try {
 				cacheBlockCountChoicesInt[i] = Integer.parseInt(cacheBlockCountChoices[i]);
-			} catch (NumberFormatException nfe) {
+			} catch (final NumberFormatException nfe) {
 				cacheBlockCountChoicesInt[i] = 1;
 			}
 		}
@@ -465,6 +479,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	 * method that does nothing.
 	 */
 
+	@Override
 	protected void initializePostGUI() {
 		theCache = createNewCache();
 	}
@@ -473,6 +488,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	 * Method to reset cache, counters and display when the Reset button selected.
 	 * Overrides inherited method that does nothing.
 	 */
+	@Override
 	protected void reset() {
 		theCache = createNewCache();
 		resetCounts();
@@ -487,6 +503,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	 * when Mars is running in timed mode. Overrides inherited method that does
 	 * nothing.
 	 */
+	@Override
 	protected void updateDisplay() {
 		updateMemoryAccessCountDisplay();
 		updateCacheHitCountDisplay();
@@ -500,10 +517,10 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 
 	// Will determine range of choices for "set size in blocks", which is determined both by
 	// the number of blocks in the cache and by placement policy.
-	private String[] determineSetSizeChoices(int cacheBlockCountIndex, int placementPolicyIndex) {
+	private String[] determineSetSizeChoices(final int cacheBlockCountIndex, final int placementPolicyIndex) {
 		String[] choices;
-		int firstBlockCountIndex = 0;
-		int lastBlockCountIndex = cacheBlockCountIndex;
+		final int firstBlockCountIndex = 0;
+		final int lastBlockCountIndex = cacheBlockCountIndex;
 		switch (placementPolicyIndex) {
 		case DIRECT:
 			choices = new String[1];
@@ -535,7 +552,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 		int setSize = 1;
 		try {
 			setSize = Integer.parseInt((String) cacheSetSizeSelector.getSelectedItem());
-		} catch (NumberFormatException nfe) { // if this happens its my fault!
+		} catch (final NumberFormatException nfe) { // if this happens its my fault!
 		}
 		theNewCache = new AnyCache(cacheBlockCountChoicesInt[cacheBlockCountSelector.getSelectedIndex()],
 				cacheBlockSizeChoicesInt[cacheBlockSizeSelector.getSelectedIndex()], setSize);
@@ -566,7 +583,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	}
 
 	private void updateCacheSizeDisplay() {
-		int cacheSize = cacheBlockSizeChoicesInt[cacheBlockSizeSelector.getSelectedIndex()]
+		final int cacheSize = cacheBlockSizeChoicesInt[cacheBlockSizeSelector.getSelectedIndex()]
 				* cacheBlockCountChoicesInt[cacheBlockCountSelector.getSelectedIndex()] * Memory.WORD_LENGTH_BYTES;
 		cacheSizeDisplay.setText(Integer.toString(cacheSize));
 	}
@@ -577,7 +594,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 		logText.setText("");
 	}
 
-	private void writeLog(String text) {
+	private void writeLog(final String text) {
 		logText.append(text);
 		logText.setCaretPosition(logText.getDocument().getLength());
 	}
@@ -593,14 +610,14 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 
 		private boolean valid;
 		private int tag;
-		private int sizeInWords;
+		private final int sizeInWords;
 		private int mostRecentAccessTime;
 
-		public CacheBlock(int sizeInWords) {
-			this.valid = false;
-			this.tag = 0;
+		public CacheBlock(final int sizeInWords) {
+			valid = false;
+			tag = 0;
 			this.sizeInWords = sizeInWords;
-			this.mostRecentAccessTime = -1;
+			mostRecentAccessTime = -1;
 		}
 	}
 
@@ -611,10 +628,10 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	// a miss, the block where new association is made.	DPS 23-Dec-2010
 	private class CacheAccessResult {
 
-		private boolean hitOrMiss;
-		private int blockNumber;
+		private final boolean hitOrMiss;
+		private final int blockNumber;
 
-		public CacheAccessResult(boolean hitOrMiss, int blockNumber) {
+		public CacheAccessResult(final boolean hitOrMiss, final int blockNumber) {
 			this.hitOrMiss = hitOrMiss;
 			this.blockNumber = blockNumber;
 		}
@@ -628,61 +645,59 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	// Abstract Cache class.  Subclasses will implement specific policies.
 	private abstract class AbstractCache {
 
-		private int numberOfBlocks, blockSizeInWords, setSizeInBlocks, numberOfSets;
+		private final int numberOfBlocks, blockSizeInWords, setSizeInBlocks, numberOfSets;
 		protected CacheBlock[] blocks;
 
-		protected AbstractCache(int numberOfBlocks, int blockSizeInWords, int setSizeInBlocks) {
+		protected AbstractCache(final int numberOfBlocks, final int blockSizeInWords, final int setSizeInBlocks) {
 			this.numberOfBlocks = numberOfBlocks;
 			this.blockSizeInWords = blockSizeInWords;
 			this.setSizeInBlocks = setSizeInBlocks;
-			this.numberOfSets = numberOfBlocks / setSizeInBlocks;
-			this.blocks = new CacheBlock[numberOfBlocks];
-			this.reset();
+			numberOfSets = numberOfBlocks / setSizeInBlocks;
+			blocks = new CacheBlock[numberOfBlocks];
+			reset();
 		}
 
-		public int getNumberOfBlocks() { return this.numberOfBlocks; }
+		public int getNumberOfBlocks() { return numberOfBlocks; }
 
-		public int getNumberOfSets() { return this.numberOfSets; }
+		public int getNumberOfSets() { return numberOfSets; }
 
-		public int getSetSizeInBlocks() { return this.setSizeInBlocks; }
+		public int getSetSizeInBlocks() { return setSizeInBlocks; }
 
-		public int getBlockSizeInWords() { return this.blockSizeInWords; }
+		public int getBlockSizeInWords() { return blockSizeInWords; }
 
-		public int getCacheSizeInWords() { return this.numberOfBlocks * this.blockSizeInWords; }
+		public int getCacheSizeInWords() { return numberOfBlocks * blockSizeInWords; }
 
-		public int getCacheSizeInBytes() {
-			return this.numberOfBlocks * this.blockSizeInWords * Memory.WORD_LENGTH_BYTES;
-		}
+		public int getCacheSizeInBytes() { return numberOfBlocks * blockSizeInWords * Memory.WORD_LENGTH_BYTES; }
 
-		// This will work regardless of placement. 
+		// This will work regardless of placement.
 		// For direct map, #sets==#blocks
 		// For full assoc, #sets==1 so anything % #sets == 0
 		// For n-way assoc, it extracts the set bits in address.
-		public int getSetNumber(int address) {
-			return address / Memory.WORD_LENGTH_BYTES / this.blockSizeInWords % this.numberOfSets;
+		public int getSetNumber(final int address) {
+			return address / Memory.WORD_LENGTH_BYTES / blockSizeInWords % numberOfSets;
 		}
 
 		// This will work regardless of placement policy (direct map, n-way or full assoc)
-		public int getTag(int address) {
-			return address / Memory.WORD_LENGTH_BYTES / this.blockSizeInWords / this.numberOfSets;
-		}
-
-		// This will work regardless of placement policy (direct map, n-way or full assoc)
-		// Returns absolute block offset into the cache.
-		public int getFirstBlockToSearch(int address) {
-			return this.getSetNumber(address) * this.setSizeInBlocks;
+		public int getTag(final int address) {
+			return address / Memory.WORD_LENGTH_BYTES / blockSizeInWords / numberOfSets;
 		}
 
 		// This will work regardless of placement policy (direct map, n-way or full assoc)
 		// Returns absolute block offset into the cache.
-		public int getLastBlockToSearch(int address) {
-			return this.getFirstBlockToSearch(address) + this.setSizeInBlocks - 1;
+		public int getFirstBlockToSearch(final int address) {
+			return getSetNumber(address) * setSizeInBlocks;
+		}
+
+		// This will work regardless of placement policy (direct map, n-way or full assoc)
+		// Returns absolute block offset into the cache.
+		public int getLastBlockToSearch(final int address) {
+			return getFirstBlockToSearch(address) + setSizeInBlocks - 1;
 		}
 
 		/* Reset the cache contents. */
 		public void reset() {
 			for (int i = 0; i < numberOfBlocks; i++) {
-				this.blocks[i] = new CacheBlock(blockSizeInWords);
+				blocks[i] = new CacheBlock(blockSizeInWords);
 			}
 			System.gc(); // scoop 'em up now
 		}
@@ -741,54 +756,53 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	//
 	private class AnyCache extends AbstractCache {
 
-		public AnyCache(int numberOfBlocks, int blockSizeInWords, int setSizeInBlocks) {
+		public AnyCache(final int numberOfBlocks, final int blockSizeInWords, final int setSizeInBlocks) {
 			super(numberOfBlocks, blockSizeInWords, setSizeInBlocks);
 		}
 
 		private final int SET_FULL = 0, HIT = 1, MISS = 2;
 
-		// This method works for any of the placement policies: 
+		// This method works for any of the placement policies:
 		// direct mapped, full associative or n-way set associative.
-		public CacheAccessResult isItAHitThenReadOnMiss(int address) {
+		@Override
+		public CacheAccessResult isItAHitThenReadOnMiss(final int address) {
 			int result = SET_FULL;
-			int firstBlock = getFirstBlockToSearch(address);
-			int lastBlock = getLastBlockToSearch(address);
-			if (debug) //System.out.print
+			final int firstBlock = getFirstBlockToSearch(address);
+			final int lastBlock = getLastBlockToSearch(address);
+			if (debug) {
 				writeLog("(" + memoryAccessCount + ") address: " + Binary.intToHexString(address) + " (tag " + Binary
 						.intToHexString(getTag(address)) + ") " + " block range: " + firstBlock + "-" + lastBlock
 						+ "\n");
+			}
 			CacheBlock block;
 			int blockNumber = 0;
 			// Will do a sequential instead of associative search!
 			for (blockNumber = firstBlock; blockNumber <= lastBlock; blockNumber++) {
 				block = blocks[blockNumber];
-				if (debug) //System.out.print
-					writeLog("   trying block " + blockNumber + ((block.valid) ? " tag " + Binary.intToHexString(
+				if (debug) {
+					writeLog("   trying block " + blockNumber + (block.valid ? " tag " + Binary.intToHexString(
 							block.tag) : " empty"));
+				}
 				if (block.valid && block.tag == getTag(address)) {//  it's a hit!
-					if (debug) //System.out.print
-						writeLog(" -- HIT\n");
+					if (debug) { writeLog(" -- HIT\n"); }
 					result = HIT;
 					block.mostRecentAccessTime = memoryAccessCount;
 					break;
 				}
 				if (!block.valid) {// it's a miss but I got it now because it is empty!
-					if (debug) //System.out.print
-						writeLog(" -- MISS\n");
+					if (debug) { writeLog(" -- MISS\n"); }
 					result = MISS;
 					block.valid = true;
 					block.tag = getTag(address);
 					block.mostRecentAccessTime = memoryAccessCount;
 					break;
 				}
-				if (debug) //System.out.print
-					writeLog(" -- OCCUPIED\n");
+				if (debug) { writeLog(" -- OCCUPIED\n"); }
 			}
 			if (result == SET_FULL) {
 				//select one to replace and replace it...
-				if (debug) //System.out.print
-					writeLog("   MISS due to FULL SET");
-				int blockToReplace = selectBlockToReplace(firstBlock, lastBlock);
+				if (debug) { writeLog("   MISS due to FULL SET"); }
+				final int blockToReplace = selectBlockToReplace(firstBlock, lastBlock);
 				block = blocks[blockToReplace];
 				block.tag = getTag(address);
 				block.mostRecentAccessTime = memoryAccessCount;
@@ -799,14 +813,13 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 
 		// call this if all blocks in the set are full.  If the set contains more than one block,
 		// It will pick on to replace based on selected replacement policy.
-		private int selectBlockToReplace(int first, int last) {
+		private int selectBlockToReplace(final int first, final int last) {
 			int replaceBlock = first;
 			if (first != last) {
 				switch (cacheReplacementSelector.getSelectedIndex()) {
 				case RANDOM:
 					replaceBlock = first + randu.nextInt(last - first + 1);
-					if (debug) //System.out.print
-						writeLog(" -- Random replace block " + replaceBlock + "\n");
+					if (debug) { writeLog(" -- Random replace block " + replaceBlock + "\n"); }
 					break;
 				case LRU:
 				default:
@@ -817,9 +830,10 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 							replaceBlock = block;
 						}
 					}
-					if (debug) //System.out.print
+					if (debug) {
 						writeLog(" -- LRU replace block " + replaceBlock + "; unused since (" + leastRecentAccessTime
 								+ ")\n");
+					}
 					break;
 				}
 			}
@@ -832,7 +846,7 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 	//
 	private class Animation {
 
-		private Box animation;
+		private final Box animation;
 		private JTextField[] blocks;
 		public final Color hitColor = Color.GREEN;
 		public final Color missColor = Color.RED;
@@ -844,13 +858,13 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 
 		private Box getAnimationBox() { return animation; }
 
-		public int getNumberOfBlocks() { return (blocks == null) ? 0 : blocks.length; }
+		public int getNumberOfBlocks() { return blocks == null ? 0 : blocks.length; }
 
-		public void showHit(int blockNum) {
+		public void showHit(final int blockNum) {
 			blocks[blockNum].setBackground(hitColor);
 		}
 
-		public void showMiss(int blockNum) {
+		public void showMiss(final int blockNum) {
 			blocks[blockNum].setBackground(missColor);
 		}
 
@@ -864,11 +878,12 @@ public class CacheSimulator extends AbstractMarsToolAndApplication {
 		private void fillAnimationBoxWithCacheBlocks() {
 			animation.setVisible(false);
 			animation.removeAll();
-			int numberOfBlocks = cacheBlockCountChoicesInt[cacheBlockCountSelector.getSelectedIndex()];
-			int totalVerticalPixels = 128;
-			int blockPixelHeight = (numberOfBlocks > totalVerticalPixels) ? 1 : totalVerticalPixels / numberOfBlocks;
-			int blockPixelWidth = 40;
-			Dimension blockDimension = new Dimension(blockPixelWidth, blockPixelHeight);
+			final int numberOfBlocks = cacheBlockCountChoicesInt[cacheBlockCountSelector.getSelectedIndex()];
+			final int totalVerticalPixels = 128;
+			final int blockPixelHeight = numberOfBlocks > totalVerticalPixels ? 1
+					: totalVerticalPixels / numberOfBlocks;
+			final int blockPixelWidth = 40;
+			final Dimension blockDimension = new Dimension(blockPixelWidth, blockPixelHeight);
 			blocks = new JTextField[numberOfBlocks];
 			for (int i = 0; i < numberOfBlocks; i++) {
 				blocks[i] = new JTextField();

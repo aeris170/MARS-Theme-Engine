@@ -9,11 +9,12 @@
 
 package mars.venus.editors.jeditsyntax;
 
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 /**
  * Class with several utility functions used by the text area component.
- * 
+ *
  * @author Slava Pestov
  * @version $Id: TextUtilities.java,v 1.4 1999/12/13 03:40:30 sp Exp $
  */
@@ -23,15 +24,15 @@ public class TextUtilities {
 	 * Returns the offset of the bracket matching the one at the specified offset of
 	 * the document, or -1 if the bracket is unmatched (or if the character is not a
 	 * bracket).
-	 * 
+	 *
 	 * @param doc    The document
 	 * @param offset The offset
 	 * @exception BadLocationException If an out-of-bounds access was attempted on
 	 *                                 the document text
 	 */
-	public static int findMatchingBracket(Document doc, int offset) throws BadLocationException {
-		if (doc.getLength() == 0) return -1;
-		char c = doc.getText(offset, 1).charAt(0);
+	public static int findMatchingBracket(final Document doc, int offset) throws BadLocationException {
+		if (doc.getLength() == 0) { return -1; }
+		final char c = doc.getText(offset, 1).charAt(0);
 		char cprime; // c` - corresponding character
 		boolean direction; // true = back, false = forward
 
@@ -76,7 +77,7 @@ public class TextUtilities {
 			count = 1;
 
 			// Get text[0,offset-1];
-			String text = doc.getText(0, offset);
+			final String text = doc.getText(0, offset);
 
 			// Scan backwards
 			for (int i = offset - 1; i >= 0; i--) {
@@ -84,13 +85,10 @@ public class TextUtilities {
 				// closing bracket, therefore we will need
 				// two opening brackets to complete the
 				// match.
-				char x = text.charAt(i);
-				if (x == c) count++;
-
-				// If text[i] == cprime, we have found a
-				// opening bracket, so we return i if
-				// --count == 0
-				else if (x == cprime) { if (--count == 0) return i; }
+				final char x = text.charAt(i);
+				if (x == c) {
+					count++;
+				} else if (x == cprime) { if (--count == 0) { return i; } }
 			}
 		} else {
 			// Count is 1 initially because we have already
@@ -101,10 +99,10 @@ public class TextUtilities {
 			offset++;
 
 			// Number of characters to check
-			int len = doc.getLength() - offset;
+			final int len = doc.getLength() - offset;
 
 			// Get text[offset+1,len];
-			String text = doc.getText(offset, len);
+			final String text = doc.getText(offset, len);
 
 			// Scan forwards
 			for (int i = 0; i < len; i++) {
@@ -112,14 +110,11 @@ public class TextUtilities {
 				// opening bracket, therefore we will need
 				// two closing brackets to complete the
 				// match.
-				char x = text.charAt(i);
+				final char x = text.charAt(i);
 
-				if (x == c) count++;
-
-				// If text[i] == cprime, we have found an
-				// closing bracket, so we return i if
-				// --count == 0
-				else if (x == cprime) { if (--count == 0) return i + offset; }
+				if (x == c) {
+					count++;
+				} else if (x == cprime) { if (--count == 0) { return i + offset; } }
 			}
 		}
 
@@ -129,15 +124,15 @@ public class TextUtilities {
 
 	/**
 	 * Locates the start of the word at the specified position.
-	 * 
+	 *
 	 * @param line The text
 	 * @param pos  The position
 	 */
-	public static int findWordStart(String line, int pos, String noWordSep) {
+	public static int findWordStart(final String line, final int pos, String noWordSep) {
 		char ch = line.charAt(pos - 1);
 
-		if (noWordSep == null) noWordSep = "";
-		boolean selectNoLetter = (!Character.isLetterOrDigit(ch) && noWordSep.indexOf(ch) == -1);
+		if (noWordSep == null) { noWordSep = ""; }
+		final boolean selectNoLetter = !Character.isLetterOrDigit(ch) && noWordSep.indexOf(ch) == -1;
 
 		int wordStart = 0;
 		for (int i = pos - 1; i >= 0; i--) {
@@ -153,15 +148,15 @@ public class TextUtilities {
 
 	/**
 	 * Locates the end of the word at the specified position.
-	 * 
+	 *
 	 * @param line The text
 	 * @param pos  The position
 	 */
-	public static int findWordEnd(String line, int pos, String noWordSep) {
+	public static int findWordEnd(final String line, final int pos, String noWordSep) {
 		char ch = line.charAt(pos);
 
-		if (noWordSep == null) noWordSep = "";
-		boolean selectNoLetter = (!Character.isLetterOrDigit(ch) && noWordSep.indexOf(ch) == -1);
+		if (noWordSep == null) { noWordSep = ""; }
+		final boolean selectNoLetter = !Character.isLetterOrDigit(ch) && noWordSep.indexOf(ch) == -1;
 
 		int wordEnd = line.length();
 		for (int i = pos; i < line.length(); i++) {

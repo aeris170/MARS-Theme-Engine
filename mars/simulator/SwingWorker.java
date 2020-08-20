@@ -5,7 +5,7 @@ import javax.swing.SwingUtilities;
 /*-----------------------------------------------------
  * This file downloaded from the Sun Microsystems URL given below.
  *
- * I will subclass it to create worker thread for running 
+ * I will subclass it to create worker thread for running
  * MIPS simulated execution.
  */
 
@@ -29,7 +29,7 @@ public abstract class SwingWorker {
 
 		private Thread thread;
 
-		ThreadVar(Thread t) {
+		ThreadVar(final Thread t) {
 			thread = t;
 		}
 
@@ -42,7 +42,7 @@ public abstract class SwingWorker {
 		}
 	}
 
-	private ThreadVar threadVar;
+	private final ThreadVar threadVar;
 
 	/**
 	 * Get the value produced by the worker thread, or null if it hasn't been
@@ -53,7 +53,7 @@ public abstract class SwingWorker {
 	/**
 	 * Set the value produced by worker thread
 	 */
-	private synchronized void setValue(Object x) { value = x; }
+	private synchronized void setValue(final Object x) { value = x; }
 
 	/**
 	 * Compute the value to be returned by the <code>get</code> method.
@@ -71,7 +71,7 @@ public abstract class SwingWorker {
 	 * worker to stop what it's doing.
 	 */
 	public void interrupt() {
-		Thread t = threadVar.get();
+		final Thread t = threadVar.get();
 		if (t != null) { t.interrupt(); }
 		threadVar.clear();
 	}
@@ -80,16 +80,16 @@ public abstract class SwingWorker {
 	 * Return the value created by the <code>construct</code> method. Returns null
 	 * if either the constructing thread or the current thread was interrupted
 	 * before a value was produced.
-	 * 
+	 *
 	 * @return the value created by the <code>construct</code> method
 	 */
 	public Object get() {
 		while (true) {
-			Thread t = threadVar.get();
+			final Thread t = threadVar.get();
 			if (t == null) { return getValue(); }
 			try {
 				t.join();
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				Thread.currentThread().interrupt(); // propagate
 				return null;
 			}
@@ -99,33 +99,28 @@ public abstract class SwingWorker {
 	/**
 	 * Start a thread that will call the <code>construct</code> method and then
 	 * exit.
-	 * 
+	 *
 	 * @param useSwing Set true if MARS is running from GUI, false otherwise.
 	 */
 	public SwingWorker(final boolean useSwing) {
-		final Runnable doFinished = new Runnable() {
+		final Runnable doFinished = () -> finished();
 
-			public void run() {
-				finished();
+		final Runnable doConstruct = () -> {
+			try {
+				setValue(construct());
+			} finally {
+				threadVar.clear();
 			}
-		};
 
-		Runnable doConstruct = new Runnable() {
-
-			public void run() {
-				try {
-					setValue(construct());
-				} finally {
-					threadVar.clear();
-				}
-
-				if (useSwing) SwingUtilities.invokeLater(doFinished);
-				else doFinished.run();
+			if (useSwing) {
+				SwingUtilities.invokeLater(doFinished);
+			} else {
+				doFinished.run();
 			}
 		};
 
 		// Thread that represents executing MIPS program...
-		Thread t = new Thread(doConstruct, "MIPS");
+		final Thread t = new Thread(doConstruct, "MIPS");
 
 		//t.setPriority(Thread.NORM_PRIORITY-1);//******************
 
@@ -136,7 +131,7 @@ public abstract class SwingWorker {
 	 * Start the worker thread.
 	 */
 	public void start() {
-		Thread t = threadVar.get();
+		final Thread t = threadVar.get();
 		if (t != null) { t.start(); }
 	}
 }

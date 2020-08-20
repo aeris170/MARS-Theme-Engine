@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2008, Felipe Lessa
- * 
+ *
  * Developed by Felipe Lessa (felipe.lessa@gmail.com)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,7 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 package mars.tools;
@@ -35,6 +35,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import mars.ProgramStatement;
 import mars.mips.hardware.AccessNotice;
@@ -48,12 +49,16 @@ import mars.mips.instructions.BasicInstructionFormat;
  * Instruction counter tool. Can be used to know how many instructions were
  * executed to complete a given program. Code slightly based on
  * MemoryReferenceVisualization.
- * 
+ *
  * @author Felipe Lessa <felipe.lessa@gmail.com>
  */
 //@SuppressWarnings("serial")
 public class InstructionCounter extends AbstractMarsToolAndApplication {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 8585913723201262800L;
 	private static String name = "Instruction Counter";
 	private static String version = "Version 1.0 (Felipe Lessa)";
 	private static String heading = "Counting the number of instructions executed";
@@ -95,12 +100,12 @@ public class InstructionCounter extends AbstractMarsToolAndApplication {
 	/**
 	 * Simple constructor, likely used to run a stand-alone memory reference
 	 * visualizer.
-	 * 
+	 *
 	 * @param title   String containing title for title bar
 	 * @param heading String containing text for heading shown in upper part of
 	 *                window.
 	 */
-	public InstructionCounter(String title, String heading) {
+	public InstructionCounter(final String title, final String heading) {
 		super(title, heading);
 	}
 
@@ -112,35 +117,37 @@ public class InstructionCounter extends AbstractMarsToolAndApplication {
 	}
 
 	//	@Override
+	@Override
 	public String getName() { return name; }
 
 	//	@Override
+	@Override
 	protected JComponent buildMainDisplayArea() {
 		// Create everything
-		JPanel panel = new JPanel(new GridBagLayout());
+		final JPanel panel = new JPanel(new GridBagLayout());
 
 		counterField = new JTextField("0", 10);
 		counterField.setEditable(false);
 
 		counterRField = new JTextField("0", 10);
 		counterRField.setEditable(false);
-		progressbarR = new JProgressBar(JProgressBar.HORIZONTAL);
+		progressbarR = new JProgressBar(SwingConstants.HORIZONTAL);
 		progressbarR.setStringPainted(true);
 
 		counterIField = new JTextField("0", 10);
 		counterIField.setEditable(false);
-		progressbarI = new JProgressBar(JProgressBar.HORIZONTAL);
+		progressbarI = new JProgressBar(SwingConstants.HORIZONTAL);
 		progressbarI.setStringPainted(true);
 
 		counterJField = new JTextField("0", 10);
 		counterJField.setEditable(false);
-		progressbarJ = new JProgressBar(JProgressBar.HORIZONTAL);
+		progressbarJ = new JProgressBar(SwingConstants.HORIZONTAL);
 		progressbarJ.setStringPainted(true);
 
 		// Add them to the panel
 
 		// Fields
-		GridBagConstraints c = new GridBagConstraints();
+		final GridBagConstraints c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.LINE_START;
 		c.gridheight = c.gridwidth = 1;
 		c.gridx = 3;
@@ -194,28 +201,31 @@ public class InstructionCounter extends AbstractMarsToolAndApplication {
 	}
 
 	//	@Override
+	@Override
 	protected void addAsObserver() {
 		addAsObserver(Memory.textBaseAddress, Memory.textLimitAddress);
 	}
 
 	//	@Override
-	protected void processMIPSUpdate(Observable resource, AccessNotice notice) {
-		if (!notice.accessIsFromMIPS()) return;
-		if (notice.getAccessType() != AccessNotice.READ) return;
-		MemoryAccessNotice m = (MemoryAccessNotice) notice;
-		int a = m.getAddress();
-		if (a == lastAddress) return;
+	@Override
+	protected void processMIPSUpdate(final Observable resource, final AccessNotice notice) {
+		if (!notice.accessIsFromMIPS()) { return; }
+		if (notice.getAccessType() != AccessNotice.READ) { return; }
+		final MemoryAccessNotice m = (MemoryAccessNotice) notice;
+		final int a = m.getAddress();
+		if (a == lastAddress) { return; }
 		lastAddress = a;
 		counter++;
 		try {
-			ProgramStatement stmt = Memory.getInstance().getStatement(a);
-			BasicInstruction instr = (BasicInstruction) stmt.getInstruction();
-			BasicInstructionFormat format = instr.getInstructionFormat();
-			if (format == BasicInstructionFormat.R_FORMAT) counterR++;
-			else if (format == BasicInstructionFormat.I_FORMAT || format == BasicInstructionFormat.I_BRANCH_FORMAT)
+			final ProgramStatement stmt = Memory.getInstance().getStatement(a);
+			final BasicInstruction instr = (BasicInstruction) stmt.getInstruction();
+			final BasicInstructionFormat format = instr.getInstructionFormat();
+			if (format == BasicInstructionFormat.R_FORMAT) {
+				counterR++;
+			} else if (format == BasicInstructionFormat.I_FORMAT || format == BasicInstructionFormat.I_BRANCH_FORMAT) {
 				counterI++;
-			else if (format == BasicInstructionFormat.J_FORMAT) counterJ++;
-		} catch (AddressErrorException e) {
+			} else if (format == BasicInstructionFormat.J_FORMAT) { counterJ++; }
+		} catch (final AddressErrorException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -223,12 +233,14 @@ public class InstructionCounter extends AbstractMarsToolAndApplication {
 	}
 
 	//	@Override
+	@Override
 	protected void initializePreGUI() {
 		counter = counterR = counterI = counterJ = 0;
 		lastAddress = -1;
 	}
 
 	// @Override
+	@Override
 	protected void reset() {
 		counter = counterR = counterI = counterJ = 0;
 		lastAddress = -1;
@@ -236,6 +248,7 @@ public class InstructionCounter extends AbstractMarsToolAndApplication {
 	}
 
 	//	@Override
+	@Override
 	protected void updateDisplay() {
 		counterField.setText(String.valueOf(counter));
 
@@ -256,9 +269,9 @@ public class InstructionCounter extends AbstractMarsToolAndApplication {
 			progressbarI.setString("0%");
 			progressbarJ.setString("0%");
 		} else {
-			progressbarR.setString((counterR * 100) / counter + "%");
-			progressbarI.setString((counterI * 100) / counter + "%");
-			progressbarJ.setString((counterJ * 100) / counter + "%");
+			progressbarR.setString(counterR * 100 / counter + "%");
+			progressbarI.setString(counterI * 100 / counter + "%");
+			progressbarJ.setString(counterJ * 100 / counter + "%");
 		}
 	}
 }

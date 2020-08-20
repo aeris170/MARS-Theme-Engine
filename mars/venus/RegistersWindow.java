@@ -1,32 +1,51 @@
 package mars.venus;
 
-import mars.*;
-import mars.util.*;
-import mars.simulator.*;
-import mars.mips.hardware.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.MouseEvent;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+
+import mars.Globals;
+import mars.Settings;
+import mars.mips.hardware.AccessNotice;
+import mars.mips.hardware.Register;
+import mars.mips.hardware.RegisterAccessNotice;
+import mars.mips.hardware.RegisterFile;
+import mars.simulator.Simulator;
+import mars.simulator.SimulatorNotice;
+import mars.util.Binary;
 
 /*
  * Copyright (c) 2003-2009, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,18 +53,22 @@ import javax.swing.event.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /**
  * Sets up a window to display registers in the UI.
- * 
+ *
  * @author Sanderson, Bumgarner
  **/
 
 public class RegistersWindow extends JPanel implements Observer {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -1062568029810971377L;
 	private static JTable table;
 	private static Register[] registers;
 	private Object[][] tableData;
@@ -65,7 +88,7 @@ public class RegistersWindow extends JPanel implements Observer {
 	public RegistersWindow() {
 		Simulator.getInstance().addObserver(this);
 		settings = Globals.getSettings();
-		this.highlighting = false;
+		highlighting = false;
 		table = new MyTippedJTable(new RegTableModel(setupWindow()));
 		table.getColumnModel().getColumn(NAME_COLUMN).setPreferredWidth(25);
 		table.getColumnModel().getColumn(NUMBER_COLUMN).setPreferredWidth(25);
@@ -78,19 +101,19 @@ public class RegistersWindow extends JPanel implements Observer {
 		table.getColumnModel().getColumn(VALUE_COLUMN).setCellRenderer(new RegisterCellRenderer(
 				MonoRightCellRenderer.MONOSPACED_PLAIN_12POINT, SwingConstants.RIGHT));
 		table.setPreferredScrollableViewportSize(new Dimension(200, 700));
-		this.setLayout(new BorderLayout()); // table display will occupy entire width if widened
-		this.add(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
+		setLayout(new BorderLayout()); // table display will occupy entire width if widened
+		this.add(new JScrollPane(table, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER));
 	}
 
 	/**
 	 * Sets up the data for the window.
-	 * 
+	 *
 	 * @return The array object with the data for the window.
 	 **/
 
 	public Object[][] setupWindow() {
-		int valueBase = NumberDisplayBaseChooser.getBase(settings.getDisplayValuesInHex());
+		final int valueBase = NumberDisplayBaseChooser.getBase(settings.getDisplayValuesInHex());
 		tableData = new Object[35][3];
 		registers = RegisterFile.getRegisters();
 		for (int i = 0; i < registers.length; i++) {
@@ -117,7 +140,7 @@ public class RegistersWindow extends JPanel implements Observer {
 	 * clear and redisplay registers
 	 */
 	public void clearWindow() {
-		this.clearHighlighting();
+		clearHighlighting();
 		RegisterFile.resetRegisters();
 		this.updateRegisters(Globals.getGui().getMainPane().getExecutePane().getValueDisplayBase());
 	}
@@ -150,7 +173,7 @@ public class RegistersWindow extends JPanel implements Observer {
 	 *
 	 * @param base desired number base
 	 */
-	public void updateRegisters(int base) {
+	public void updateRegisters(final int base) {
 		registers = RegisterFile.getRegisters();
 		for (int i = 0; i < registers.length; i++) {
 			updateRegisterValue(registers[i].getNumber(), registers[i].getValue(), base);
@@ -162,17 +185,17 @@ public class RegistersWindow extends JPanel implements Observer {
 
 	/**
 	 * This method handles the updating of the GUI.
-	 * 
+	 *
 	 * @param number The number of the register to update.
 	 * @param val    New value.
 	 **/
 
-	public void updateRegisterValue(int number, int val, int base) {
+	public void updateRegisterValue(final int number, final int val, final int base) {
 		((RegTableModel) table.getModel()).setDisplayAndModelValueAt(NumberDisplayBaseChooser.formatNumber(val, base),
 				number, 2);
 	}
 
-	private void updateRegisterUnsignedValue(int number, int val, int base) {
+	private void updateRegisterUnsignedValue(final int number, final int val, final int base) {
 		((RegTableModel) table.getModel()).setDisplayAndModelValueAt(NumberDisplayBaseChooser.formatUnsignedInteger(val,
 				base), number, 2);
 	}
@@ -183,19 +206,20 @@ public class RegistersWindow extends JPanel implements Observer {
 	 * know when it starts and stops running A register object, which lets us know
 	 * of register operations The Simulator keeps us informed of when simulated MIPS
 	 * execution is active. This is the only time we care about register operations.
-	 * 
+	 *
 	 * @param observable The Observable object who is notifying us
 	 * @param obj        Auxiliary object with additional information.
 	 */
-	public void update(Observable observable, Object obj) {
+	@Override
+	public void update(final Observable observable, final Object obj) {
 		if (observable == mars.simulator.Simulator.getInstance()) {
-			SimulatorNotice notice = (SimulatorNotice) obj;
+			final SimulatorNotice notice = (SimulatorNotice) obj;
 			if (notice.getAction() == SimulatorNotice.SIMULATOR_START) {
 				// Simulated MIPS execution starts.  Respond to memory changes if running in timed
 				// or stepped mode.
 				if (notice.getRunSpeed() != RunSpeedPanel.UNLIMITED_SPEED || notice.getMaxSteps() == 1) {
 					RegisterFile.addRegistersObserver(this);
-					this.highlighting = true;
+					highlighting = true;
 				}
 			} else {
 				// Simulated MIPS execution stops.  Stop responding.
@@ -203,12 +227,12 @@ public class RegistersWindow extends JPanel implements Observer {
 			}
 		} else if (obj instanceof RegisterAccessNotice) {
 			// NOTE: each register is a separate Observable
-			RegisterAccessNotice access = (RegisterAccessNotice) obj;
+			final RegisterAccessNotice access = (RegisterAccessNotice) obj;
 			if (access.getAccessType() == AccessNotice.WRITE) {
 				// Uses the same highlighting technique as for Text Segment -- see
 				// AddressCellRenderer class in DataSegmentWindow.java.
-				this.highlighting = true;
-				this.highlightCellForRegister((Register) observable);
+				highlighting = true;
+				highlightCellForRegister((Register) observable);
 				Globals.getGui().getRegistersPane().setSelectedComponent(this);
 			}
 		}
@@ -216,37 +240,43 @@ public class RegistersWindow extends JPanel implements Observer {
 
 	/**
 	 * Highlight the row corresponding to the given register.
-	 * 
+	 *
 	 * @param register Register object corresponding to row to be selected.
 	 */
-	void highlightCellForRegister(Register register) {
-		this.highlightRow = register.getNumber();
-		// Tell the system that table contents have changed.  This will trigger re-rendering 
-		// during which cell renderers are obtained.  The row of interest (identified by 
+	void highlightCellForRegister(final Register register) {
+		highlightRow = register.getNumber();
+		// Tell the system that table contents have changed.  This will trigger re-rendering
+		// during which cell renderers are obtained.  The row of interest (identified by
 		// instance variabls this.registerRow) will get a renderer
-		// with highlight background color and all others get renderer with default background. 
+		// with highlight background color and all others get renderer with default background.
 		table.tableChanged(new TableModelEvent(table.getModel()));
 	}
 
 	/*
 	* Cell renderer for displaying register entries.  This does highlighting, so if you
-	* don't want highlighting for a given column, don't use this.  Currently we highlight 
+	* don't want highlighting for a given column, don't use this.  Currently we highlight
 	* all columns.
 	*/
 	private class RegisterCellRenderer extends DefaultTableCellRenderer {
 
-		private Font font;
-		private int alignment;
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 3326458046306618533L;
+		private final Font font;
+		private final int alignment;
 
-		public RegisterCellRenderer(Font font, int alignment) {
+		public RegisterCellRenderer(final Font font, final int alignment) {
 			super();
 			this.font = font;
 			this.alignment = alignment;
 		}
 
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-				int row, int column) {
-			JLabel cell = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+		@Override
+		public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected,
+				final boolean hasFocus, final int row, final int column) {
+			final JLabel cell = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+					column);
 			cell.setFont(font);
 			cell.setHorizontalAlignment(alignment);
 			if (settings.getRegistersHighlighting() && highlighting && row == highlightRow) {
@@ -270,38 +300,48 @@ public class RegistersWindow extends JPanel implements Observer {
 
 	class RegTableModel extends AbstractTableModel {
 
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = -1232936166438401626L;
 		final String[] columnNames = { "Name", "Number", "Value" };
 		Object[][] data;
 
-		public RegTableModel(Object[][] d) {
+		public RegTableModel(final Object[][] d) {
 			data = d;
 		}
 
+		@Override
 		public int getColumnCount() { return columnNames.length; }
 
+		@Override
 		public int getRowCount() { return data.length; }
 
-		public String getColumnName(int col) {
+		@Override
+		public String getColumnName(final int col) {
 			return columnNames[col];
 		}
 
-		public Object getValueAt(int row, int col) {
+		@Override
+		public Object getValueAt(final int row, final int col) {
 			return data[row][col];
 		}
 
 		/*
 		 * JTable uses this method to determine the default renderer/
-		 * editor for each cell.  
+		 * editor for each cell.
 		*/
-		public Class getColumnClass(int c) {
+		@Override
+		public Class getColumnClass(final int c) {
 			return getValueAt(0, c).getClass();
 		}
 
 		/*
 		* Don't need to implement this method unless your table's
-		* editable.  
+		* editable.
 		*/
-		public boolean isCellEditable(int row, int col) {
+		@Override
+		public boolean isCellEditable(final int row, final int col) {
 			//Note that the data/cell address is constant,
 			//no matter where the cell appears onscreen.
 			// these registers are not editable: $zero (0), $pc (32), $ra (31)
@@ -317,11 +357,12 @@ public class RegistersWindow extends JPanel implements Observer {
 		* only when user edits cell, so input validation has to be done.  If
 		* value is valid, MIPS register is updated.
 		 */
-		public void setValueAt(Object value, int row, int col) {
+		@Override
+		public void setValueAt(final Object value, final int row, final int col) {
 			int val = 0;
 			try {
 				val = Binary.stringToInt((String) value);
-			} catch (NumberFormatException nfe) {
+			} catch (final NumberFormatException nfe) {
 				data[row][col] = "INVALID";
 				fireTableCellUpdated(row, col);
 				return;
@@ -331,7 +372,7 @@ public class RegistersWindow extends JPanel implements Observer {
 			synchronized (Globals.memoryAndRegistersLock) {
 				RegisterFile.updateRegister(row, val);
 			}
-			int valueBase = Globals.getGui().getMainPane().getExecutePane().getValueDisplayBase();
+			final int valueBase = Globals.getGui().getMainPane().getExecutePane().getValueDisplayBase();
 			data[row][col] = NumberDisplayBaseChooser.formatNumber(val, valueBase);
 			fireTableCellUpdated(row, col);
 			return;
@@ -340,15 +381,15 @@ public class RegistersWindow extends JPanel implements Observer {
 		/**
 		 * Update cell contents in table model. Does not affect MIPS register.
 		 */
-		private void setDisplayAndModelValueAt(Object value, int row, int col) {
+		private void setDisplayAndModelValueAt(final Object value, final int row, final int col) {
 			data[row][col] = value;
 			fireTableCellUpdated(row, col);
 		}
 
 		// handy for debugging....
 		private void printDebugData() {
-			int numRows = getRowCount();
-			int numCols = getColumnCount();
+			final int numRows = getRowCount();
+			final int numCols = getColumnCount();
 
 			for (int i = 0; i < numRows; i++) {
 				System.out.print("    row " + i + ":");
@@ -364,19 +405,24 @@ public class RegistersWindow extends JPanel implements Observer {
 	///////////////////////////////////////////////////////////////////
 	//
 	// JTable subclass to provide custom tool tips for each of the
-	// register table column headers and for each register name in 
+	// register table column headers and for each register name in
 	// the first column. From Sun's JTable tutorial.
 	// http://java.sun.com/docs/books/tutorial/uiswing/components/table.html
 	//
 	private class MyTippedJTable extends JTable {
 
-		MyTippedJTable(RegTableModel m) {
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 513907327826617134L;
+
+		MyTippedJTable(final RegTableModel m) {
 			super(m);
-			this.setRowSelectionAllowed(true); // highlights background color of entire row
-			this.setSelectionBackground(Color.GREEN);
+			setRowSelectionAllowed(true); // highlights background color of entire row
+			setSelectionBackground(Color.GREEN);
 		}
 
-		private String[] regToolTips = { /* $zero */ "constant 0", /* $at   */ "reserved for assembler",
+		private final String[] regToolTips = { /* $zero */ "constant 0", /* $at   */ "reserved for assembler",
 				/* $v0   */ "expression evaluation and results of a function",
 				/* $v1   */ "expression evaluation and results of a function", /* $a0   */ "argument 1",
 				/* $a1   */ "argument 2", /* $a2   */ "argument 3", /* $a3   */ "argument 4",
@@ -404,12 +450,13 @@ public class RegistersWindow extends JPanel implements Observer {
 				/* lo    */ "low-order word of multiply product, or divide quotient" };
 
 		//Implement table cell tool tips.
-		public String getToolTipText(MouseEvent e) {
+		@Override
+		public String getToolTipText(final MouseEvent e) {
 			String tip = null;
-			java.awt.Point p = e.getPoint();
-			int rowIndex = rowAtPoint(p);
-			int colIndex = columnAtPoint(p);
-			int realColumnIndex = convertColumnIndexToModel(colIndex);
+			final java.awt.Point p = e.getPoint();
+			final int rowIndex = rowAtPoint(p);
+			final int colIndex = columnAtPoint(p);
+			final int realColumnIndex = convertColumnIndexToModel(colIndex);
 			if (realColumnIndex == NAME_COLUMN) { //Register name column
 				tip = regToolTips[rowIndex];
 				/* You can customize each tip to encorporiate cell contents if you like:
@@ -418,25 +465,27 @@ public class RegistersWindow extends JPanel implements Observer {
 					....... etc .......
 				*/
 			} else {
-				//You can omit this part if you know you don't have any 
+				//You can omit this part if you know you don't have any
 				//renderers that supply their own tool tips.
 				tip = super.getToolTipText(e);
 			}
 			return tip;
 		}
 
-		private String[] columnToolTips = { /* name */ "Each register has a tool tip describing its usage convention",
+		private final String[] columnToolTips = {
+				/* name */ "Each register has a tool tip describing its usage convention",
 				/* number */ "Corresponding register number", /* value */ "Current 32 bit value" };
 
-		//Implement table header tool tips. 
+		//Implement table header tool tips.
+		@Override
 		protected JTableHeader createDefaultTableHeader() {
 			return new JTableHeader(columnModel) {
 
-				public String getToolTipText(MouseEvent e) {
-					String tip = null;
-					java.awt.Point p = e.getPoint();
-					int index = columnModel.getColumnIndexAtX(p.x);
-					int realIndex = columnModel.getColumn(index).getModelIndex();
+				@Override
+				public String getToolTipText(final MouseEvent e) {
+					final java.awt.Point p = e.getPoint();
+					final int index = columnModel.getColumnIndexAtX(p.x);
+					final int realIndex = columnModel.getColumn(index).getModelIndex();
 					return columnToolTips[realIndex];
 				}
 			};

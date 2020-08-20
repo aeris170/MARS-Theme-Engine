@@ -1,26 +1,27 @@
 package mars.util;
 
-import mars.*;
-import java.awt.*;
-import java.util.*;
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.util.Arrays;
+
+import mars.Globals;
 
 /*
  * Copyright (c) 2003-2009, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,7 +29,7 @@ import java.awt.Font;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -62,7 +63,7 @@ public class EditorFont {
 	 * Obtain an array of common font family names. These are guaranteed to be
 	 * available at runtime, as they were checked against the local
 	 * GraphicsEnvironment.
-	 * 
+	 *
 	 * @return Array of strings, each is a common and available font family name.
 	 */
 
@@ -71,7 +72,7 @@ public class EditorFont {
 	/**
 	 * Obtain an array of all available font family names. These are guaranteed to
 	 * be available at runtime, as they come from the local GraphicsEnvironment.
-	 * 
+	 *
 	 * @return Array of strings, each is an available font family name.
 	 */
 
@@ -87,13 +88,13 @@ public class EditorFont {
 	/**
 	 * Given a string that represents a font style, returns the corresponding final
 	 * int defined in Font: PLAIN, BOLD, ITALIC. It is not case-sensitive.
-	 * 
+	 *
 	 * @param style String representing the font style name
 	 * @return The int value of the corresponding Font style constant. If the string
 	 *         does not match any style name, returns Font.PLAIN.
 	 */
-	public static int styleStringToStyleInt(String style) {
-		String styleLower = style.toLowerCase();
+	public static int styleStringToStyleInt(final String style) {
+		final String styleLower = style.toLowerCase();
 		for (int i = 0; i < styleStrings.length; i++) {
 			if (styleLower.equals(styleStrings[i].toLowerCase())) { return styleInts[i]; }
 		}
@@ -103,12 +104,12 @@ public class EditorFont {
 	/**
 	 * Given an int that represents a font style from the Font class, returns the
 	 * corresponding String.
-	 * 
+	 *
 	 * @param style Must be one of Font.PLAIN, Font.BOLD, Font.ITALIC.
 	 * @return The String representation of that style. If the parameter is not one
 	 *         of the above, returns "Plain".
 	 */
-	public static String styleIntToStyleString(int style) {
+	public static String styleIntToStyleString(final int style) {
 		for (int i = 0; i < styleInts.length; i++) {
 			if (style == styleInts[i]) { return styleStrings[i]; }
 		}
@@ -117,38 +118,38 @@ public class EditorFont {
 
 	/**
 	 * Given an int representing font size, returns corresponding string.
-	 * 
+	 *
 	 * @param size Int representing size.
 	 * @return String value of parameter, unless it is less than MIN_SIZE (returns
 	 *         MIN_SIZE as String) or greater than MAX_SIZE (returns MAX_SIZE as
 	 *         String).
 	 */
-	public static String sizeIntToSizeString(int size) {
-		int result = (size < MIN_SIZE) ? MIN_SIZE : ((size > MAX_SIZE) ? MAX_SIZE : size);
+	public static String sizeIntToSizeString(final int size) {
+		final int result = size < MIN_SIZE ? MIN_SIZE : size > MAX_SIZE ? MAX_SIZE : size;
 		return String.valueOf(result);
 	}
 
 	/**
 	 * Given a String representing font size, returns corresponding int.
-	 * 
+	 *
 	 * @param size String representing size.
 	 * @return int value of parameter, unless it is less than MIN_SIZE (returns
 	 *         MIN_SIZE) or greater than MAX_SIZE (returns MAX_SIZE). If the string
 	 *         cannot be parsed as a decimal integer, it returns DEFAULT_SIZE.
 	 */
-	public static int sizeStringToSizeInt(String size) {
+	public static int sizeStringToSizeInt(final String size) {
 		int result = DEFAULT_SIZE;
 		try {
 			result = Integer.parseInt(size);
-		} catch (NumberFormatException e) {}
-		return (result < MIN_SIZE) ? MIN_SIZE : ((result > MAX_SIZE) ? MAX_SIZE : result);
+		} catch (final NumberFormatException e) {}
+		return result < MIN_SIZE ? MIN_SIZE : result > MAX_SIZE ? MAX_SIZE : result;
 	}
 
 	/**
 	 * Creates a new Font object based on the given String specifications. This is
 	 * different than Font's constructor, which requires ints for style and size. It
 	 * assures that defaults and size limits are applied when necessary.
-	 * 
+	 *
 	 * @param family String containing font family.
 	 * @param style  String containing font style. A list of available styles can be
 	 *               obtained from getFontStyleStrings(). The default of
@@ -156,7 +157,7 @@ public class EditorFont {
 	 * @param size   String containing font size. The defaults and limits of
 	 *               sizeStringToSizeInt() are substituted if necessary.
 	 */
-	public static Font createFontFromStringValues(String family, String style, String size) {
+	public static Font createFontFromStringValues(final String family, final String style, final String size) {
 		return new Font(family, styleStringToStyleInt(style), sizeStringToSizeInt(size));
 	}
 
@@ -164,7 +165,7 @@ public class EditorFont {
 	 * Handy utility to produce a string that substitutes spaces for all tab
 	 * characters in the given string. The number of spaces generated is based on
 	 * the position of the tab character and the editor's current tab size setting.
-	 * 
+	 *
 	 * @param string The original string
 	 * @return New string in which spaces are substituted for tabs
 	 * @throws NullPointerException if string is null
@@ -173,7 +174,7 @@ public class EditorFont {
 	private static final char TAB_CHAR = '\t';
 	private static final String SPACES = "                                                  ";
 
-	public static String substituteSpacesForTabs(String string) {
+	public static String substituteSpacesForTabs(final String string) {
 		return substituteSpacesForTabs(string, Globals.getSettings().getEditorTabSize());
 	}
 
@@ -181,19 +182,17 @@ public class EditorFont {
 	 * Handy utility to produce a string that substitutes spaces for all tab
 	 * characters in the given string. The number of spaces generated is based on
 	 * the position of the tab character and the specified tab size.
-	 * 
+	 *
 	 * @param string  The original string
 	 * @param tabSize The number of spaces each tab character represents
 	 * @return New string in which spaces are substituted for tabs
 	 * @throws NullPointerException if string is null
 	 */
-	public static String substituteSpacesForTabs(String string, int tabSize) {
-		if (!string.contains(TAB_STRING)) return string;
-		StringBuffer result = new StringBuffer(string);
+	public static String substituteSpacesForTabs(final String string, final int tabSize) {
+		if (!string.contains(TAB_STRING)) { return string; }
+		final StringBuffer result = new StringBuffer(string);
 		for (int i = 0; i < result.length(); i++) {
-			if (result.charAt(i) == TAB_CHAR) {
-				result.replace(i, i + 1, SPACES.substring(0, tabSize - (i % tabSize)));
-			}
+			if (result.charAt(i) == TAB_CHAR) { result.replace(i, i + 1, SPACES.substring(0, tabSize - i % tabSize)); }
 		}
 		return result.toString();
 	}
@@ -206,7 +205,8 @@ public class EditorFont {
 
 	private static String[] actualCommonFamilies() {
 		String[] result = new String[allCommonFamilies.length];
-		String[] availableFamilies = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+		final String[] availableFamilies = GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getAvailableFontFamilyNames();
 		Arrays.sort(availableFamilies); // not sure if necessary; is the list already alphabetical?
 		int k = 0;
 		for (int i = 0; i < allCommonFamilies.length; i++) {
@@ -216,7 +216,7 @@ public class EditorFont {
 		}
 		// If not all are found, creat a new array with only the ones that are.
 		if (k < allCommonFamilies.length) {
-			String[] temp = new String[k];
+			final String[] temp = new String[k];
 			System.arraycopy(result, 0, temp, 0, k);
 			result = temp;
 		}

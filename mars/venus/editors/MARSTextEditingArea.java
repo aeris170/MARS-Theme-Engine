@@ -1,26 +1,29 @@
 package mars.venus.editors;
 
-import javax.swing.text.*;
-import javax.swing.undo.*;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.FontMetrics;
+
+import javax.swing.text.Document;
+import javax.swing.undo.UndoManager;
 
 /*
  * Copyright (c) 2003-2010, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,7 +31,7 @@ import java.awt.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -38,89 +41,89 @@ import java.awt.*;
 
 public interface MARSTextEditingArea {
 
-	// Used by Find/Replace 
-	public static final int TEXT_NOT_FOUND = 0;
-	public static final int TEXT_FOUND = 1;
-	public static final int TEXT_REPLACED_FOUND_NEXT = 2;
-	public static final int TEXT_REPLACED_NOT_FOUND_NEXT = 3;
+	// Used by Find/Replace
+	int TEXT_NOT_FOUND = 0;
+	int TEXT_FOUND = 1;
+	int TEXT_REPLACED_FOUND_NEXT = 2;
+	int TEXT_REPLACED_NOT_FOUND_NEXT = 3;
 
-	public void copy();
+	void copy();
 
-	public void cut();
+	void cut();
 
-	public int doFindText(String find, boolean caseSensitive);
+	int doFindText(String find, boolean caseSensitive);
 
-	public int doReplace(String find, String replace, boolean caseSensitive);
+	int doReplace(String find, String replace, boolean caseSensitive);
 
-	public int doReplaceAll(String find, String replace, boolean caseSensitive);
+	int doReplaceAll(String find, String replace, boolean caseSensitive);
 
-	public int getCaretPosition();
+	int getCaretPosition();
 
-	public Document getDocument();
+	Document getDocument();
 
-	public String getSelectedText();
+	String getSelectedText();
 
-	public int getSelectionEnd();
+	int getSelectionEnd();
 
-	public int getSelectionStart();
+	int getSelectionStart();
 
-	public void select(int selectionStart, int selectionEnd);
+	void select(int selectionStart, int selectionEnd);
 
-	public void selectAll();
+	void selectAll();
 
-	public String getText();
+	String getText();
 
-	public UndoManager getUndoManager();
+	UndoManager getUndoManager();
 
-	public void paste();
+	void paste();
 
-	public void replaceSelection(String str);
+	void replaceSelection(String str);
 
-	public void setCaretPosition(int position);
+	void setCaretPosition(int position);
 
-	public void setEditable(boolean editable);
+	void setEditable(boolean editable);
 
-	public void setSelectionEnd(int pos);
+	void setSelectionEnd(int pos);
 
-	public void setSelectionStart(int pos);
+	void setSelectionStart(int pos);
 
-	public void setText(String text);
+	void setText(String text);
 
-	public void setFont(Font f);
+	void setFont(Font f);
 
-	public Font getFont();
+	Font getFont();
 
-	public boolean requestFocusInWindow();
+	boolean requestFocusInWindow();
 
-	public FontMetrics getFontMetrics(Font f);
+	FontMetrics getFontMetrics(Font f);
 
-	public void setBackground(Color c);
+	void setBackground(Color c);
 
-	public void setEnabled(boolean enabled);
+	void setEnabled(boolean enabled);
 
-	public void grabFocus();
+	void grabFocus();
 
-	public void redo();
+	void redo();
 
-	public void revalidate();
+	void revalidate();
 
-	public void setSourceCode(String code, boolean editable);
+	void setSourceCode(String code, boolean editable);
 
-	public void setCaretVisible(boolean vis);
+	void setCaretVisible(boolean vis);
 
-	public void setSelectionVisible(boolean vis);
+	void setSelectionVisible(boolean vis);
 
-	public void undo();
+	void undo();
 
-	public void discardAllUndoableEdits();
+	void discardAllUndoableEdits();
 
-	public void setLineHighlightEnabled(boolean highlight);
+	void setLineHighlightEnabled(boolean highlight);
 
-	public void setCaretBlinkRate(int rate);
+	void setCaretBlinkRate(int rate);
 
-	public void setTabSize(int chars);
+	void setTabSize(int chars);
 
-	public void updateSyntaxStyles();
+	void updateSyntaxStyles();
 
-	public Component getOuterComponent();
+	Component getOuterComponent();
 }

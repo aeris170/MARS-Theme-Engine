@@ -4,20 +4,20 @@ import java.util.ArrayList;
 
 /*
  * Copyright (c) 2003-2012, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,7 +25,7 @@ import java.util.ArrayList;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
@@ -34,7 +34,7 @@ import java.util.ArrayList;
  * these would probably be implemented that way. Each directive is represented
  * by a unique object. The directive name is indicative of the directive it
  * represents. For example, DATA represents the MIPS .data directive.
- * 
+ *
  * @author Pete Sanderson
  * @version August 2003
  **/
@@ -83,31 +83,31 @@ public final class Directives {
 	public static final Directives INCLUDE = new Directives(".include",
 			"Insert the contents of the specified file.  Put filename in quotes.");
 
-	private String descriptor;
-	private String description; // help text
+	private final String descriptor;
+	private final String description; // help text
 
 	private Directives() {
 		// private ctor assures no objects can be created other than those above.
-		this.descriptor = "generic";
-		this.description = "";
+		descriptor = "generic";
+		description = "";
 		directiveList.add(this);
 	}
 
-	private Directives(String name, String description) {
-		this.descriptor = name;
+	private Directives(final String name, final String description) {
+		descriptor = name;
 		this.description = description;
 		directiveList.add(this);
 	}
 
 	/**
 	 * Find Directive object, if any, which matches the given String.
-	 * 
+	 *
 	 * @param str A String containing candidate directive name (e.g. ".ascii")
 	 * @return If match is found, returns matching Directives object, else returns
 	 *         <tt>null</tt>.
 	 **/
 
-	public static Directives matchDirective(String str) {
+	public static Directives matchDirective(final String str) {
 		Directives match;
 		for (int i = 0; i < directiveList.size(); i++) {
 			match = (Directives) directiveList.get(i);
@@ -119,13 +119,13 @@ public final class Directives {
 	/**
 	 * Find Directive object, if any, which contains the given string as a prefix.
 	 * For example, ".a" will match ".ascii", ".asciiz" and ".align"
-	 * 
+	 *
 	 * @param str A String
 	 * @return If match is found, returns ArrayList of matching Directives objects,
 	 *         else returns <tt>null</tt>.
 	 **/
 
-	public static ArrayList prefixMatchDirectives(String str) {
+	public static ArrayList prefixMatchDirectives(final String str) {
 		ArrayList matches = null;
 		for (int i = 0; i < directiveList.size(); i++) {
 			if (((Directives) directiveList.get(i)).descriptor.toLowerCase().startsWith(str.toLowerCase())) {
@@ -138,44 +138,45 @@ public final class Directives {
 
 	/**
 	 * Produces String-ified version of Directive object
-	 * 
+	 *
 	 * @return String representing Directive: its MIPS name
 	 **/
 
+	@Override
 	public String toString() {
-		return this.descriptor;
+		return descriptor;
 	}
 
 	/**
 	 * Get name of this Directives object
-	 * 
+	 *
 	 * @return name of this MIPS directive as a String
 	 **/
 
-	public String getName() { return this.descriptor; }
+	public String getName() { return descriptor; }
 
 	/**
 	 * Get description of this Directives object
-	 * 
+	 *
 	 * @return description of this MIPS directive (for help purposes)
 	 **/
 
-	public String getDescription() { return this.description; }
+	public String getDescription() { return description; }
 
 	/**
 	 * Produces List of Directive objects
-	 * 
+	 *
 	 * @return MIPS Directive
 	 **/
 	public static ArrayList getDirectiveList() { return directiveList; }
 
 	/**
 	 * Lets you know whether given directive is for integer (WORD,HALF,BYTE).
-	 * 
+	 *
 	 * @param direct a MIPS directive
 	 * @return true if given directive is FLOAT or DOUBLE, false otherwise
 	 **/
-	public static boolean isIntegerDirective(Directives direct) {
+	public static boolean isIntegerDirective(final Directives direct) {
 		return direct == Directives.WORD || direct == Directives.HALF || direct == Directives.BYTE;
 	}
 
@@ -185,7 +186,7 @@ public final class Directives {
 	 * @param direct a MIPS directive
 	 * @return true if given directive is FLOAT or DOUBLE, false otherwise.
 	 **/
-	public static boolean isFloatingDirective(Directives direct) {
+	public static boolean isFloatingDirective(final Directives direct) {
 		return direct == Directives.FLOAT || direct == Directives.DOUBLE;
 	}
 

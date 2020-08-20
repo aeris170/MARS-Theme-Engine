@@ -1,30 +1,51 @@
 package mars.venus;
 
-import mars.*;
-import mars.mips.dump.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.event.*;
-import java.io.*;
-import java.net.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.net.URL;
+
+import javax.swing.Action;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
+
+import mars.Globals;
+import mars.Settings;
 
 /*
  * Copyright (c) 2003-2013, Pete Sanderson and Kenneth Vollmar
- * 
+ *
  * Developed by Pete Sanderson (psanderson@otterbein.edu) and Kenneth Vollmar
  * (kenvollmar@missouristate.edu)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,13 +53,13 @@ import java.net.*;
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * (MIT license, http://www.opensource.org/licenses/mit-license.html)
  */
 
 /**
  * Top level container for Venus GUI.
- * 
+ *
  * @author Sanderson and Team JSpim
  **/
 
@@ -49,6 +70,10 @@ import java.net.*;
 
 public class VenusUI extends JFrame {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 2523230172475273889L;
 	VenusUI mainUI;
 	public JMenuBar menu;
 	JToolBar toolbar;
@@ -109,31 +134,31 @@ public class VenusUI extends JFrame {
 
 	/**
 	 * Constructor for the Class. Sets up a window object for the UI
-	 * 
+	 *
 	 * @param s Name of the window to be created.
 	 **/
 
-	public VenusUI(String s) {
+	public VenusUI(final String s) {
 		super(s);
 		mainUI = this;
 		Globals.setGui(this);
-		this.editor = new Editor(this);
+		editor = new Editor(this);
 
-		double screenWidth = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
-		double screenHeight = Toolkit.getDefaultToolkit().getScreenSize().getHeight();
+		final double screenWidth = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+		final double screenHeight = Toolkit.getDefaultToolkit().getScreenSize().getHeight();
 		// basically give up some screen space if running at 800 x 600
-		double messageWidthPct = (screenWidth < 1000.0) ? 0.67 : 0.73;
-		double messageHeightPct = (screenWidth < 1000.0) ? 0.12 : 0.15;
-		double mainWidthPct = (screenWidth < 1000.0) ? 0.67 : 0.73;
-		double mainHeightPct = (screenWidth < 1000.0) ? 0.60 : 0.65;
-		double registersWidthPct = (screenWidth < 1000.0) ? 0.18 : 0.22;
-		double registersHeightPct = (screenWidth < 1000.0) ? 0.72 : 0.80;
+		final double messageWidthPct = screenWidth < 1000.0 ? 0.67 : 0.73;
+		final double messageHeightPct = screenWidth < 1000.0 ? 0.12 : 0.15;
+		final double mainWidthPct = screenWidth < 1000.0 ? 0.67 : 0.73;
+		final double mainHeightPct = screenWidth < 1000.0 ? 0.60 : 0.65;
+		final double registersWidthPct = screenWidth < 1000.0 ? 0.18 : 0.22;
+		final double registersHeightPct = screenWidth < 1000.0 ? 0.72 : 0.80;
 
-		Dimension messagesPanePreferredSize = new Dimension((int) (screenWidth * messageWidthPct), (int) (screenHeight
-				* messageHeightPct));
-		Dimension mainPanePreferredSize = new Dimension((int) (screenWidth * mainWidthPct), (int) (screenHeight
+		final Dimension messagesPanePreferredSize = new Dimension((int) (screenWidth * messageWidthPct),
+				(int) (screenHeight * messageHeightPct));
+		final Dimension mainPanePreferredSize = new Dimension((int) (screenWidth * mainWidthPct), (int) (screenHeight
 				* mainHeightPct));
-		Dimension registersPanePreferredSize = new Dimension((int) (screenWidth * registersWidthPct),
+		final Dimension registersPanePreferredSize = new Dimension((int) (screenWidth * registersWidthPct),
 				(int) (screenHeight * registersHeightPct));
 
 		// the "restore" size (window control button that toggles with maximize)
@@ -142,14 +167,14 @@ public class VenusUI extends JFrame {
 
 		Globals.initialize(true);
 
-		//  image courtesy of NASA/JPL.  
-		URL im = this.getClass().getResource(Globals.imagesPath + "RedMars16.gif");
+		//  image courtesy of NASA/JPL.
+		final URL im = this.getClass().getResource(Globals.imagesPath + "RedMars16.gif");
 		if (im == null) {
 			System.out.println("Internal Error: images folder or file not found");
 			System.exit(0);
 		}
-		Image mars = Toolkit.getDefaultToolkit().getImage(im);
-		this.setIconImage(mars);
+		final Image mars = Toolkit.getDefaultToolkit().getImage(im);
+		setIconImage(mars);
 		// Everything in frame will be arranged on JPanel "center", which is only frame component.
 		// "center" has BorderLayout and 2 major components:
 		//   -- panel (jp) on North with 2 components
@@ -173,7 +198,7 @@ public class VenusUI extends JFrame {
 		//Insets defaultTabInsets = (Insets)UIManager.get("TabbedPane.tabInsets");
 		//UIManager.put("TabbedPane.tabInsets", new Insets(1, 1, 1, 1));
 		mainPane = new MainPane(mainUI, editor, registersTab, coprocessor1Tab, coprocessor0Tab);
-		//UIManager.put("TabbedPane.tabInsets", defaultTabInsets); 
+		//UIManager.put("TabbedPane.tabInsets", defaultTabInsets);
 
 		mainPane.setPreferredSize(mainPanePreferredSize);
 		messagesPane = new MessagesPane();
@@ -186,20 +211,20 @@ public class VenusUI extends JFrame {
 		horizonSplitter.resetToPreferredSizes();
 
 		// due to dependencies, do not set up menu/toolbar until now.
-		this.createActionObjects();
-		menu = this.setUpMenuBar();
-		this.setJMenuBar(menu);
+		createActionObjects();
+		menu = setUpMenuBar();
+		setJMenuBar(menu);
 
-		toolbar = this.setUpToolBar();
+		toolbar = setUpToolBar();
 
-		JPanel jp = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		final JPanel jp = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		jp.add(toolbar);
 		jp.add(RunSpeedPanel.getInstance());
-		JPanel center = new JPanel(new BorderLayout());
+		final JPanel center = new JPanel(new BorderLayout());
 		center.add(jp, BorderLayout.NORTH);
 		center.add(horizonSplitter);
 
-		this.getContentPane().add(center);
+		getContentPane().add(center);
 
 		FileStatus.reset();
 		// The following has side effect of establishing menu state
@@ -207,29 +232,31 @@ public class VenusUI extends JFrame {
 
 		// This is invoked when opening the app.  It will set the app to
 		// appear at full screen size.
-		this.addWindowListener(new WindowAdapter() {
+		addWindowListener(new WindowAdapter() {
 
-			public void windowOpened(WindowEvent e) {
-				mainUI.setExtendedState(JFrame.MAXIMIZED_BOTH);
+			@Override
+			public void windowOpened(final WindowEvent e) {
+				mainUI.setExtendedState(Frame.MAXIMIZED_BOTH);
 			}
 		});
 
 		// This is invoked when exiting the app through the X icon.  It will in turn
 		// check for unsaved edits before exiting.
-		this.addWindowListener(new WindowAdapter() {
+		addWindowListener(new WindowAdapter() {
 
-			public void windowClosing(WindowEvent e) {
+			@Override
+			public void windowClosing(final WindowEvent e) {
 				if (mainUI.editor.closeAll()) { System.exit(0); }
 			}
 		});
 
-		// The following will handle the windowClosing event properly in the 
+		// The following will handle the windowClosing event properly in the
 		// situation where user Cancels out of "save edits?" dialog.  By default,
 		// the GUI frame will be hidden but I want it to do nothing.
-		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		this.pack();
-		this.setVisible(true);
+		pack();
+		setVisible(true);
 	}
 
 	/*
@@ -238,8 +265,8 @@ public class VenusUI extends JFrame {
 	 * disabled, etc.
 	 */
 	private void createActionObjects() {
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		Class cs = this.getClass();
+		final Toolkit tk = Toolkit.getDefaultToolkit();
+		final Class cs = this.getClass();
 		try {
 			fileNewAction = new FileNewAction("New", new ImageIcon(tk.getImage(cs.getResource(Globals.imagesPath
 					+ "New22.png"))), "Create a new file for editing", new Integer(KeyEvent.VK_N), KeyStroke
@@ -368,7 +395,7 @@ public class VenusUI extends JFrame {
 					+ "Help22.png"))), "Help", new Integer(KeyEvent.VK_H), KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),
 					mainUI);
 			helpAboutAction = new HelpAboutAction("About ...", null, "Information about Mars", null, null, mainUI);
-		} catch (NullPointerException e) {
+		} catch (final NullPointerException e) {
 			System.out.println(
 					"Internal Error: images folder not found, or other null pointer exception while creating Action objects");
 			e.printStackTrace();
@@ -383,9 +410,9 @@ public class VenusUI extends JFrame {
 
 	private JMenuBar setUpMenuBar() {
 
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		Class cs = this.getClass();
-		JMenuBar menuBar = new JMenuBar();
+		final Toolkit tk = Toolkit.getDefaultToolkit();
+		final Class cs = this.getClass();
+		final JMenuBar menuBar = new JMenuBar();
 		file = new JMenu("File");
 		file.setMnemonic(KeyEvent.VK_F);
 		edit = new JMenu("Edit");
@@ -437,7 +464,7 @@ public class VenusUI extends JFrame {
 		editUndo = new JMenuItem(editUndoAction);
 		editUndo.setIcon(new ImageIcon(tk.getImage(cs.getResource(Globals.imagesPath + "Undo16.png"))));//"Undo16.gif"))));
 		editRedo = new JMenuItem(editRedoAction);
-		editRedo.setIcon(new ImageIcon(tk.getImage(cs.getResource(Globals.imagesPath + "Redo16.png"))));//"Redo16.gif"))));      
+		editRedo.setIcon(new ImageIcon(tk.getImage(cs.getResource(Globals.imagesPath + "Redo16.png"))));//"Redo16.gif"))));
 		editCut = new JMenuItem(editCutAction);
 		editCut.setIcon(new ImageIcon(tk.getImage(cs.getResource(Globals.imagesPath + "Cut16.gif"))));
 		editCopy = new JMenuItem(editCopyAction);
@@ -554,8 +581,8 @@ public class VenusUI extends JFrame {
 		menuBar.add(edit);
 		menuBar.add(run);
 		menuBar.add(settings);
-		JMenu toolMenu = new ToolLoader().buildToolsMenu();
-		if (toolMenu != null) menuBar.add(toolMenu);
+		final JMenu toolMenu = new ToolLoader().buildToolsMenu();
+		if (toolMenu != null) { menuBar.add(toolMenu); }
 		menuBar.add(help);
 
 		// experiment with popup menu for settings. 3 Aug 2006 PS
@@ -570,7 +597,7 @@ public class VenusUI extends JFrame {
 	 */
 
 	JToolBar setUpToolBar() {
-		JToolBar toolBar = new JToolBar();
+		final JToolBar toolBar = new JToolBar();
 
 		New = new JButton(fileNewAction);
 		New.setText("");
@@ -645,7 +672,7 @@ public class VenusUI extends JFrame {
 		return toolBar;
 	}
 
-	/* Determine from FileStatus what the menu state (enabled/disabled)should 
+	/* Determine from FileStatus what the menu state (enabled/disabled)should
 	 * be then call the appropriate method to set it.  Current states are:
 	 *
 	 * setMenuStateInitial: set upon startup and after File->Close
@@ -655,7 +682,7 @@ public class VenusUI extends JFrame {
 	 * setMenuStateRunning: set upon Run->Go
 	 * setMenuStateTerminated: set upon completion of simulated execution
 	 */
-	void setMenuState(int status) {
+	void setMenuState(final int status) {
 		menuState = status;
 		switch (status) {
 		case FileStatus.NO_FILE:
@@ -860,8 +887,8 @@ public class VenusUI extends JFrame {
 		runAssembleAction.setEnabled(true);
 		runGoAction.setEnabled(true);
 		runStepAction.setEnabled(true);
-		runBackstepAction.setEnabled((Globals.getSettings().getBackSteppingEnabled() && !Globals.program
-				.getBackStepper().empty()) ? true : false);
+		runBackstepAction.setEnabled(Globals.getSettings().getBackSteppingEnabled() && !Globals.program.getBackStepper()
+				.empty() ? true : false);
 		runResetAction.setEnabled(true);
 		runStopAction.setEnabled(false);
 		runPauseAction.setEnabled(false);
@@ -931,8 +958,8 @@ public class VenusUI extends JFrame {
 		runAssembleAction.setEnabled(true);
 		runGoAction.setEnabled(false);
 		runStepAction.setEnabled(false);
-		runBackstepAction.setEnabled((Globals.getSettings().getBackSteppingEnabled() && !Globals.program
-				.getBackStepper().empty()) ? true : false);
+		runBackstepAction.setEnabled(Globals.getSettings().getBackSteppingEnabled() && !Globals.program.getBackStepper()
+				.empty() ? true : false);
 		runResetAction.setEnabled(true);
 		runStopAction.setEnabled(false);
 		runPauseAction.setEnabled(false);
@@ -946,7 +973,7 @@ public class VenusUI extends JFrame {
 	/**
 	 * Get current menu state. State values are constants in FileStatus class. DPS
 	 * 23 July 2008
-	 * 
+	 *
 	 * @return current menu state.
 	 **/
 
@@ -954,23 +981,23 @@ public class VenusUI extends JFrame {
 
 	/**
 	 * To set whether the register values are reset.
-	 * 
+	 *
 	 * @param b Boolean true if the register values have been reset.
 	 **/
 
-	public static void setReset(boolean b) { reset = b; }
+	public static void setReset(final boolean b) { reset = b; }
 
 	/**
 	 * To set whether MIPS program execution has started.
-	 * 
+	 *
 	 * @param b true if the MIPS program execution has started.
 	 **/
 
-	public static void setStarted(boolean b) { started = b; }
+	public static void setStarted(final boolean b) { started = b; }
 
 	/**
 	 * To find out whether the register values are reset.
-	 * 
+	 *
 	 * @return Boolean true if the register values have been reset.
 	 **/
 
@@ -978,14 +1005,14 @@ public class VenusUI extends JFrame {
 
 	/**
 	 * To find out whether MIPS program is currently executing.
-	 * 
+	 *
 	 * @return true if MIPS program is currently executing.
 	 **/
 	public static boolean getStarted() { return started; }
 
 	/**
 	 * Get reference to Editor object associated with this GUI.
-	 * 
+	 *
 	 * @return Editor for the GUI.
 	 **/
 
@@ -993,7 +1020,7 @@ public class VenusUI extends JFrame {
 
 	/**
 	 * Get reference to messages pane associated with this GUI.
-	 * 
+	 *
 	 * @return MessagesPane object associated with the GUI.
 	 **/
 
@@ -1001,7 +1028,7 @@ public class VenusUI extends JFrame {
 
 	/**
 	 * Get reference to messages pane associated with this GUI.
-	 * 
+	 *
 	 * @return MessagesPane object associated with the GUI.
 	 **/
 
@@ -1009,7 +1036,7 @@ public class VenusUI extends JFrame {
 
 	/**
 	 * Get reference to registers pane associated with this GUI.
-	 * 
+	 *
 	 * @return RegistersPane object associated with the GUI.
 	 **/
 
@@ -1018,7 +1045,7 @@ public class VenusUI extends JFrame {
 	/**
 	 * Get reference to settings menu item for display base of memory/register
 	 * values.
-	 * 
+	 *
 	 * @return the menu item
 	 **/
 
@@ -1027,7 +1054,7 @@ public class VenusUI extends JFrame {
 	/**
 	 * Get reference to settings menu item for display base of memory/register
 	 * values.
-	 * 
+	 *
 	 * @return the menu item
 	 **/
 
@@ -1036,7 +1063,7 @@ public class VenusUI extends JFrame {
 	/**
 	 * Return reference tothe Run->Assemble item's action. Needed by File->Open in
 	 * case assemble-upon-open flag is set.
-	 * 
+	 *
 	 * @return the Action object for the Run->Assemble operation.
 	 */
 	public Action getRunAssembleAction() { return runAssembleAction; }
@@ -1045,16 +1072,16 @@ public class VenusUI extends JFrame {
 	 * Have the menu request keyboard focus. DPS 5-4-10
 	 */
 	public void haveMenuRequestFocus() {
-		this.menu.requestFocus();
+		menu.requestFocus();
 	}
 
 	/**
 	 * Send keyboard event to menu for possible processing. DPS 5-4-10
-	 * 
+	 *
 	 * @param evt KeyEvent for menu component to consider for processing.
 	 */
-	public void dispatchEventToMenu(KeyEvent evt) {
-		this.menu.dispatchEvent(evt);
+	public void dispatchEventToMenu(final KeyEvent evt) {
+		menu.dispatchEvent(evt);
 	}
 
 	// pop up menu experiment 3 Aug 2006.  Keep for possible later revival.
@@ -1068,9 +1095,9 @@ public class VenusUI extends JFrame {
 		// If you popup this menu and check the box, the right action occurs
 		// but its counterpart on the regular menu is not checked.
 		popup.add(new JCheckBoxMenuItem(settingsLabelAction));
-		//Add listener to components that can bring up popup menus. 
-		MouseListener popupListener = new PopupListener(popup);
-		this.addMouseListener(popupListener);
+		//Add listener to components that can bring up popup menus.
+		final MouseListener popupListener = new PopupListener(popup);
+		addMouseListener(popupListener);
 	}
 
 }
