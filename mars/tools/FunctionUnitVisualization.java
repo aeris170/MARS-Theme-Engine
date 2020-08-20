@@ -21,7 +21,6 @@ public class FunctionUnitVisualization extends JFrame {
 	 * Launch the application.
 	 */
 
-
 	/**
 	 * Create the frame.
 	 */
@@ -33,27 +32,27 @@ public class FunctionUnitVisualization extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
-		if(functionalUnit == register){
+		if (functionalUnit == register) {
 			currentUnit = register;
 			UnitAnimation reg = new UnitAnimation(instruction, register);
 			contentPane.add(reg);
 			reg.startAnimation(instruction);
-		}
-		else if(functionalUnit == control){
+		} else if (functionalUnit == control) {
 			currentUnit = control;
 			UnitAnimation reg = new UnitAnimation(instruction, control);
 			contentPane.add(reg);
 			reg.startAnimation(instruction);
 		}
-		
-		else if(functionalUnit == aluControl){
+
+		else if (functionalUnit == aluControl) {
 			currentUnit = aluControl;
 			UnitAnimation reg = new UnitAnimation(instruction, aluControl);
 			contentPane.add(reg);
 			reg.startAnimation(instruction);
 		}
-		
+
 	}
+
 	public void run() {
 		try {
 			FunctionUnitVisualization frame = new FunctionUnitVisualization(instruction, currentUnit);
