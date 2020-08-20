@@ -387,7 +387,7 @@ public class VenusUI extends JFrame {
 					null, null, mainUI);
 			settingsHighlightingAction = new SettingsHighlightingAction("Highlighting...", null,
 					"View and modify Execute Tab highlighting colors", null, null, mainUI);
-			settingsThemesAction = new SettingThemesAction("Themes...", null, "View and modify MARS themes", null, null,
+			settingsThemesAction = new SettingsThemesAction("Themes...", null, "View and modify MARS themes", null, null,
 					mainUI);
 			settingsExceptionHandlerAction = new SettingsExceptionHandlerAction("Exception Handler...", null,
 					"If set, the specified exception handler file will be included in all Assemble operations.", null,
