@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="src" path=""/>
+	<classpathentry kind="lib" path="themeengine/include/flatlaf-0.40.jar"/>
+	<classpathentry kind="lib" path="themeengine/include/flatlaf-extras-0.40.jar"/>
+	<classpathentry kind="lib" path="themeengine/include/flatlaf-intellij-themes-0.40.jar"/>
+	<classpathentry kind="lib" path="themeengine/include/miglayout-core-5.2.jar"/>
+	<classpathentry kind="lib" path="themeengine/include/miglayout-swing-5.2.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
