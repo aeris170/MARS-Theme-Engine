@@ -104,7 +104,8 @@ public class VenusUI extends JFrame {
 	private JCheckBoxMenuItem settingsLabel, settingsPopupInput, settingsValueDisplayBase, settingsAddressDisplayBase,
 			settingsExtended, settingsAssembleOnOpen, settingsAssembleAll, settingsWarningsAreErrors,
 			settingsStartAtMain, settingsDelayedBranching, settingsProgramArguments, settingsSelfModifyingCode;
-	private JMenuItem settingsExceptionHandler, settingsEditor, settingsHighlighting, settingsMemoryConfiguration;
+	private JMenuItem settingsExceptionHandler, settingsEditor, settingsHighlighting, settingsThemes,
+			settingsMemoryConfiguration;
 	private JMenuItem helpHelp, helpAbout;
 
 	// components of the toolbar
@@ -128,7 +129,7 @@ public class VenusUI extends JFrame {
 			settingsAddressDisplayBaseAction, settingsExtendedAction, settingsAssembleOnOpenAction,
 			settingsAssembleAllAction, settingsWarningsAreErrorsAction, settingsStartAtMainAction,
 			settingsProgramArgumentsAction, settingsDelayedBranchingAction, settingsExceptionHandlerAction,
-			settingsEditorAction, settingsHighlightingAction, settingsMemoryConfigurationAction,
+			settingsEditorAction, settingsHighlightingAction, settingsThemesAction, settingsMemoryConfigurationAction,
 			settingsSelfModifyingCodeAction;
 	private Action helpHelpAction, helpAboutAction;
 
@@ -386,6 +387,8 @@ public class VenusUI extends JFrame {
 					null, null, mainUI);
 			settingsHighlightingAction = new SettingsHighlightingAction("Highlighting...", null,
 					"View and modify Execute Tab highlighting colors", null, null, mainUI);
+			settingsThemesAction = new SettingThemesAction("Themes...", null, "View and modify MARS themes", null, null,
+					mainUI);
 			settingsExceptionHandlerAction = new SettingsExceptionHandlerAction("Exception Handler...", null,
 					"If set, the specified exception handler file will be included in all Assemble operations.", null,
 					null, mainUI);
@@ -546,6 +549,7 @@ public class VenusUI extends JFrame {
 		settingsProgramArguments.setSelected(Globals.getSettings().getProgramArguments());
 		settingsEditor = new JMenuItem(settingsEditorAction);
 		settingsHighlighting = new JMenuItem(settingsHighlightingAction);
+		settingsThemes = new JMenuItem(settingsThemesAction);
 		settingsExceptionHandler = new JMenuItem(settingsExceptionHandlerAction);
 		settingsMemoryConfiguration = new JMenuItem(settingsMemoryConfigurationAction);
 
@@ -566,6 +570,7 @@ public class VenusUI extends JFrame {
 		settings.addSeparator();
 		settings.add(settingsEditor);
 		settings.add(settingsHighlighting);
+		settings.add(settingsThemes);
 		settings.add(settingsExceptionHandler);
 		settings.add(settingsMemoryConfiguration);
 
