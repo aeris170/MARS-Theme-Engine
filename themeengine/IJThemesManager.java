@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.formdev.flatlaf.json.Json;
-import com.formdev.flatlaf.util.StringUtils;
+import themeengine.include.com.formdev.flatlaf.json.Json;
+import themeengine.include.com.formdev.flatlaf.util.StringUtils;
 
 /**
  * @author Karl Tauber

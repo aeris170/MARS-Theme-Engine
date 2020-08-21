@@ -27,8 +27,8 @@ import javax.swing.JList;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import com.formdev.flatlaf.ui.FlatUIUtils;
-import com.formdev.flatlaf.util.UIScale;
+import themeengine.include.com.formdev.flatlaf.ui.FlatUIUtils;
+import themeengine.include.com.formdev.flatlaf.util.UIScale;
 
 /**
  * @author Karl Tauber

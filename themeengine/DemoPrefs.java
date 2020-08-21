@@ -22,11 +22,11 @@ import java.util.prefs.Preferences;
 
 import javax.swing.UIManager;
 
-import com.formdev.flatlaf.FlatLaf;
-import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.FlatPropertiesLaf;
-import com.formdev.flatlaf.IntelliJTheme;
-import com.formdev.flatlaf.util.StringUtils;
+import themeengine.include.com.formdev.flatlaf.FlatLaf;
+import themeengine.include.com.formdev.flatlaf.FlatLightLaf;
+import themeengine.include.com.formdev.flatlaf.FlatPropertiesLaf;
+import themeengine.include.com.formdev.flatlaf.IntelliJTheme;
+import themeengine.include.com.formdev.flatlaf.util.StringUtils;
 
 /**
  * @author Karl Tauber

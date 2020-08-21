@@ -96,7 +96,7 @@ public class IJThemesClassGenerator {
 		allInfos.append(THEME_TEMPLATE.replace("${subPackage}", subPackage).replace("${themeClass}", themeClass)
 				.replace("${themeName}", name));
 
-		markdownTable.append(String.format("[%s](%s) | `com.formdev.flatlaf.intellijthemes%s.%s`\n", name,
+		markdownTable.append(String.format("[%s](%s) | `themeengine.include.com.formdev.flatlaf.intellijthemes%s.%s`\n", name,
 				ti.sourceCodeUrl, subPackage, themeClass));
 	}
 
@@ -120,18 +120,18 @@ public class IJThemesClassGenerator {
 			+ " * See the License for the specific language governing permissions and\n"
 			+ " * limitations under the License.\n" + " */\n" + "\n";
 
-	private static final String CLASS_TEMPLATE = "package com.formdev.flatlaf.intellijthemes${subPackage};\n" + "\n"
-			+ "import com.formdev.flatlaf.IntelliJTheme;\n" + "\n" + "/**\n" + " * @author Karl Tauber\n" + " */\n"
+	private static final String CLASS_TEMPLATE = "package themeengine.include.com.formdev.flatlaf.intellijthemes${subPackage};\n" + "\n"
+			+ "import themeengine.include.com.formdev.flatlaf.IntelliJTheme;\n" + "\n" + "/**\n" + " * @author Karl Tauber\n" + " */\n"
 			+ "public class ${themeClass}\n" + "	extends IntelliJTheme.ThemeLaf\n" + "{\n"
 			+ "	public static boolean install( ) {\n" + "		try {\n"
 			+ "			return install( new ${themeClass}() );\n" + "		} catch( RuntimeException ex ) {\n"
 			+ "			return false;\n" + "		}\n" + "	}\n" + "\n" + "	public ${themeClass}() {\n"
 			+ "		super( Utils.loadTheme( \"${themeFile}\" ) );\n" + "	}\n" + "}\n";
 
-	private static final String ALL_THEMES_TEMPLATE = "package com.formdev.flatlaf.intellijthemes;\n" + "\n"
+	private static final String ALL_THEMES_TEMPLATE = "package themeengine.include.com.formdev.flatlaf.intellijthemes;\n" + "\n"
 			+ "import javax.swing.UIManager.LookAndFeelInfo;\n" + "\n" + "/**\n" + " * @author Karl Tauber\n" + " */\n"
 			+ "public class FlatAllIJThemes\n" + "{\n" + "	public static final LookAndFeelInfo[] INFOS = {\n"
 			+ "${allInfos}\n" + "	};\n" + "}\n";
 
-	private static final String THEME_TEMPLATE = "		new LookAndFeelInfo( \"${themeName}\", \"com.formdev.flatlaf.intellijthemes${subPackage}.${themeClass}\" ),";
+	private static final String THEME_TEMPLATE = "		new LookAndFeelInfo( \"${themeName}\", \"themeengine.include.com.formdev.flatlaf.intellijthemes${subPackage}.${themeClass}\" ),";
 }

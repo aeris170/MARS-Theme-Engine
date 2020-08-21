@@ -3,7 +3,7 @@ package themeengine;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 
-import com.formdev.flatlaf.util.SystemInfo;
+import themeengine.include.com.formdev.flatlaf.util.SystemInfo;
 
 public final class ThemeEngine {
 

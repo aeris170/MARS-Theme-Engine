@@ -58,18 +58,17 @@ import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.ListSelectionEvent;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.FlatLaf;
-import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.FlatPropertiesLaf;
-import com.formdev.flatlaf.IntelliJTheme;
-import com.formdev.flatlaf.IntelliJTheme.ThemeLaf;
-import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
-import com.formdev.flatlaf.util.StringUtils;
-
-import net.miginfocom.swing.MigLayout;
+import themeengine.include.com.formdev.flatlaf.FlatDarculaLaf;
+import themeengine.include.com.formdev.flatlaf.FlatDarkLaf;
+import themeengine.include.com.formdev.flatlaf.FlatIntelliJLaf;
+import themeengine.include.com.formdev.flatlaf.FlatLaf;
+import themeengine.include.com.formdev.flatlaf.FlatLightLaf;
+import themeengine.include.com.formdev.flatlaf.FlatPropertiesLaf;
+import themeengine.include.com.formdev.flatlaf.IntelliJTheme;
+import themeengine.include.com.formdev.flatlaf.IntelliJTheme.ThemeLaf;
+import themeengine.include.com.formdev.flatlaf.extras.FlatAnimatedLafChange;
+import themeengine.include.com.formdev.flatlaf.util.StringUtils;
+import themeengine.include.net.miginfocom.swing.MigLayout;
 
 /**
  * @author Karl Tauber
@@ -81,7 +80,7 @@ public class IJThemesPanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 1015932645086976264L;
 
-	public static final String THEMES_PACKAGE = "/com/formdev/flatlaf/intellijthemes/themes/";
+	public static final String THEMES_PACKAGE = "include/com/formdev/flatlaf/intellijthemes/themes/";
 
 	private final IJThemesManager themesManager = new IJThemesManager();
 	private final List<IJThemeInfo> themes = new ArrayList<>();
