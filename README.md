@@ -12,7 +12,7 @@ Official project: [here](https://courses.missouristate.edu/KenVollmar/mars/)
 This repository contains a modified, themeable version of MARS. You can see features included below, alongside with some screenshots.
 
 ## What's new?
-* Changed the default [Java Metal](https://docs.oracle.com/javase/8/docs/api/javax/swing/plaf/metal/package-summary.html) theme to a modern looking one, ![FlatLaf logo](themeengine/flatlaf.svg)[FlatLaf](https://www.formdev.com/flatlaf/)
+* Changed the default [Java Metal](https://docs.oracle.com/javase/8/docs/api/javax/swing/plaf/metal/package-summary.html) theme to a modern looking one, ![FlatLaf logo](themeengine/FlatLaf.svg)[FlatLaf](https://www.formdev.com/flatlaf/)
 ![MARS new look](screenshots/fullwindow.png)
 
 
