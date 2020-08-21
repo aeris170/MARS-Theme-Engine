@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.prefs.Preferences;
 
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.UIManager;
 
 import themeengine.include.com.formdev.flatlaf.FlatLaf;
@@ -41,6 +43,8 @@ public class DemoPrefs {
 
 	public static final String THEME_UI_KEY = "__FlatLaf.demo.theme";
 
+	public static final String LAF_STATE_KEY = "areThemesActive";
+
 	private static Preferences state;
 
 	public static Preferences getState() { return state; }
@@ -50,7 +54,18 @@ public class DemoPrefs {
 	}
 
 	public static void initLaf(final String[] args) {
+		// remember active look and feel
+		UIManager.addPropertyChangeListener(e -> {
+			if ("lookAndFeel".equals(e.getPropertyName())) {
+				state.put(KEY_LAF, UIManager.getLookAndFeel().getClass().getName());
+			}
+		});
+
+		if (!getLafState()) return;
 		// set look and feel
+
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		JDialog.setDefaultLookAndFeelDecorated(true);
 		try {
 			if (args.length > 0) {
 				UIManager.setLookAndFeel(args[0]);
@@ -90,12 +105,11 @@ public class DemoPrefs {
 			// fallback
 			FlatLightLaf.install();
 		}
-
-		// remember active look and feel
-		UIManager.addPropertyChangeListener(e -> {
-			if ("lookAndFeel".equals(e.getPropertyName())) {
-				state.put(KEY_LAF, UIManager.getLookAndFeel().getClass().getName());
-			}
-		});
 	}
+
+	public static void setLafState(boolean lafState) {
+		state.putBoolean(LAF_STATE_KEY, lafState);
+	}
+
+	public static boolean getLafState() { return state.getBoolean(LAF_STATE_KEY, false); }
 }

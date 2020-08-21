@@ -11,6 +11,7 @@ import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 
 import mars.Globals;
+import themeengine.DemoPrefs;
 import themeengine.IJThemesPanel;
 
 public class SettingsThemesAction extends GuiAction {
@@ -44,7 +45,7 @@ public class SettingsThemesAction extends GuiAction {
 	}
 
 	private Container buildDialogPanel() {
-		return new IJThemesPanel();
+		return new IJThemesPanel(DemoPrefs.getLafState());
 	}
 
 	// We're finished with this modal dialog.

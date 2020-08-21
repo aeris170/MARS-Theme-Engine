@@ -21,6 +21,7 @@ import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -43,6 +44,7 @@ import java.util.function.Predicate;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -55,6 +57,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.ListSelectionEvent;
 
@@ -97,9 +100,12 @@ public class IJThemesPanel extends JPanel {
 
 	private File lastDirectory;
 	private boolean isAdjustingThemesList;
+	private boolean areThemesEnabled;
 
-	public IJThemesPanel() {
+	public IJThemesPanel(boolean areThemesEnabled) {
 		initComponents();
+		setThemesEnabled(areThemesEnabled);
+		enableThemesCheckBox.addItemListener(e -> checkBoxChanged(e)); //special treatment for this guy.
 
 		// create renderer
 		themesList.setCellRenderer(new DefaultListCellRenderer() {
@@ -259,7 +265,7 @@ public class IJThemesPanel extends JPanel {
 
 	private void themesListValueChanged(final ListSelectionEvent e) {
 		final IJThemeInfo themeInfo = themesList.getSelectedValue();
-		if (e.getValueIsAdjusting() || isAdjustingThemesList) { return; }
+		if (e.getValueIsAdjusting() || isAdjustingThemesList || !areThemesEnabled) { return; }
 
 		EventQueue.invokeLater(() -> { setTheme(themeInfo); });
 	}
@@ -429,13 +435,48 @@ public class IJThemesPanel extends JPanel {
 		isAdjustingThemesList = false;
 	}
 
+	private void checkBoxChanged(ItemEvent e) {
+		boolean newState = e.getStateChange() == ItemEvent.SELECTED;
+		setThemesEnabled(newState);
+		DemoPrefs.setLafState(newState);
+		if (newState) {
+			Object[] options = { "I understand" };
+			JOptionPane.showOptionDialog(this,
+					"Due to how Java's L&F system works, title bars will not be themes until MARS is restarted.",
+					"MARS Theme Engine", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options,
+					options[0]);
+		}
+	}
+
 	private void filterChanged() {
 		updateThemesList();
+	}
+
+	private void setThemesEnabled(boolean state) {
+		areThemesEnabled = state;
+		enableThemesCheckBox.setSelected(state);
+		filterComboBox.setEnabled(state);
+		themesList.setEnabled(state);
+		if (state) { //apply theme
+			updateThemesList(); //i'm a simple man, i'm lazy
+		} else { //apply java default laf
+			try {
+				UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+					| UnsupportedLookAndFeelException ex) {
+				ex.printStackTrace();
+			}
+
+			// update all components
+			FlatLaf.updateUI();
+			FlatAnimatedLafChange.hideSnapshotWithAnimation();
+		}
 	}
 
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
 		final JLabel themesLabel = new JLabel();
+		enableThemesCheckBox = new JCheckBox("Enable Themes");
 		filterComboBox = new JComboBox<>();
 		themesScrollPane = new JScrollPane();
 		themesList = new JList<>();
@@ -447,16 +488,20 @@ public class IJThemesPanel extends JPanel {
 				// rows
 				"[]3" + "[grow,fill]"));
 
+		//---- enableThemesCheckBox ----
+		enableThemesCheckBox.setFocusable(false);
+		add(enableThemesCheckBox, "cell 0 0");
+
 		//---- themesLabel ----
 		themesLabel.setText("Themes:");
-		add(themesLabel, "cell 0 0");
+		add(themesLabel, "cell 0 1");
 
 		//---- filterComboBox ----
 		filterComboBox.setModel(new DefaultComboBoxModel<>(new String[] { "all", "light", "dark" }));
 		filterComboBox.putClientProperty("JComponent.minimumWidth", 0);
 		filterComboBox.setFocusable(false);
 		filterComboBox.addActionListener(e -> filterChanged());
-		add(filterComboBox, "cell 0 0,alignx right,growx 0");
+		add(filterComboBox, "cell 1 0,alignx right,growx 0");
 
 		//======== themesScrollPane ========
 		{
@@ -466,11 +511,12 @@ public class IJThemesPanel extends JPanel {
 			themesList.addListSelectionListener(this::themesListValueChanged);
 			themesScrollPane.setViewportView(themesList);
 		}
-		add(themesScrollPane, "cell 0 1");
+		add(themesScrollPane, "cell 0 2,spanx 2");
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+	private JCheckBox enableThemesCheckBox;
 	private JComboBox<String> filterComboBox;
 	private JScrollPane themesScrollPane;
 	private JList<IJThemeInfo> themesList;

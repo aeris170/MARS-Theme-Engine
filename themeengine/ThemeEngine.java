@@ -1,8 +1,5 @@
 package themeengine;
 
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-
 import themeengine.include.com.formdev.flatlaf.util.SystemInfo;
 
 public final class ThemeEngine {
@@ -14,8 +11,6 @@ public final class ThemeEngine {
 			System.setProperty("apple.laf.useScreenMenuBar", "true");
 		}
 		DemoPrefs.init("mars");
-		JFrame.setDefaultLookAndFeelDecorated(true);
-		JDialog.setDefaultLookAndFeelDecorated(true);
 		DemoPrefs.initLaf(args);
 	}
 }
