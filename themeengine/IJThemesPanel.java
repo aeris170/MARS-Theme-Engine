@@ -223,15 +223,28 @@ public class IJThemesPanel extends JPanel {
 				}
 			}
 		} else {
-			ThemeLaf laf = (ThemeLaf) UIManager.getLookAndFeel();
-			IntelliJTheme themeLaf = laf.getTheme();
-			for (int i = 0; i < themes.size(); i++) {
-				final IJThemeInfo theme = themes.get(i);
-				if (themeLaf.name.equals(theme.name)) {
-					themesList.setSelectedIndex(i);
-					break;
+			LookAndFeel currentlaf = UIManager.getLookAndFeel();
+			if (currentlaf instanceof ThemeLaf) {
+				ThemeLaf laf = (ThemeLaf) currentlaf;
+				IntelliJTheme themeLaf = laf.getTheme();
+				for (int i = 0; i < themes.size(); i++) {
+					final IJThemeInfo theme = themes.get(i);
+					if (themeLaf.name.equals(theme.name)) {
+						themesList.setSelectedIndex(i);
+						break;
+					}
+				}
+			} else if (currentlaf instanceof FlatLaf) {
+				FlatLaf laf = (FlatLaf) currentlaf;
+				for (int i = 0; i < themes.size(); i++) {
+					final IJThemeInfo theme = themes.get(i);
+					if (laf.getClass().getName().equals(theme.lafClassName)) {
+						themesList.setSelectedIndex(i);
+						break;
+					}
 				}
 			}
+
 		}
 
 		// select first theme if none selected
