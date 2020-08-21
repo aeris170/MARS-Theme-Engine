@@ -40,5 +40,5 @@ This repository contains a modified, themeable version of MARS. You can see feat
 ## How to install?
 You have the option to: 
 * Wait until this unofficial version gets added to the official version, no promises.
-* Download it by downloading the "MARS 4.5.1 Unofficial" file from the repository
-* Download it clicking [here]( )
+* Download it by downloading the "Mars4_5_1Unofficial.jar" file from the repository
+* Download it clicking [here](https://github.com/aeris170/MARS/releases/download/v4.5.1/Mars4_5_1Unoffiial.jar)
