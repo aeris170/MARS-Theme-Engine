@@ -1,0 +1,7 @@
+DemoPrefs, ListCellTitledBorder and
+other classes starting with IJ are
+taken from: https://github.com/JFormDesigner/FlatLaf/tree/master/flatlaf-demo
+and modified for use in MARS Theme Engine.
+
+FlatLaf belongs to JFromDesigner -> https://github.com/JFormDesigner
+MigLayout belongs to MiG InfoCom AB -> http://www.miglayout.com/
