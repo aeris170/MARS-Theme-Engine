@@ -1,2 +1,2 @@
 Main-Class: Mars
-Class-Path: .
+Class-Path: . themeengine/include/flatlaf-0.40.jar themeengine/include/flatlaf-extras-0.40.jar themeengine/include/flatlaf-intellij-themes-0.40.jar themeengine/include/miglayout-core-5.2.jar themeengine/include/miglayout-swing-5.2.jar
