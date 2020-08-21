@@ -12,7 +12,7 @@ Official project: [here](https://courses.missouristate.edu/KenVollmar/mars/)
 This repository contains a modified, themeable version of MARS. You can see features included below, alongside with some screenshots.
 
 ## What's new?
-* Changed the default [Java Metal](https://docs.oracle.com/javase/8/docs/api/javax/swing/plaf/metal/package-summary.html) theme to a modern looking one, ![FlatLaf logo](themeengine/FlatLaf.svg)[FlatLaf](https://www.formdev.com/flatlaf/)
+* Added a modern looking Look and Feel, ![FlatLaf logo](themeengine/FlatLaf.svg)[FlatLaf](https://www.formdev.com/flatlaf/). 
 ![MARS new look](screenshots/fullwindow.png)
 
 
@@ -41,4 +41,4 @@ This repository contains a modified, themeable version of MARS. You can see feat
 You have the option to: 
 * Wait until this unofficial version gets added to the official version, no promises.
 * Download it by downloading the "Mars4_5_1Unofficial.jar" file from the repository
-* Download it clicking [here](https://github.com/aeris170/MARS/releases/download/v4.5.1/Mars4_5_1Unoffiial.jar)
+* Download it clicking [here](https://github.com/aeris170/MARS-Theme-Engine/releases/download/v4.5.1/Mars4_5_1Unofficial.jar)
