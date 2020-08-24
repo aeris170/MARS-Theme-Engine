@@ -44,6 +44,7 @@ public class DemoPrefs {
 	public static final String THEME_UI_KEY = "__FlatLaf.demo.theme";
 
 	public static final String LAF_STATE_KEY = "areThemesActive";
+	private static final String LAF_INDEX_KEY = "selectedLafIndex";
 
 	private static Preferences state;
 
@@ -112,4 +113,11 @@ public class DemoPrefs {
 	}
 
 	public static boolean getLafState() { return state.getBoolean(LAF_STATE_KEY, false); }
+
+	public static void setSelectedLafIndex(int selectedIndex) {
+		state.putInt(LAF_INDEX_KEY, selectedIndex);
+	}
+
+	public static int getSelectedLafIndex() { return state.getInt(LAF_INDEX_KEY, 0); }
+
 }

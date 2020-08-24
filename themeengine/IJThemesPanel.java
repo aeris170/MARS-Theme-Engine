@@ -68,7 +68,6 @@ import themeengine.include.com.formdev.flatlaf.FlatLaf;
 import themeengine.include.com.formdev.flatlaf.FlatLightLaf;
 import themeengine.include.com.formdev.flatlaf.FlatPropertiesLaf;
 import themeengine.include.com.formdev.flatlaf.IntelliJTheme;
-import themeengine.include.com.formdev.flatlaf.IntelliJTheme.ThemeLaf;
 import themeengine.include.com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import themeengine.include.com.formdev.flatlaf.util.StringUtils;
 import themeengine.include.net.miginfocom.swing.MigLayout;
@@ -228,28 +227,9 @@ public class IJThemesPanel extends JPanel {
 				}
 			}
 		} else {
-			LookAndFeel currentlaf = UIManager.getLookAndFeel();
-			if (currentlaf instanceof ThemeLaf) {
-				ThemeLaf laf = (ThemeLaf) currentlaf;
-				IntelliJTheme themeLaf = laf.getTheme();
-				for (int i = 0; i < themes.size(); i++) {
-					final IJThemeInfo theme = themes.get(i);
-					if (themeLaf.name.equals(theme.name)) {
-						themesList.setSelectedIndex(i);
-						break;
-					}
-				}
-			} else if (currentlaf instanceof FlatLaf) {
-				FlatLaf laf = (FlatLaf) currentlaf;
-				for (int i = 0; i < themes.size(); i++) {
-					final IJThemeInfo theme = themes.get(i);
-					if (laf.getClass().getName().equals(theme.lafClassName)) {
-						themesList.setSelectedIndex(i);
-						break;
-					}
-				}
+			if (UIManager.getLookAndFeel() instanceof FlatLaf) {
+				themesList.setSelectedIndex(DemoPrefs.getSelectedLafIndex());
 			}
-
 		}
 
 		// select first theme if none selected
@@ -265,6 +245,7 @@ public class IJThemesPanel extends JPanel {
 
 	private void themesListValueChanged(final ListSelectionEvent e) {
 		final IJThemeInfo themeInfo = themesList.getSelectedValue();
+		DemoPrefs.setSelectedLafIndex(themesList.getSelectedIndex());
 		if (e.getValueIsAdjusting() || isAdjustingThemesList || !areThemesEnabled) { return; }
 
 		EventQueue.invokeLater(() -> { setTheme(themeInfo); });
@@ -442,7 +423,7 @@ public class IJThemesPanel extends JPanel {
 		if (newState) {
 			Object[] options = { "I understand" };
 			JOptionPane.showOptionDialog(this,
-					"Due to how Java's L&F system works, title bars will not be themes until MARS is restarted.",
+					"Due to how Java's L&F system works, title bars will not be themed until MARS is restarted.",
 					"MARS Theme Engine", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options,
 					options[0]);
 		}
