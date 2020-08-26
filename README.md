@@ -11,6 +11,12 @@ Official project: [here](https://courses.missouristate.edu/KenVollmar/mars/)
 
 This repository contains a modified, themeable version of MARS. You can see features included below, alongside with some screenshots.
 
+## Platforms
+MARS Theme Engine has been tested on:
+* Windows 10 Version 10.0.19041 Build 19041
+* Ubuntu 20.04.1 LTS
+
+
 ## What's new?
 * Added a modern looking Look and Feel, ![FlatLaf logo](themeengine/FlatLaf.svg)[FlatLaf](https://www.formdev.com/flatlaf/). 
 ![MARS new look](screenshots/fullwindow.png)
