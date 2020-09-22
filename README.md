@@ -46,5 +46,5 @@ MARS Theme Engine has been tested on:
 ## How to install?
 You have the option to: 
 * Wait until this unofficial version gets added to the official version, no promises.
-* Download it by downloading the "Mars4_5_1Unofficial.jar" file from the repository
-* Download it clicking [here](https://github.com/aeris170/MARS-Theme-Engine/releases/download/v4.5.1/Mars4_5_1Unofficial.jar)
+* Download it by downloading the "Mars4_5_1_1Unofficial.jar" file from the repository
+* Download it clicking [here](https://github.com/aeris170/MARS-Theme-Engine/releases/download/v4.5.1.1/Mars4_5_1_1Unofficial.jar)
