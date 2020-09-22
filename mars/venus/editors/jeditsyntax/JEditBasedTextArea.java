@@ -67,9 +67,7 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	}
 
 	@Override
-	public void setFont(final Font f) {
-		getPainter().setFont(f);
-	}
+	public void setFont(final Font f) { getPainter().setFont(f); }
 
 	@Override
 	public Font getFont() { return getPainter().getFont(); }
@@ -84,9 +82,7 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	 * @param highlight true to enable line highlighting, false to disable.
 	 */
 	@Override
-	public void setLineHighlightEnabled(final boolean highlight) {
-		getPainter().setLineHighlightEnabled(highlight);
-	}
+	public void setLineHighlightEnabled(final boolean highlight) { getPainter().setLineHighlightEnabled(highlight); }
 
 	/**
 	 * Set the caret blinking rate in milliseconds. If rate is 0 will disable
@@ -96,7 +92,9 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	 */
 	@Override
 	public void setCaretBlinkRate(final int rate) {
-		if (rate == 0) { caretBlinks = false; }
+		if (rate == 0) {
+			caretBlinks = false;
+		}
 		if (rate > 0) {
 			caretBlinks = true;
 			caretBlinkRate = rate;
@@ -112,17 +110,13 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	 * @param chars number of characters
 	 */
 	@Override
-	public void setTabSize(final int chars) {
-		painter.setTabSize(chars);
-	}
+	public void setTabSize(final int chars) { painter.setTabSize(chars); }
 
 	/**
 	 * Update the syntax style table, which is obtained from SyntaxUtilities.
 	 */
 	@Override
-	public void updateSyntaxStyles() {
-		painter.setStyles(SyntaxUtilities.getCurrentSyntaxStyles());
-	}
+	public void updateSyntaxStyles() { painter.setStyles(SyntaxUtilities.getCurrentSyntaxStyles()); }
 
 	@Override
 	public Component getOuterComponent() { return this; }
@@ -135,9 +129,7 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	 * unless you call this after setting the text.
 	 */
 	@Override
-	public void discardAllUndoableEdits() {
-		undoManager.discardAllEdits();
-	}
+	public void discardAllUndoableEdits() { undoManager.discardAllEdits(); }
 
 	/**
 	 * Display caret position on the edit pane.
@@ -146,9 +138,7 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	 */
 
 	@Override
-	public void caretUpdate(final CaretEvent e) {
-		editPane.displayCaretPosition(((MutableCaretEvent) e).getDot());
-	}
+	public void caretUpdate(final CaretEvent e) { editPane.displayCaretPosition(((MutableCaretEvent) e).getDot()); }
 
 	/**
 	 * Same as setSelectedText but named for compatibility with JTextComponent
@@ -157,9 +147,7 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	 * @param replacementText The replacement text for the selection
 	 */
 	@Override
-	public void replaceSelection(final String replacementText) {
-		setSelectedText(replacementText);
-	}
+	public void replaceSelection(final String replacementText) { setSelectedText(replacementText); }
 
 	//
 	//
@@ -178,7 +166,9 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 		setEnabled(editable);
 		//this.getCaret().setVisible(editable);
 		setCaretPosition(0);
-		if (editable) { this.requestFocusInWindow(); }
+		if (editable) {
+			this.requestFocusInWindow();
+		}
 	}
 
 	/**
@@ -200,7 +190,9 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 		try {
 			undoManager.undo();
 		} catch (final CannotUndoException ex) {
-			System.out.println("Unable to undo: " + ex);
+			System.out.println(
+				"Unable to undo: "
+					+ ex);
 			ex.printStackTrace();
 		}
 		unredoing = false;
@@ -218,7 +210,9 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 		try {
 			undoManager.redo();
 		} catch (final CannotRedoException ex) {
-			System.out.println("Unable to redo: " + ex);
+			System.out.println(
+				"Unable to redo: "
+					+ ex);
 			ex.printStackTrace();
 		}
 		unredoing = false;
@@ -238,7 +232,7 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	 * at the current cursor location, and wraps around when the end of the string
 	 * is reached.
 	 *
-	 * @param find          the text to locate in the string
+	 * @param find the text to locate in the string
 	 * @param caseSensitive true if search is to be case-sensitive, false otherwise
 	 * @return TEXT_FOUND or TEXT_NOT_FOUND, depending on the result.
 	 */
@@ -264,9 +258,9 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	 * reached during the search, will wrap around to the beginning one time.
 	 *
 	 * @return next indexed position of found text or -1 if not found
-	 * @param input         the string to search
-	 * @param find          the string to find
-	 * @param start         the character position to start the search
+	 * @param input the string to search
+	 * @param find the string to find
+	 * @param start the character position to start the search
 	 * @param caseSensitive true for case sensitive. false to ignore case
 	 */
 	public int nextIndex(final String input, final String find, final int start, final boolean caseSensitive) {
@@ -275,12 +269,16 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 			if (caseSensitive) { // indexOf() returns -1 if not found
 				textPosn = input.indexOf(find, start);
 				// If not found from non-starting cursor position, wrap around
-				if (start > 0 && textPosn < 0) { textPosn = input.indexOf(find); }
+				if (start > 0 && textPosn < 0) {
+					textPosn = input.indexOf(find);
+				}
 			} else {
 				final String lowerCaseText = input.toLowerCase();
 				textPosn = lowerCaseText.indexOf(find.toLowerCase(), start);
 				// If not found from non-starting cursor position, wrap around
-				if (start > 0 && textPosn < 0) { textPosn = lowerCaseText.indexOf(find.toLowerCase()); }
+				if (start > 0 && textPosn < 0) {
+					textPosn = lowerCaseText.indexOf(find.toLowerCase());
+				}
 			}
 		}
 		return textPosn;
@@ -292,16 +290,15 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	 * then find and select the next occurrence if any. Otherwise it performs a find
 	 * operation. The replace can be undone with one undo operation.
 	 *
-	 * @param find          the text to locate in the string
-	 * @param replace       the text to replace the find text with - if the find
-	 *                      text exists
+	 * @param find the text to locate in the string
+	 * @param replace the text to replace the find text with - if the find text
+	 * exists
 	 * @param caseSensitive true for case sensitive. false to ignore case
 	 * @return Returns TEXT_FOUND if not initially at end of selected match and
-	 *         matching occurrence is found. Returns TEXT_NOT_FOUND if the text is
-	 *         not matched. Returns TEXT_REPLACED_NOT_FOUND_NEXT if replacement is
-	 *         successful but there are no additional matches. Returns
-	 *         TEXT_REPLACED_FOUND_NEXT if reaplacement is successful and there is
-	 *         at least one additional match.
+	 * matching occurrence is found. Returns TEXT_NOT_FOUND if the text is not
+	 * matched. Returns TEXT_REPLACED_NOT_FOUND_NEXT if replacement is successful
+	 * but there are no additional matches. Returns TEXT_REPLACED_FOUND_NEXT if
+	 * reaplacement is successful and there is at least one additional match.
 	 */
 	@Override
 	public int doReplace(final String find, final String replace, final boolean caseSensitive) {
@@ -309,7 +306,7 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 		// Will perform a "find" and return, unless positioned at the end of
 		// a selected "find" result.
 		if (find == null || !find.equals(sourceCode.getSelectedText()) || sourceCode.getSelectionEnd() != sourceCode
-				.getCaretPosition()) {
+			.getCaretPosition()) {
 			return doFindText(find, caseSensitive);
 		}
 		// We are positioned at end of selected "find".  Rreplace and find next.
@@ -340,9 +337,9 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	 * search. All replacements are bundled into one CompoundEdit, so one Undo
 	 * operation will undo all of them.
 	 *
-	 * @param find          the text to locate in the string
-	 * @param replace       the text to replace the find text with - if the find
-	 *                      text exists
+	 * @param find the text to locate in the string
+	 * @param replace the text to replace the find text with - if the find text
+	 * exists
 	 * @param caseSensitive true for case sensitive. false to ignore case
 	 * @return the number of occurrences that were matched and replaced.
 	 */
@@ -359,13 +356,17 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 				// nextIndex() will wrap around, which causes infinite loop if
 				// find string is a substring of replacement string.  This
 				// statement will prevent that.
-				if (nextPosn < findPosn) { break; }
+				if (nextPosn < findPosn) {
+					break;
+				}
 				sourceCode.grabFocus();
 				sourceCode.setSelectionStart(nextPosn); // posn cursor at word start
 				sourceCode.setSelectionEnd(nextPosn + find.length()); //select found text
 				// Need to repeat start due to quirk in JEditTextArea implementation of setSelectionStart.
 				sourceCode.setSelectionStart(nextPosn);
-				if (compoundEdit == null) { compoundEdit = new CompoundEdit(); }
+				if (compoundEdit == null) {
+					compoundEdit = new CompoundEdit();
+				}
 				sourceCode.replaceSelection(replace);
 				findPosn = nextPosn + replace.length(); // set for next search
 				replaceCount++;
@@ -383,6 +384,9 @@ public class JEditBasedTextArea extends JEditTextArea implements MARSTextEditing
 	}
 	//
 	/////////////////////////////  End Find/Replace methods //////////////////////////
+
+	@Override
+	public void updateColors() { painter.updateColors(); }
 
 	//
 	//////////////////////////////////////////////////////////////////

@@ -73,10 +73,12 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 		final JPanel source = new JPanel(new BorderLayout());
 		source.add(lineNumbers, BorderLayout.WEST);
 		source.add(this, BorderLayout.CENTER);
-		editAreaScrollPane = new JScrollPane(source, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+		editAreaScrollPane = new JScrollPane(
+				source,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-		editAreaScrollPane.getVerticalScrollBar().setUnitIncrement(sourceCode.getFontMetrics(sourceCode.getFont())
-				.getHeight());
+		editAreaScrollPane.getVerticalScrollBar()
+			.setUnitIncrement(sourceCode.getFontMetrics(sourceCode.getFont()).getHeight());
 
 		undoManager = new UndoManager();
 
@@ -118,7 +120,9 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 	 */
 	@Override
 	public void setCaretBlinkRate(final int rate) {
-		if (rate >= 0) { getCaret().setBlinkRate(rate); }
+		if (rate >= 0) {
+			getCaret().setBlinkRate(rate);
+		}
 	}
 
 	@Override
@@ -127,7 +131,7 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 	/**
 	 * For initalizing the source code when opening an ASM file
 	 *
-	 * @param s        String containing text
+	 * @param s String containing text
 	 * @param editable set true if code is editable else false
 	 **/
 
@@ -139,23 +143,23 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 		setEnabled(editable);
 		getCaret().setVisible(editable);
 		setCaretPosition(0);
-		if (editable) { this.requestFocusInWindow(); }
+		if (editable) {
+			this.requestFocusInWindow();
+		}
 	}
 
 	/**
 	 * Tell UndoManager to discard all its collected undoable edits.
 	 */
 	@Override
-	public void discardAllUndoableEdits() {
-		undoManager.discardAllEdits();
-	}
+	public void discardAllUndoableEdits() { undoManager.discardAllEdits(); }
 
 	/**
 	 * Override inherited setText to temporarily remove UndoableEditListener because
 	 * this operation is not undoable.
 	 *
 	 * @param s String with new contents for the editing area. Replaces current
-	 *          content.
+	 * content.
 	 */
 	@Override
 	public void setText(final String s) {
@@ -170,9 +174,7 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 	 * @param vis true to display caret, false to hide it
 	 */
 	@Override
-	public void setCaretVisible(final boolean vis) {
-		getCaret().setVisible(vis);
-	}
+	public void setCaretVisible(final boolean vis) { getCaret().setVisible(vis); }
 
 	/**
 	 * Control selection visibility
@@ -180,9 +182,7 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 	 * @param vis true to display selection, false to hide it
 	 */
 	@Override
-	public void setSelectionVisible(final boolean vis) {
-		getCaret().setSelectionVisible(vis);
-	}
+	public void setSelectionVisible(final boolean vis) { getCaret().setSelectionVisible(vis); }
 
 	/**
 	 * Returns the undo manager for this editing area
@@ -200,7 +200,9 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 		try {
 			undoManager.undo();
 		} catch (final CannotUndoException ex) {
-			System.out.println("Unable to undo: " + ex);
+			System.out.println(
+				"Unable to undo: "
+					+ ex);
 			ex.printStackTrace();
 		}
 		setCaretVisible(true);
@@ -214,7 +216,9 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 		try {
 			undoManager.redo();
 		} catch (final CannotRedoException ex) {
-			System.out.println("Unable to redo: " + ex);
+			System.out.println(
+				"Unable to redo: "
+					+ ex);
 			ex.printStackTrace();
 		}
 		setCaretVisible(true);
@@ -235,7 +239,7 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 	 * at the current cursor location, and wraps around when the end of the string
 	 * is reached.
 	 *
-	 * @param find          the text to locate in the string
+	 * @param find the text to locate in the string
 	 * @param caseSensitive true if search is to be case-sensitive, false otherwise
 	 * @return TEXT_FOUND or TEXT_NOT_FOUND, depending on the result.
 	 */
@@ -260,9 +264,9 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 	 * reached during the search, will wrap around to the beginning one time.
 	 *
 	 * @return next indexed position of found text or -1 if not found
-	 * @param input         the string to search
-	 * @param find          the string to find
-	 * @param start         the character position to start the search
+	 * @param input the string to search
+	 * @param find the string to find
+	 * @param start the character position to start the search
 	 * @param caseSensitive true for case sensitive. false to ignore case
 	 */
 	public int nextIndex(final String input, final String find, final int start, final boolean caseSensitive) {
@@ -271,12 +275,16 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 			if (caseSensitive) { // indexOf() returns -1 if not found
 				textPosn = input.indexOf(find, start);
 				// If not found from non-starting cursor position, wrap around
-				if (start > 0 && textPosn < 0) { textPosn = input.indexOf(find); }
+				if (start > 0 && textPosn < 0) {
+					textPosn = input.indexOf(find);
+				}
 			} else {
 				final String lowerCaseText = input.toLowerCase();
 				textPosn = lowerCaseText.indexOf(find.toLowerCase(), start);
 				// If not found from non-starting cursor position, wrap around
-				if (start > 0 && textPosn < 0) { textPosn = lowerCaseText.indexOf(find.toLowerCase()); }
+				if (start > 0 && textPosn < 0) {
+					textPosn = lowerCaseText.indexOf(find.toLowerCase());
+				}
 			}
 		}
 		return textPosn;
@@ -288,16 +296,15 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 	 * then find and select the next occurrence if any. Otherwise it performs a find
 	 * operation. The replace can be undone with one undo operation.
 	 *
-	 * @param find          the text to locate in the string
-	 * @param replace       the text to replace the find text with - if the find
-	 *                      text exists
+	 * @param find the text to locate in the string
+	 * @param replace the text to replace the find text with - if the find text
+	 * exists
 	 * @param caseSensitive true for case sensitive. false to ignore case
 	 * @return Returns TEXT_FOUND if not initially at end of selected match and
-	 *         matching occurrence is found. Returns TEXT_NOT_FOUND if the text is
-	 *         not matched. Returns TEXT_REPLACED_NOT_FOUND_NEXT if replacement is
-	 *         successful but there are no additional matches. Returns
-	 *         TEXT_REPLACED_FOUND_NEXT if reaplacement is successful and there is
-	 *         at least one additional match.
+	 * matching occurrence is found. Returns TEXT_NOT_FOUND if the text is not
+	 * matched. Returns TEXT_REPLACED_NOT_FOUND_NEXT if replacement is successful
+	 * but there are no additional matches. Returns TEXT_REPLACED_FOUND_NEXT if
+	 * reaplacement is successful and there is at least one additional match.
 	 */
 	@Override
 	public int doReplace(final String find, final String replace, final boolean caseSensitive) {
@@ -305,7 +312,7 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 		// Will perform a "find" and return, unless positioned at the end of
 		// a selected "find" result.
 		if (find == null || !find.equals(sourceCode.getSelectedText()) || sourceCode.getSelectionEnd() != sourceCode
-				.getCaretPosition()) {
+			.getCaretPosition()) {
 			return doFindText(find, caseSensitive);
 		}
 		// We are positioned at end of selected "find".  Rreplace and find next.
@@ -334,9 +341,9 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 	 * search. All replacements are bundled into one CompoundEdit, so one Undo
 	 * operation will undo all of them.
 	 *
-	 * @param find          the text to locate in the string
-	 * @param replace       the text to replace the find text with - if the find
-	 *                      text exists
+	 * @param find the text to locate in the string
+	 * @param replace the text to replace the find text with - if the find text
+	 * exists
 	 * @param caseSensitive true for case sensitive. false to ignore case
 	 * @return the number of occurrences that were matched and replaced.
 	 */
@@ -353,11 +360,15 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 				// nextIndex() will wrap around, which causes infinite loop if
 				// find string is a substring of replacement string.  This
 				// statement will prevent that.
-				if (nextPosn < findPosn) { break; }
+				if (nextPosn < findPosn) {
+					break;
+				}
 				sourceCode.grabFocus();
 				sourceCode.setSelectionStart(nextPosn); // posn cursor at word start
 				sourceCode.setSelectionEnd(nextPosn + find.length()); //select found text
-				if (compoundEdit == null) { compoundEdit = new CompoundEdit(); }
+				if (compoundEdit == null) {
+					compoundEdit = new CompoundEdit();
+				}
 				sourceCode.replaceSelection(replace);
 				findPosn = nextPosn + replace.length(); // set for next search
 				replaceCount++;
@@ -375,5 +386,8 @@ public class GenericTextArea extends JTextArea implements MARSTextEditingArea {
 	}
 	//
 	/////////////////////////////  End Find/Replace methods //////////////////////////
+
+	@Override
+	public void updateColors() {}
 
 }
