@@ -126,4 +126,6 @@ public interface MARSTextEditingArea {
 	void updateSyntaxStyles();
 
 	Component getOuterComponent();
+
+	void updateColors();
 }

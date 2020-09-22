@@ -29,13 +29,9 @@ import mars.venus.editors.jeditsyntax.PopupHelpItem;
  */
 public class MIPSTokenMarker extends TokenMarker {
 
-	public MIPSTokenMarker() {
-		this(getKeywords());
-	}
+	public MIPSTokenMarker() { this(getKeywords()); }
 
-	public MIPSTokenMarker(final KeywordMap keywords) {
-		this.keywords = keywords;
-	}
+	public MIPSTokenMarker(final KeywordMap keywords) { this.keywords = keywords; }
 
 	public static String[] getMIPSTokenLabels() {
 		if (tokenLabels == null) {
@@ -49,6 +45,9 @@ public class MIPSTokenMarker extends TokenMarker {
 			tokenLabels[Token.KEYWORD3] = "Register";
 			tokenLabels[Token.INVALID] = "In-progress, invalid";
 			tokenLabels[Token.MACRO_ARG] = "Macro parameter";
+			tokenLabels[Token.EDITOR_BG] = "Background";
+			tokenLabels[Token.EDITOR_LINE] = "Line";
+			tokenLabels[Token.EDITOR_SELECTION] = "Selection";
 		}
 		return tokenLabels;
 	}
@@ -65,6 +64,9 @@ public class MIPSTokenMarker extends TokenMarker {
 			tokenExamples[Token.KEYWORD3] = "$zero";
 			tokenExamples[Token.INVALID] = "\"Regi";
 			tokenExamples[Token.MACRO_ARG] = "%arg";
+			tokenExamples[Token.EDITOR_BG] = "";
+			tokenExamples[Token.EDITOR_LINE] = "";
+			tokenExamples[Token.EDITOR_SELECTION] = "";
 		}
 		return tokenExamples;
 	}
@@ -136,8 +138,8 @@ public class MIPSTokenMarker extends TokenMarker {
 					//String lab = new String(array, lastOffset, i1-lastOffset-1).trim();
 					boolean validIdentifier = false;
 					try {
-						validIdentifier = mars.assembler.TokenTypes.isValidIdentifier(new String(array, lastOffset, i1
-								- lastOffset - 1).trim());
+						validIdentifier = mars.assembler.TokenTypes.isValidIdentifier(
+							new String(array, lastOffset, i1 - lastOffset - 1).trim());
 					} catch (final StringIndexOutOfBoundsException e) {
 						validIdentifier = false;
 					}
@@ -184,11 +186,15 @@ public class MIPSTokenMarker extends TokenMarker {
 				}
 				break;
 			default:
-				throw new InternalError("Invalid state: " + token);
+				throw new InternalError(
+						"Invalid state: "
+							+ token);
 			}
 		}
 
-		if (token == Token.NULL) { doKeyword(line, length, '\0'); }
+		if (token == Token.NULL) {
+			doKeyword(line, length, '\0');
+		}
 
 		switch (token) {
 		case Token.LITERAL1:
@@ -198,7 +204,9 @@ public class MIPSTokenMarker extends TokenMarker {
 			break;
 		case Token.KEYWORD2:
 			addToken(length - lastOffset, token);
-			if (!backslash) { token = Token.NULL; }
+			if (!backslash) {
+				token = Token.NULL;
+			}
 		default:
 			addToken(length - lastOffset, token);
 			break;
@@ -210,7 +218,7 @@ public class MIPSTokenMarker extends TokenMarker {
 	/**
 	 * Construct and return any appropriate help information for the given token.
 	 *
-	 * @param token     the pertinent Token object
+	 * @param token the pertinent Token object
 	 * @param tokenText the source String that matched to the token
 	 * @return ArrayList of PopupHelpItem objects, one per match.
 	 */
@@ -248,17 +256,16 @@ public class MIPSTokenMarker extends TokenMarker {
 	 * Construct and return any appropriate help information for prefix match based
 	 * on current line's token list.
 	 *
-	 * @param line      String containing current line
+	 * @param line String containing current line
 	 * @param tokenList first Token on current line (head of linked list)
-	 * @param token     the pertinent Token object
+	 * @param token the pertinent Token object
 	 * @param tokenText the source String that matched to the token in previous
-	 *                  parameter
+	 * parameter
 	 * @return ArrayList of PopupHelpItem objects, one per match.
 	 */
 
 	@Override
-	public ArrayList getTokenPrefixMatchHelp(final String line, final Token tokenList, final Token token,
-			final String tokenText) {
+	public ArrayList getTokenPrefixMatchHelp(final String line, final Token tokenList, final Token token, final String tokenText) {
 		// CASE:  Unlikely boundary case...
 		if (tokenList == null || tokenList.id == Token.END) { return null; }
 
@@ -292,8 +299,9 @@ public class MIPSTokenMarker extends TokenMarker {
 		//        instructions for which this is a prefix, so do a prefix match on current token.
 		if (token != null && token.id == Token.KEYWORD1) {
 			if (moreThanOneKeyword) {
-				return keywordType == Token.KEYWORD1 ? getTextFromInstructionMatch(keywordTokenText, true)
-						: getTextFromDirectiveMatch(keywordTokenText, true);
+				return keywordType == Token.KEYWORD1 ? getTextFromInstructionMatch(
+					keywordTokenText,
+					true) : getTextFromDirectiveMatch(keywordTokenText, true);
 			} else {
 				return getTextFromInstructionMatch(tokenText, false);
 			}
@@ -304,8 +312,9 @@ public class MIPSTokenMarker extends TokenMarker {
 		//        directives for which this is a prefix, so do a prefix match on current token.
 		if (token != null && token.id == Token.KEYWORD2) {
 			if (moreThanOneKeyword) {
-				return keywordType == Token.KEYWORD1 ? getTextFromInstructionMatch(keywordTokenText, true)
-						: getTextFromDirectiveMatch(keywordTokenText, true);
+				return keywordType == Token.KEYWORD1 ? getTextFromInstructionMatch(
+					keywordTokenText,
+					true) : getTextFromDirectiveMatch(keywordTokenText, true);
 			} else {
 				return getTextFromDirectiveMatch(tokenText, false);
 			}
@@ -428,7 +437,7 @@ public class MIPSTokenMarker extends TokenMarker {
 	 * mnemonics, assembler directives, and register names.
 	 *
 	 * @return KeywordMap where key is the keyword and associated value is the token
-	 *         type (e.g. Token.KEYWORD1).
+	 * type (e.g. Token.KEYWORD1).
 	 */
 
 	public static KeywordMap getKeywords() {
@@ -448,11 +457,14 @@ public class MIPSTokenMarker extends TokenMarker {
 			final mars.mips.hardware.Register[] registerFile = mars.mips.hardware.RegisterFile.getRegisters();
 			for (int i = 0; i < registerFile.length; i++) {
 				cKeywords.add(registerFile[i].getName(), Token.KEYWORD3);
-				cKeywords.add("$" + i, Token.KEYWORD3);  // also recognize $0, $1, $2, etc
+				cKeywords.add(
+					"$"
+						+ i,
+					Token.KEYWORD3);  // also recognize $0, $1, $2, etc
 			}
 			// add Coprocessor 1 (floating point) register file
 			final mars.mips.hardware.Register[] coprocessor1RegisterFile = mars.mips.hardware.Coprocessor1
-					.getRegisters();
+				.getRegisters();
 			for (int i = 0; i < coprocessor1RegisterFile.length; i++) {
 				cKeywords.add(coprocessor1RegisterFile[i].getName(), Token.KEYWORD3);
 			}
@@ -480,7 +492,9 @@ public class MIPSTokenMarker extends TokenMarker {
 			//   if (id == Token.KEYWORD1 && tokenListContainsKeyword()) {
 			//    }
 			//    else {
-			if (lastKeyword != lastOffset) { addToken(lastKeyword - lastOffset, Token.NULL); }
+			if (lastKeyword != lastOffset) {
+				addToken(lastKeyword - lastOffset, Token.NULL);
+			}
 			addToken(len, id);
 			lastOffset = i;
 			//  }
@@ -494,13 +508,21 @@ public class MIPSTokenMarker extends TokenMarker {
 		boolean result = false;
 		String str = "";
 		while (token != null) {
-			str += "" + token.id + "(" + token.length + ") ";
+			str += ""
+				+ token.id
+				+ "("
+				+ token.length
+				+ ") ";
 			if (token.id == Token.KEYWORD1 || token.id == Token.KEYWORD2 || token.id == Token.KEYWORD3) {
 				result = true;
 			}
 			token = token.next;
 		}
-		System.out.println("" + result + " " + str);
+		System.out.println(
+			""
+				+ result
+				+ " "
+				+ str);
 		return result;
 	}
 }

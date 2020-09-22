@@ -83,8 +83,8 @@ public class Editor {
 	 * Get name of current directory for Open operation.
 	 *
 	 * @return String containing directory pathname. Returns null if there is no
-	 *         EditTabbedPane. Returns default, directory MARS is launched from, if
-	 *         no Opens have been performed.
+	 * EditTabbedPane. Returns default, directory MARS is launched from, if no Opens
+	 * have been performed.
 	 */
 
 	public String getCurrentOpenDirectory() { return currentOpenDirectory; }
@@ -94,9 +94,8 @@ public class Editor {
 	 * directory will be displayed when Open dialog is launched.
 	 *
 	 * @param currentOpenDirectory String containing pathname for current Open
-	 *                             directory. If it does not exist or is not a
-	 *                             directory, the default (MARS launch directory)
-	 *                             will be used.
+	 * directory. If it does not exist or is not a directory, the default (MARS
+	 * launch directory) will be used.
 	 */
 
 	void setCurrentOpenDirectory(final String currentOpenDirectory) {
@@ -112,8 +111,8 @@ public class Editor {
 	 * Get name of current directory for Save or Save As operation.
 	 *
 	 * @return String containing directory pathname. Returns null if there is no
-	 *         EditTabbedPane. Returns default, directory MARS is launched from, if
-	 *         no Save or Save As operations have been performed.
+	 * EditTabbedPane. Returns default, directory MARS is launched from, if no Save
+	 * or Save As operations have been performed.
 	 */
 
 	public String getCurrentSaveDirectory() { return currentSaveDirectory; }
@@ -123,9 +122,8 @@ public class Editor {
 	 * directory will be displayed when Save dialog is launched.
 	 *
 	 * @param currentSaveDirectory String containing pathname for current Save
-	 *                             directory. If it does not exist or is not a
-	 *                             directory, the default (MARS launch directory)
-	 *                             will be used.
+	 * directory. If it does not exist or is not a directory, the default (MARS
+	 * launch directory) will be used.
 	 */
 
 	void setCurrentSaveDirectory(final String currentSaveDirectory) {
@@ -144,7 +142,9 @@ public class Editor {
 	 */
 	public String getNextDefaultFilename() {
 		newUsageCount++;
-		return "mips" + newUsageCount + ".asm";
+		return "mips"
+			+ newUsageCount
+			+ ".asm";
 	}
 
 	/**
@@ -155,8 +155,8 @@ public class Editor {
 	 * name and path will be followed with an '*'. If newly-created file has not yet
 	 * been saved, the title bar will show (temporary) file name but not path.
 	 *
-	 * @param path   Full pathname for file
-	 * @param name   Name of file (last component of path)
+	 * @param path Full pathname for file
+	 * @param name Name of file (last component of path)
 	 * @param status Edit status of file. See FileStatus static constants.
 	 */
 	public void setTitle(final String path, final String name, final int status) {
@@ -164,9 +164,12 @@ public class Editor {
 			mainUI.setTitle(mainUIbaseTitle);
 		} else {
 			final String edited = status == FileStatus.NEW_EDITED || status == FileStatus.EDITED ? "*" : " ";
-			final String titleName = status == FileStatus.NEW_EDITED || status == FileStatus.NEW_NOT_EDITED ? name
-					: path;
-			mainUI.setTitle(titleName + edited + " - " + mainUIbaseTitle);
+			final String titleName = status == FileStatus.NEW_EDITED || status == FileStatus.NEW_NOT_EDITED ? name : path;
+			mainUI.setTitle(
+				titleName
+					+ edited
+					+ " - "
+					+ mainUIbaseTitle);
 			editTabbedPane.setTitleAt(editTabbedPane.getSelectedIndex(), name + edited);
 		}
 	}
@@ -174,63 +177,49 @@ public class Editor {
 	/**
 	 * Perform "new" operation to create an empty tab.
 	 */
-	public void newFile() {
-		editTabbedPane.newFile();
-	}
+	public void newFile() { editTabbedPane.newFile(); }
 
 	/**
 	 * Perform "close" operation on current tab's file.
 	 *
 	 * @return true if succeeded, else false.
 	 */
-	public boolean close() {
-		return editTabbedPane.closeCurrentFile();
-	}
+	public boolean close() { return editTabbedPane.closeCurrentFile(); }
 
 	/**
 	 * Close all currently open files.
 	 *
 	 * @return true if succeeded, else false.
 	 */
-	public boolean closeAll() {
-		return editTabbedPane.closeAllFiles();
-	}
+	public boolean closeAll() { return editTabbedPane.closeAllFiles(); }
 
 	/**
 	 * Perform "save" operation on current tab's file.
 	 *
 	 * @return true if succeeded, else false.
 	 */
-	public boolean save() {
-		return editTabbedPane.saveCurrentFile();
-	}
+	public boolean save() { return editTabbedPane.saveCurrentFile(); }
 
 	/**
 	 * Perform "save as" operation on current tab's file.
 	 *
 	 * @return true if succeeded, else false.
 	 */
-	public boolean saveAs() {
-		return editTabbedPane.saveAsCurrentFile();
-	}
+	public boolean saveAs() { return editTabbedPane.saveAsCurrentFile(); }
 
 	/**
 	 * Perform save operation on all open files (tabs).
 	 *
 	 * @return true if succeeded, else false.
 	 */
-	public boolean saveAll() {
-		return editTabbedPane.saveAllFiles();
-	}
+	public boolean saveAll() { return editTabbedPane.saveAllFiles(); }
 
 	/**
 	 * Open file in a new tab.
 	 *
 	 * @return true if succeeded, else false.
 	 */
-	public boolean open() {
-		return editTabbedPane.openFile();
-	}
+	public boolean open() { return editTabbedPane.openFile(); }
 
 	/**
 	 * Called by several of the Action objects when there is potential loss of
@@ -240,10 +229,18 @@ public class Editor {
 	 * File->New, File->Open, File->Close, and File->Exit.
 	 *
 	 * @return false means user selected Cancel so caller should do that. Return of
-	 *         true means caller can proceed (edits were saved or discarded).
+	 * true means caller can proceed (edits were saved or discarded).
 	 */
-	public boolean editsSavedOrAbandoned() {
-		return editTabbedPane.editsSavedOrAbandoned();
+	public boolean editsSavedOrAbandoned() { return editTabbedPane.editsSavedOrAbandoned(); }
+
+	public void updateAll() {
+		int size = editTabbedPane.getTabCount();
+		for (int i = 0; i < size; i++) {
+			if (editTabbedPane.getComponentAt(i) instanceof EditPane) {
+				EditPane p = (EditPane) editTabbedPane.getComponentAt(i);
+				p.updateColors();
+			}
+		}
 	}
 
 }

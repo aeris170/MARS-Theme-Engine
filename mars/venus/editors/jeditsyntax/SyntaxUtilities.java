@@ -36,12 +36,11 @@ public class SyntaxUtilities {
 	 * Checks if a subregion of a <code>Segment</code> is equal to a string.
 	 *
 	 * @param ignoreCase True if case should be ignored, false otherwise
-	 * @param text       The segment
-	 * @param offset     The offset into the segment
-	 * @param match      The string to match
+	 * @param text The segment
+	 * @param offset The offset into the segment
+	 * @param match The string to match
 	 */
-	public static boolean regionMatches(final boolean ignoreCase, final Segment text, final int offset,
-			final String match) {
+	public static boolean regionMatches(final boolean ignoreCase, final Segment text, final int offset, final String match) {
 		final int length = offset + match.length();
 		final char[] textArray = text.array;
 		if (length > text.offset + text.count) { return false; }
@@ -62,12 +61,11 @@ public class SyntaxUtilities {
 	 * array.
 	 *
 	 * @param ignoreCase True if case should be ignored, false otherwise
-	 * @param text       The segment
-	 * @param offset     The offset into the segment
-	 * @param match      The character array to match
+	 * @param text The segment
+	 * @param offset The offset into the segment
+	 * @param match The character array to match
 	 */
-	public static boolean regionMatches(final boolean ignoreCase, final Segment text, final int offset,
-			final char[] match) {
+	public static boolean regionMatches(final boolean ignoreCase, final Segment text, final int offset, final char[] match) {
 		final int length = offset + match.length;
 		final char[] textArray = text.array;
 		if (length > text.offset + text.count) { return false; }
@@ -105,6 +103,9 @@ public class SyntaxUtilities {
 		styles[Token.OPERATOR] = new SyntaxStyle(Color.black, false, true);
 		styles[Token.INVALID] = new SyntaxStyle(Color.red, false, false);
 		styles[Token.MACRO_ARG] = new SyntaxStyle(new Color(150, 150, 0), false, false);
+		styles[Token.EDITOR_BG] = new SyntaxStyle(new Color(255, 255, 255), false, false);
+		styles[Token.EDITOR_LINE] = new SyntaxStyle(new Color(238, 238, 238), false, false);
+		styles[Token.EDITOR_SELECTION] = new SyntaxStyle(new Color(204, 204, 255), false, false);
 		return styles;
 	}
 
@@ -129,6 +130,9 @@ public class SyntaxUtilities {
 		styles[Token.OPERATOR] = Globals.getSettings().getEditorSyntaxStyleByPosition(Token.OPERATOR);
 		styles[Token.INVALID] = Globals.getSettings().getEditorSyntaxStyleByPosition(Token.INVALID);
 		styles[Token.MACRO_ARG] = Globals.getSettings().getEditorSyntaxStyleByPosition(Token.MACRO_ARG);
+		styles[Token.EDITOR_BG] = Globals.getSettings().getEditorSyntaxStyleByPosition(Token.EDITOR_BG);
+		styles[Token.EDITOR_LINE] = Globals.getSettings().getEditorSyntaxStyleByPosition(Token.EDITOR_LINE);
+		styles[Token.EDITOR_SELECTION] = Globals.getSettings().getEditorSyntaxStyleByPosition(Token.EDITOR_SELECTION);
 		return styles;
 	}
 
@@ -136,31 +140,36 @@ public class SyntaxUtilities {
 	 * Paints the specified line onto the graphics context. Note that this method
 	 * munges the offset and count values of the segment.
 	 *
-	 * @param line     The line segment
-	 * @param tokens   The token list for the line
-	 * @param styles   The syntax style list
+	 * @param line The line segment
+	 * @param tokens The token list for the line
+	 * @param styles The syntax style list
 	 * @param expander The tab expander used to determine tab stops. May be null
-	 * @param gfx      The graphics context
-	 * @param x        The x co-ordinate
-	 * @param y        The y co-ordinate
+	 * @param gfx The graphics context
+	 * @param x The x co-ordinate
+	 * @param y The y co-ordinate
 	 * @return The x co-ordinate, plus the width of the painted string
 	 */
 	public static boolean popupShowing = false;
 	public static Popup popup;
 
-	public static int paintSyntaxLine(final Segment line, Token tokens, final SyntaxStyle[] styles,
-			final TabExpander expander, final Graphics gfx, int x, final int y) {
+	public static int paintSyntaxLine(final Segment line, Token tokens, final SyntaxStyle[] styles, final TabExpander expander, final Graphics gfx, int x, final int y) {
 		final Font defaultFont = gfx.getFont();
 		final Color defaultColor = gfx.getColor();
 
 		for (;;) {
 			final byte id = tokens.id;
-			if (id == Token.END) { break; }
+			if (id == Token.END) {
+				break;
+			}
 
 			final int length = tokens.length;
 			if (id == Token.NULL) {
-				if (!defaultColor.equals(gfx.getColor())) { gfx.setColor(defaultColor); }
-				if (!defaultFont.equals(gfx.getFont())) { gfx.setFont(defaultFont); }
+				if (!defaultColor.equals(gfx.getColor())) {
+					gfx.setColor(defaultColor);
+				}
+				if (!defaultFont.equals(gfx.getFont())) {
+					gfx.setFont(defaultFont);
+				}
 			} else {
 				styles[id].setGraphicsFlags(gfx, defaultFont);
 			}
@@ -220,7 +229,13 @@ class InstructionMouseEvent extends MouseEvent {
 
 	public InstructionMouseEvent(final Component component, final int x, final int y, final Segment line) {
 		super(component, MouseEvent.MOUSE_MOVED, new java.util.Date().getTime(), 0, x, y, 0, false);
-		System.out.println("Create InstructionMouseEvent " + x + " " + y + " " + line);
+		System.out.println(
+			"Create InstructionMouseEvent "
+				+ x
+				+ " "
+				+ y
+				+ " "
+				+ line);
 		this.line = line;
 	}
 
