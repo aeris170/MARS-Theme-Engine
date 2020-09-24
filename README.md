@@ -14,7 +14,8 @@ This repository contains a modified, themeable version of MARS. You can see feat
 ## Platforms
 MARS Theme Engine has been tested on:
 * Windows 10 Version 10.0.19041 Build 19041
-* Ubuntu 20.04.1 LTS
+* [Ubuntu 20.04.1 LTS](https://releases.ubuntu.com/20.04.1/)
+* [Arch Linux 2020-09-01](https://www.archlinux.org/releng/releases/2020.09.01/)
 
 
 ## What's new?
