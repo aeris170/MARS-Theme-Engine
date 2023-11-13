@@ -90,7 +90,7 @@
 
 #######################  arithmetic and branch pseudo-ops #####################
 
-not $t1,$t2	nor RG1, RG2, $0	#Bitwise NOT (bit inversion)
+not $t1,$t2	nor RG1, RG2, $0	#Bitwise NOT (bit inversion): set $t1 to the NOT of $t2
 
 # Here are some "convenience" arithmetic pseduo-ops.  But do they encourage sloppy programming?
 add $t1,$t2,-100	addi RG1, RG2, VL3	#ADDition : set $t1 to ($t2 plus 16-bit immediate)
