@@ -1,4 +1,10 @@
 {
+	"dopamina-dark-theme-color-theme.json": {
+		"name": "Dopamina Dark",
+		"dark": true,
+		"sourceCodeUrl": "https://github.com/jaccon/dopaminadarktheme",
+		"sourceCodePath": "blob/master/themes/Dopamina Dark Theme-color-theme.json"
+	},
 	"arc-theme.theme.json": {
 		"name": "Arc",
 		"license": "MIT",
